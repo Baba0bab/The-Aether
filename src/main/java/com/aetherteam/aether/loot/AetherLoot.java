@@ -1,35 +1,23 @@
 package com.aetherteam.aether.loot;
 
 import com.aetherteam.aether.Aether;
+import net.minecraft.util.Util;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.storage.loot.LootTable;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 public class AetherLoot {
     private static final Set<ResourceKey<LootTable>> LOOT_TABLES = new HashSet<>();
     public static final Set<ResourceKey<LootTable>> IMMUTABLE_LOOT_TABLES = Collections.unmodifiableSet(LOOT_TABLES);
 
-    public static final ResourceKey<LootTable> ENTITIES_SHEEPUFF_WHITE = register("entities/sheepuff/white");
-    public static final ResourceKey<LootTable> ENTITIES_SHEEPUFF_ORANGE = register("entities/sheepuff/orange");
-    public static final ResourceKey<LootTable> ENTITIES_SHEEPUFF_MAGENTA = register("entities/sheepuff/magenta");
-    public static final ResourceKey<LootTable> ENTITIES_SHEEPUFF_LIGHT_BLUE = register("entities/sheepuff/light_blue");
-    public static final ResourceKey<LootTable> ENTITIES_SHEEPUFF_YELLOW = register("entities/sheepuff/yellow");
-    public static final ResourceKey<LootTable> ENTITIES_SHEEPUFF_LIME = register("entities/sheepuff/lime");
-    public static final ResourceKey<LootTable> ENTITIES_SHEEPUFF_PINK = register("entities/sheepuff/pink");
-    public static final ResourceKey<LootTable> ENTITIES_SHEEPUFF_GRAY = register("entities/sheepuff/gray");
-    public static final ResourceKey<LootTable> ENTITIES_SHEEPUFF_LIGHT_GRAY = register("entities/sheepuff/light_gray");
-    public static final ResourceKey<LootTable> ENTITIES_SHEEPUFF_CYAN = register("entities/sheepuff/cyan");
-    public static final ResourceKey<LootTable> ENTITIES_SHEEPUFF_PURPLE = register("entities/sheepuff/purple");
-    public static final ResourceKey<LootTable> ENTITIES_SHEEPUFF_BLUE = register("entities/sheepuff/blue");
-    public static final ResourceKey<LootTable> ENTITIES_SHEEPUFF_BROWN = register("entities/sheepuff/brown");
-    public static final ResourceKey<LootTable> ENTITIES_SHEEPUFF_GREEN = register("entities/sheepuff/green");
-    public static final ResourceKey<LootTable> ENTITIES_SHEEPUFF_RED = register("entities/sheepuff/red");
-    public static final ResourceKey<LootTable> ENTITIES_SHEEPUFF_BLACK = register("entities/sheepuff/black");
+    public static final Map<DyeColor, ResourceKey<LootTable>> SHEEPUFF_BY_DYE = Util.make(new EnumMap<>(DyeColor.class), (map) -> makeDyeKeyMap(map, "entities/sheepuff"));
+
+    public static final ResourceKey<LootTable> SHEAR_SHEEPUFF = register("shearing/sheepuff");
+    public static final Map<DyeColor, ResourceKey<LootTable>> SHEAR_SHEEPUFF_BY_DYE = Util.make(new EnumMap<>(DyeColor.class), (map) -> makeDyeKeyMap(map, "shearing/sheepuff"));
 
     public static final ResourceKey<LootTable> BRONZE_DUNGEON = register("chests/dungeon/bronze/bronze_dungeon");
     public static final ResourceKey<LootTable> BRONZE_DUNGEON_LOOT = register("chests/dungeon/bronze/bronze_dungeon_loot");
@@ -64,7 +52,7 @@ public class AetherLoot {
     public static final ResourceKey<LootTable> EVIL_WHIRLWIND_JUNK = register("selectors/evil_whirlwind_junk");
 
     private static ResourceKey<LootTable> register(String id) {
-        return register(ResourceKey.create(Registries.LOOT_TABLE, ResourceLocation.fromNamespaceAndPath(Aether.MODID, id)));
+        return register(ResourceKey.create(Registries.LOOT_TABLE, Identifier.fromNamespaceAndPath(Aether.MODID, id)));
     }
 
     private static ResourceKey<LootTable> register(ResourceKey<LootTable> id) {
@@ -72,6 +60,12 @@ public class AetherLoot {
             return id;
         } else {
             throw new IllegalArgumentException(id + " is already a registered built-in loot table");
+        }
+    }
+
+    private static void makeDyeKeyMap(EnumMap<DyeColor, ResourceKey<LootTable>> output, String name) {
+        for (DyeColor dyecolor : DyeColor.values()) {
+            output.put(dyecolor, register(name + "/" + dyecolor.getName()));
         }
     }
 }

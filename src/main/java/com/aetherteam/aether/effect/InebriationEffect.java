@@ -1,5 +1,6 @@
 package com.aetherteam.aether.effect;
 
+import net.minecraft.world.item.DyeColor;
 import com.aetherteam.aether.data.resources.registries.AetherDamageTypes;
 import net.minecraft.core.particles.ItemParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
@@ -21,11 +22,12 @@ public class InebriationEffect extends MobEffect {
     /**
      * Damages the affected entity with Inebriation damage every 50 ticks, and performs distraction behavior in {@link InebriationEffect#distractEntity(LivingEntity)} every tick.
      *
+     * @param serverLevel The entity's {@link ServerLevel}.
      * @param livingEntity The affected {@link LivingEntity}.
      * @param amplifier    The {@link Integer} amplifier for the effect.
      */
     @Override
-    public boolean applyEffectTick(LivingEntity livingEntity, int amplifier) {
+    public boolean applyEffectTick(ServerLevel serverLevel, LivingEntity livingEntity, int amplifier) {
         if (this.effectDuration % 50 == 0) {
             livingEntity.hurt(AetherDamageTypes.damageSource(livingEntity.level(), AetherDamageTypes.INEBRIATION), 1.0F);
         }
@@ -53,7 +55,7 @@ public class InebriationEffect extends MobEffect {
             livingEntity.setXRot((float) (livingEntity.getXRot() + this.rotationDirection));
         }
         if (livingEntity.level() instanceof ServerLevel serverLevel) {
-            serverLevel.sendParticles(new ItemParticleOption(ParticleTypes.ITEM, Items.PURPLE_DYE.getDefaultInstance()),
+            serverLevel.sendParticles(new ItemParticleOption(ParticleTypes.ITEM, Items.DYE.pick(DyeColor.PURPLE)),
                     livingEntity.getX(), livingEntity.getY() + livingEntity.getBbHeight() * 0.8, livingEntity.getZ(),
                     1, 0.0, 0.0, 0.0, 0.0);
         }

@@ -1,0 +1,55 @@
+package com.aetherteam.nitrogen.recipe.recipes;
+
+import com.aetherteam.nitrogen.recipe.BlockPropertyPair;
+import com.aetherteam.nitrogen.recipe.BlockStateIngredient;
+import com.aetherteam.nitrogen.recipe.input.BlockStateRecipeInput;
+import net.minecraft.commands.CacheableFunction;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.PlacementInfo;
+import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeBookCategory;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
+
+import java.util.Optional;
+
+/**
+ * Overrides anything container-related or item-related because these in-world recipes have no container and are {@link BlockState}-based. Instead, custom behavior is implemented by recipes that extend this.
+ */
+public interface BlockStateRecipe extends Recipe<BlockStateRecipeInput> {
+    BlockStateIngredient getIngredient();
+
+    BlockPropertyPair getResult();
+
+    BlockState getResultState(BlockState originalState);
+
+    Optional<CacheableFunction> getFunction();
+
+    Optional<Identifier> getFunctionId();
+
+    @Override
+    default boolean matches(BlockStateRecipeInput container, Level level) {
+        return false;
+    }
+
+    @Override
+    default ItemStack assemble(BlockStateRecipeInput container) {
+        return ItemStack.EMPTY;
+    }
+
+    @Override
+    default boolean isSpecial() {
+        return true;
+    }
+
+    @Override
+    default PlacementInfo placementInfo() {
+        return PlacementInfo.NOT_PLACEABLE;
+    }
+
+    @Override
+    default RecipeBookCategory recipeBookCategory() {
+        return null;
+    }
+}

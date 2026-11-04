@@ -4,12 +4,13 @@ import com.aetherteam.aether.AetherTags;
 import com.aetherteam.aether.block.AetherBlocks;
 import com.aetherteam.aether.item.AetherItems;
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.goal.MoveToBlockGoal;
-import net.minecraft.world.entity.animal.Fox;
+import net.minecraft.world.entity.animal.fox.Fox;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.GameRules;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
@@ -60,10 +61,12 @@ public class FoxEatBerryBushGoal extends MoveToBlockGoal {
     }
 
     protected void onReachedTarget() {
-        if (this.fox.level().getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
-            BlockState blockState = this.mob.level().getBlockState(this.blockPos);
-            if (blockState.is(AetherBlocks.BERRY_BUSH.get())) {
-                this.pickBlueBerries();
+        if (this.fox.level() instanceof ServerLevel serverLevel) {
+            if (serverLevel.getGameRules().get(GameRules.MOB_GRIEFING)) {
+                BlockState blockState = this.mob.level().getBlockState(this.blockPos);
+                if (blockState.is(AetherBlocks.BERRY_BUSH.get())) {
+                    this.pickBlueBerries();
+                }
             }
         }
     }

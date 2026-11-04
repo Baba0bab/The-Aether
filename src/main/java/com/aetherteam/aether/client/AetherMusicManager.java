@@ -17,8 +17,9 @@ import net.minecraft.client.sounds.MusicManager;
 import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.core.Holder;
 import net.minecraft.sounds.Music;
+import net.minecraft.world.attribute.BackgroundMusic;
+import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.sounds.Musics;
-import net.minecraft.tags.BiomeTags;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
@@ -86,19 +87,19 @@ public class AetherMusicManager {
         if (music != null) {
             if (currentMusic != null) {
                 if (fade == null) {
-                    if (!music.getEvent().value().getLocation().equals(currentMusic.getLocation()) && music.replaceCurrentMusic()) {
+                    if (!music.sound().value().location().equals(currentMusic.getIdentifier()) && music.replaceCurrentMusic()) {
                         minecraft.getSoundManager().stop(currentMusic); // Non-copy, cancels vanilla music if Aether music starts
-                        nextSongDelay = Mth.nextInt(random, 0, music.getMinDelay() / 2);
+                        nextSongDelay = Mth.nextInt(random, 0, music.minDelay() / 2);
                     }
 
                     if (!minecraft.getSoundManager().isActive(currentMusic)) {
                         currentMusic = null;
-                        nextSongDelay = Math.min(nextSongDelay, Mth.nextInt(random, music.getMinDelay(), music.getMaxDelay()));
+                        nextSongDelay = Math.min(nextSongDelay, Mth.nextInt(random, music.minDelay(), music.maxDelay()));
                     }
                 }
             }
 
-            nextSongDelay = Math.min(nextSongDelay, music.getMaxDelay());
+            nextSongDelay = Math.min(nextSongDelay, music.maxDelay());
             if (currentMusic == null && nextSongDelay-- <= 0) {
                 startPlaying(music);
             }
@@ -118,9 +119,9 @@ public class AetherMusicManager {
     public static void startPlaying(Music music) {
         musicManager.stopPlaying(); // Non-copy, cancels vanilla music if Aether music starts
         if (isAetherBossMusic(music)) {
-            currentMusic = MusicSoundInstance.forBossMusic(music.getEvent().value());
+            currentMusic = MusicSoundInstance.forBossMusic(music.sound().value());
         } else {
-            currentMusic = MusicSoundInstance.forMusic(music.getEvent().value());
+            currentMusic = MusicSoundInstance.forMusic(music.sound().value());
         }
         if (currentMusic.getSound() != SoundManager.EMPTY_SOUND) {
             minecraft.getSoundManager().play(currentMusic);
@@ -151,12 +152,8 @@ public class AetherMusicManager {
      */
     @Nullable
     public static <T extends LivingEntity & AetherBossMob<?>> Music getSituationalMusic() {
-        if (!(minecraft.screen instanceof WinScreen)) {
-            if (isAetherWorldPreviewEnabled()) { // Play Aether menu music when the Aether menu world preview is enabled.
-                return AetherMenus.THE_AETHER.music();
-            } else if (isVanillaWorldPreviewEnabled()) { // Play Minecraft menu music when the Minecraft menu world preview is enabled.
-                return Menus.MINECRAFT.music();
-            } else if (minecraft.player != null) { // Otherwise replace creative music with biome music in the Aether.
+        if (!(minecraft.gui.screen() instanceof WinScreen)) {
+            if (minecraft.player != null) { // Otherwise replace creative music with biome music in the Aether.
                 if (isAetherBossMusicActive()) {
                     T boss = getBossFromFight();
                     if (boss != null && boss.getHealth() > 0) {
@@ -168,7 +165,8 @@ public class AetherMusicManager {
                 } else {
                     Holder<Biome> holder = minecraft.player.level().getBiome(minecraft.player.blockPosition());
                     if (isCreative(holder, minecraft.player)) {
-                        return (holder.value().getBackgroundMusic().orElse(Musics.GAME));
+                        BackgroundMusic backgroundMusic = minecraft.gameRenderer.mainCamera().attributeProbe().getValue(EnvironmentAttributes.BACKGROUND_MUSIC, 1.0F);
+                        return backgroundMusic.select(false, minecraft.player.isUnderWater()).orElse(Musics.GAME);
                     }
                 }
             }
@@ -177,15 +175,15 @@ public class AetherMusicManager {
     }
 
     public static boolean isAetherBossMusic(Music music) {
-        return music.getEvent().is(AetherTags.SoundEvents.BOSS_MUSIC);
+        return music.sound().is(AetherTags.SoundEvents.BOSS_MUSIC);
     }
 
     public static boolean isAetherBossMusicActive() {
-        return !AetherConfig.CLIENT.disable_aether_boss_music.get() && !getAetherBossFights().isEmpty() && minecraft.gui.getBossOverlay().shouldPlayMusic();
+        return !AetherConfig.CLIENT.disable_aether_boss_music.get() && !getAetherBossFights().isEmpty() && minecraft.gui.hud.getBossOverlay().shouldPlayMusic();
     }
 
     public static Map<UUID, LerpingBossEvent> getAetherBossFights() {
-        return ((BossHealthOverlayAccessor) minecraft.gui.getBossOverlay()).getEvents().entrySet().stream().filter((entry) -> GuiHooks.isAetherBossBar(entry.getKey())).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        return ((BossHealthOverlayAccessor) minecraft.gui.hud.getBossOverlay()).getEvents().entrySet().stream().filter((entry) -> GuiHooks.isAetherBossBar(entry.getKey())).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
     public static <T extends LivingEntity & AetherBossMob<?>> T getBossFromFight() {
@@ -227,7 +225,7 @@ public class AetherMusicManager {
      */
     public static boolean isCreative(Holder<Biome> holder, Player player) {
         return player.level().dimension() != Level.END && player.level().dimension() != Level.NETHER && holder.is(AetherTags.Biomes.AETHER_MUSIC)
-                && !musicManager.isPlayingMusic(Musics.UNDER_WATER) && (!player.isUnderWater() || !holder.is(BiomeTags.PLAYS_UNDERWATER_MUSIC))
-                && player.getAbilities().instabuild && (player.getAbilities().mayfly);
+                && !musicManager.isPlayingMusic(Musics.UNDER_WATER)
+                && player.getAbilities().instabuild && player.mayFly();
     }
 }

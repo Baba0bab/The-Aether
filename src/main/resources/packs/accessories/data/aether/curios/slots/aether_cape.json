@@ -1,0 +1,14 @@
+{
+  "order": 303,
+  "size": 1,
+  "icon": "aether:slot/cape",
+  "use_native_gui": false,
+  "render_toggle": true,
+  "validators": [
+    "curios:tag"
+  ],
+  "entities": [
+    "minecraft:player",
+    "minecraft:armor_stand"
+  ]
+}

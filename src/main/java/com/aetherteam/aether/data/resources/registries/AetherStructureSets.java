@@ -7,9 +7,10 @@ import net.minecraft.core.Vec3i;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.level.levelgen.structure.StructureSet;
+import net.minecraft.world.level.levelgen.structure.placement.AbstractSpreadingStructurePlacement;
 import net.minecraft.world.level.levelgen.structure.placement.RandomSpreadStructurePlacement;
 import net.minecraft.world.level.levelgen.structure.placement.RandomSpreadType;
 import net.minecraft.world.level.levelgen.structure.placement.StructurePlacement;
@@ -23,7 +24,7 @@ public class AetherStructureSets {
     public static final ResourceKey<StructureSet> SILVER_AND_GOLD_DUNGEONS = createKey("silver_and_gold_dungeons");
 
     private static ResourceKey<StructureSet> createKey(String name) {
-        return ResourceKey.create(Registries.STRUCTURE_SET, ResourceLocation.fromNamespaceAndPath(Aether.MODID, name));
+        return ResourceKey.create(Registries.STRUCTURE_SET, Identifier.fromNamespaceAndPath(Aether.MODID, name));
     }
 
     /**
@@ -39,6 +40,6 @@ public class AetherStructureSets {
                 StructureSet.entry(structures.getOrThrow(AetherStructures.GOLD_DUNGEON), 1)),
                 new RandomSpreadStructurePlacement(36, 24, RandomSpreadType.LINEAR, 4325806)));
 
-        context.register(BRONZE_DUNGEON, new StructureSet(structures.getOrThrow(AetherStructures.BRONZE_DUNGEON), new RandomSpreadStructurePlacement(Vec3i.ZERO, StructurePlacement.FrequencyReductionMethod.DEFAULT, 1.0F, 32146754, Optional.of(new StructurePlacement.ExclusionZone(airborneSetHolder, 4)), 6, 5, RandomSpreadType.TRIANGULAR)));
+        context.register(BRONZE_DUNGEON, new StructureSet(structures.getOrThrow(AetherStructures.BRONZE_DUNGEON), new RandomSpreadStructurePlacement(Vec3i.ZERO, AbstractSpreadingStructurePlacement.FrequencyReductionMethod.DEFAULT, 1.0F, 32146754, Optional.of(new AbstractSpreadingStructurePlacement.ExclusionZone(airborneSetHolder, 4)), 6, 5, RandomSpreadType.TRIANGULAR)));
     }
 }

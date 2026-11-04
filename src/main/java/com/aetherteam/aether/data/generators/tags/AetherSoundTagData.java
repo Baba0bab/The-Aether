@@ -1,5 +1,8 @@
 //package com.aetherteam.aether.data.generators.tags;
 //
+//import net.minecraft.tags.TagKey;
+//import net.minecraft.core.registries.BuiltInRegistries;
+//import com.aetherteam.nitrogen.data.providers.IntrinsicTagAppender;
 //import com.aetherteam.aether.Aether;
 //import com.aetherteam.aether.AetherTags;
 //import com.aetherteam.aether.client.AetherSoundEvents;
@@ -8,13 +11,17 @@
 //import net.minecraft.data.PackOutput;
 //import net.minecraft.data.tags.TagsProvider;
 //import net.minecraft.sounds.SoundEvent;
-//import net.neoforged.neoforge.common.data.ExistingFileHelper;
 //
 //import java.util.concurrent.CompletableFuture;
 //
 //public class AetherSoundTagData extends TagsProvider<SoundEvent> {
-//    public AetherSoundTagData(PackOutput output, CompletableFuture<HolderLookup.Provider> registries, ExistingFileHelper existingFileHelper) {
-//        super(output, Registries.SOUND_EVENT, registries, Aether.MODID, existingFileHelper);
+//    public AetherSoundTagData(PackOutput output, CompletableFuture<HolderLookup.Provider> registries) {
+//        super(output, Registries.SOUND_EVENT, registries, Aether.MODID);
+//    }
+//
+//    @Override
+//    protected IntrinsicTagAppender<SoundEvent> tag(TagKey<SoundEvent> tag) {
+//        return new IntrinsicTagAppender<>(super.tag(tag), (element) -> BuiltInRegistries.SOUND_EVENT.getResourceKey(element).orElseThrow());
 //    }
 //
 //    @Override

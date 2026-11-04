@@ -1,17 +1,15 @@
 package com.aetherteam.aether.block.dispenser;
 
+import java.util.Optional;
+import com.aetherteam.aether.item.EquipmentUtil;
+import com.aetherteam.aetherfabric.accessories.AccessoryApi;
 import com.aetherteam.aether.attachment.AetherDataAttachments;
 import com.aetherteam.aether.event.hooks.EntityHooks;
 import com.aetherteam.aether.item.AetherItems;
 import com.aetherteam.aether.item.accessories.gloves.GlovesItem;
 import com.aetherteam.aether.item.combat.loot.HammerOfKingbdogzItem;
 import com.aetherteam.aether.item.miscellaneous.bucket.SkyrootBucketItem;
-import io.wispforest.accessories.api.AccessoriesAPI;
-import io.wispforest.accessories.api.AccessoriesCapability;
-import io.wispforest.accessories.api.Accessory;
-import io.wispforest.accessories.api.EquipAction;
-import io.wispforest.accessories.api.slot.SlotReference;
-import io.wispforest.accessories.api.slot.SlotTypeReference;
+import com.aetherteam.aetherfabric.accessories.SlotContext;
 import it.unimi.dsi.fastutil.Pair;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -53,7 +51,7 @@ public class AetherDispenseBehaviors {
     };
 
     /**
-     * Based on {@link net.minecraft.world.item.ArmorItem#dispenseArmor(BlockSource, ItemStack)} and {@link io.wispforest.accessories.impl.AccessoriesEventHandler#attemptEquipFromUse(Player, InteractionHand)}.<br><br>
+     * Based on {@link net.minecraft.core.dispenser.EquipmentDispenseItemBehavior#dispenseEquipment}.<br><br>
      * Handles checking if an accessory shot from a dispenser can be equipped, and handles that equipping behavior if it can.
      *
      * @param blockSource The {@link BlockSource} for the dispenser.
@@ -62,31 +60,26 @@ public class AetherDispenseBehaviors {
      */
     public static boolean dispenseAccessory(BlockSource blockSource, ItemStack stack) {
         BlockPos pos = blockSource.pos().relative(blockSource.state().getValue(DispenserBlock.FACING));
-        List<LivingEntity> list = blockSource.level().getEntitiesOfClass(LivingEntity.class, new AABB(pos), EntitySelector.NO_SPECTATORS.and(new EntitySelector.MobCanWearArmorEntitySelector(stack)));
+        List<LivingEntity> list = blockSource.level().getEntitiesOfClass(LivingEntity.class, new AABB(pos), (p_371713_) -> p_371713_.canEquipWithDispenser(stack));
         if (list.isEmpty()) {
             return false;
         } else {
             LivingEntity livingEntity = list.getFirst();
+            Optional<SlotContext> slotContext = EquipmentUtil.findEquippableSlot(livingEntity, stack);
+            if (slotContext.isEmpty()) {
+                return false;
+            }
             ItemStack itemStack = stack.split(1);
-            AccessoriesCapability capability = AccessoriesCapability.get(livingEntity);
-            if (capability != null) {
-                Accessory accessory = AccessoriesAPI.getOrDefaultAccessory(itemStack);
-                Pair<SlotReference, EquipAction> equipReference = capability.canEquipAccessory(itemStack, true);
-                if (equipReference != null) {
-                    SlotTypeReference slotTypeReference = new SlotTypeReference(equipReference.first().slotName());
-                    if (accessory.canEquip(itemStack, equipReference.first())) {
-                        accessory.onEquipFromUse(itemStack, equipReference.left());
-                        equipReference.second().equipStack(itemStack.copy());
-                        if (livingEntity instanceof ArmorStand armorStand) {
-                            if (equipReference.first().slotName().equals(GlovesItem.getStaticIdentifier().slotName())) {
-                                armorStand.setShowArms(true);
-                            }
-                        } else if (livingEntity instanceof Mob mob && EntityHooks.canMobSpawnWithAccessories(mob)) {
-                            mob.getAttachedOrCreate(AetherDataAttachments.MOB_ACCESSORY).setGuaranteedDrop(slotTypeReference);
-                            mob.setPersistenceRequired();
-                        }
-                    }
+            SlotContext context = slotContext.get();
+            AccessoryApi.setEquipped(livingEntity, context.identifier(), context.index(), itemStack.copy());
+            AccessoryApi.onEquipFromUse(context, itemStack);
+            if (livingEntity instanceof ArmorStand armorStand) {
+                if (context.identifier().equals(GlovesItem.getStaticIdentifier())) {
+                    armorStand.setShowArms(true);
                 }
+            } else if (livingEntity instanceof Mob mob && EntityHooks.canMobSpawnWithAccessories(mob)) {
+                mob.getAttachedOrCreate(AetherDataAttachments.MOB_ACCESSORY).setGuaranteedDrop(context.identifier());
+                mob.setPersistenceRequired();
             }
         }
         return true;

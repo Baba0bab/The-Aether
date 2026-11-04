@@ -5,9 +5,10 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.valueproviders.IntProvider;
-import net.minecraft.world.level.LevelSimulatedReader;
+import net.minecraft.util.valueproviders.IntProviders;
+import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.levelgen.feature.configurations.TreeConfiguration;
+import net.minecraft.world.level.levelgen.feature.TreeFeature;
 import net.minecraft.world.level.levelgen.feature.foliageplacers.FoliagePlacer;
 import net.minecraft.world.level.levelgen.feature.foliageplacers.FoliagePlacerType;
 
@@ -15,7 +16,7 @@ import java.util.function.BiConsumer;
 
 public class CrystalFoliagePlacer extends FoliagePlacer {
     public static final MapCodec<CrystalFoliagePlacer> CODEC = RecordCodecBuilder.mapCodec((instance) -> foliagePlacerParts(instance)
-            .and(IntProvider.codec(0, 24).fieldOf("trunk_height").forGetter((placer) -> placer.trunkHeight))
+            .and(IntProviders.codec(0, 24).fieldOf("trunk_height").forGetter((placer) -> placer.trunkHeight))
             .apply(instance, CrystalFoliagePlacer::new));
     private final IntProvider trunkHeight;
 
@@ -32,10 +33,10 @@ public class CrystalFoliagePlacer extends FoliagePlacer {
     /**
      * Places leaves in a diamond shape around the trunk with different radii at different heights.
      *
-     * @param level             The {@link LevelSimulatedReader}.
+     * @param level             The {@link WorldGenLevel}.
      * @param foliageSetter     The {@link BiConsumer} of a {@link BlockPos} and {@link BlockState} used for block placement.
      * @param random            The {@link RandomSource}.
-     * @param config            The {@link TreeConfiguration}.
+     * @param config            The {@link TreeFeature}.
      * @param maxFreeTreeHeight The {@link Integer} for the maximum tree height.
      * @param attachment        A {@link net.minecraft.world.level.levelgen.feature.foliageplacers.FoliagePlacer.FoliageAttachment} to add foliage to.
      * @param foliageHeight     The {@link Integer} for the foliage height.
@@ -43,7 +44,7 @@ public class CrystalFoliagePlacer extends FoliagePlacer {
      * @param offset            The {@link Integer} for the foliage offset.
      */
     @Override
-    protected void createFoliage(LevelSimulatedReader level, FoliageSetter foliageSetter, RandomSource random, TreeConfiguration config, int maxFreeTreeHeight, FoliagePlacer.FoliageAttachment attachment, int foliageHeight, int foliageRadius, int offset) {
+    protected void createFoliage(WorldGenLevel level, FoliageSetter foliageSetter, RandomSource random, TreeFeature config, int maxFreeTreeHeight, FoliagePlacer.FoliageAttachment attachment, int foliageHeight, int foliageRadius, int offset) {
         BlockPos blockPos = attachment.pos();
         int i = 0;
         int j;
@@ -65,15 +66,15 @@ public class CrystalFoliagePlacer extends FoliagePlacer {
     /**
      * Places leaves in a diamond shape around a trunk piece.
      *
-     * @param level         The {@link LevelSimulatedReader}.
+     * @param level         The {@link WorldGenLevel}.
      * @param foliageSetter The {@link BiConsumer} of a {@link BlockPos} and {@link BlockState} used for block placement.
      * @param random        The {@link RandomSource}.
-     * @param config        The {@link TreeConfiguration}.
+     * @param config        The {@link TreeFeature}.
      * @param attachment    A {@link net.minecraft.world.level.levelgen.feature.foliageplacers.FoliagePlacer.FoliageAttachment} to add foliage to.
      * @param radius        The {@link Integer} for the placement radius.
      * @param offset        The {@link Integer} for the placement offset.
      */
-    private void placeLeavesDiamond(LevelSimulatedReader level, FoliageSetter foliageSetter, RandomSource random, TreeConfiguration config, FoliagePlacer.FoliageAttachment attachment, int radius, int offset) {
+    private void placeLeavesDiamond(WorldGenLevel level, FoliageSetter foliageSetter, RandomSource random, TreeFeature config, FoliagePlacer.FoliageAttachment attachment, int radius, int offset) {
         this.placeLeavesRow(level, foliageSetter, random, config, attachment.pos().north(), radius, offset, attachment.doubleTrunk());
         this.placeLeavesRow(level, foliageSetter, random, config, attachment.pos().south(), radius, offset, attachment.doubleTrunk());
         this.placeLeavesRow(level, foliageSetter, random, config, attachment.pos().west(), radius, offset, attachment.doubleTrunk());
@@ -85,11 +86,11 @@ public class CrystalFoliagePlacer extends FoliagePlacer {
      *
      * @param random The {@link RandomSource}.
      * @param height The {@link Integer} for the foliage height.
-     * @param config The {@link TreeConfiguration}.
+     * @param config The {@link TreeFeature}.
      * @return The {@link Integer} for the foliage height.
      */
     @Override
-    public int foliageHeight(RandomSource random, int height, TreeConfiguration config) {
+    public int foliageHeight(RandomSource random, int height, TreeFeature config) {
         return Math.max(4, height - this.trunkHeight.sample(random));
     }
 

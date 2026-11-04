@@ -16,12 +16,10 @@ public class AerogelStairsBlock extends StairBlock implements AerogelCulling {
      * Determines the amount of light this will block.<br><br>
      *
      * @param state The {@link BlockState} of the block.
-     * @param level The {@link Level} the block is in.
-     * @param pos   The {@link BlockPos} of the block.
      * @return The {@link Integer} of how many light levels are blocked, plus 2 extra by default.
      */
     @Override
-    public int getLightBlock(BlockState state, BlockGetter level, BlockPos pos) {
+    protected int getLightDampening(BlockState state) {
         return 3;
     }
 

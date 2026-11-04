@@ -6,14 +6,13 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessor;
-import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessorType;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 import org.jetbrains.annotations.Nullable;
 
 /**
  * This processor sets the {@link AetherBlockStateProperties#DOUBLE_DROPS} property to true for blocks that have it.
  */
-public class DoubleDropsProcessor extends StructureProcessor {
+public class DoubleDropsProcessor implements StructureProcessor {
     public static final DoubleDropsProcessor INSTANCE = new DoubleDropsProcessor();
 
     public static final MapCodec<DoubleDropsProcessor> CODEC = MapCodec.unit(DoubleDropsProcessor.INSTANCE);
@@ -24,11 +23,11 @@ public class DoubleDropsProcessor extends StructureProcessor {
         if (modifiedBlockInfo.state().hasProperty(AetherBlockStateProperties.DOUBLE_DROPS)) {
             return new StructureTemplate.StructureBlockInfo(modifiedBlockInfo.pos(), modifiedBlockInfo.state().setValue(AetherBlockStateProperties.DOUBLE_DROPS, true), modifiedBlockInfo.nbt());
         }
-        return super.processBlock(level, origin, centerBottom, originalBlockInfo, modifiedBlockInfo, settings);
+        return StructureProcessor.super.process(level, origin, centerBottom, originalBlockInfo, modifiedBlockInfo, settings, template);
     }
 
     @Override
-    protected StructureProcessorType<?> getType() {
-        return AetherStructureProcessors.DOUBLE_DROPS.get();
+    public MapCodec<DoubleDropsProcessor> codec() {
+        return CODEC;
     }
 }

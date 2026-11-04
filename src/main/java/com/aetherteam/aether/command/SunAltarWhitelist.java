@@ -1,8 +1,8 @@
 package com.aetherteam.aether.command;
 
 import com.aetherteam.aether.Aether;
-import com.aetherteam.aether.mixin.mixins.common.accessor.StoredUserListAccessor;
-import com.mojang.authlib.GameProfile;
+import net.minecraft.server.players.NameAndId;
+import net.minecraft.server.notifications.EmptyNotificationService;
 import net.minecraft.server.players.UserWhiteList;
 import net.minecraft.server.players.UserWhiteListEntry;
 
@@ -13,7 +13,7 @@ import java.io.File;
  */
 public class SunAltarWhitelist {
     public static final File SUN_ALTAR_WHITELIST_FILE = new File(Aether.DIRECTORY.toString(), "sun_altar_whitelist.json");
-    private final UserWhiteList sunAltarWhitelist = new UserWhiteList(SUN_ALTAR_WHITELIST_FILE);
+    private final UserWhiteList sunAltarWhitelist = new UserWhiteList(SUN_ALTAR_WHITELIST_FILE, new EmptyNotificationService());
 
     public static final SunAltarWhitelist INSTANCE = new SunAltarWhitelist();
 
@@ -39,12 +39,11 @@ public class SunAltarWhitelist {
     /**
      * Checks if a player is whitelisted.
      *
-     * @param profile The player's {@link GameProfile}.
+     * @param profile The player's {@link NameAndId}.
      * @return Whether the player was found in the whitelist data, as a {@link Boolean}.
      */
-    public boolean isWhiteListed(GameProfile profile) {
-        StoredUserListAccessor storedUserListAccessor = (StoredUserListAccessor) this.sunAltarWhitelist;
-        return storedUserListAccessor.callContains(profile);
+    public boolean isWhiteListed(NameAndId profile) {
+        return this.sunAltarWhitelist.isWhiteListed(profile);
     }
 
     /**

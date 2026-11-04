@@ -1,6 +1,6 @@
 package com.aetherteam.aether.mixin.mixins.client.accessor;
 
-import net.minecraft.client.RecipeBookCategories;
+import net.minecraft.world.item.crafting.RecipeBookCategories;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Mutable;
 import org.spongepowered.asm.mixin.gen.Accessor;

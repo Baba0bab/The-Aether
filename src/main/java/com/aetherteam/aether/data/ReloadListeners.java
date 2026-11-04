@@ -3,69 +3,45 @@ package com.aetherteam.aether.data;
 import com.aetherteam.aether.Aether;
 import com.aetherteam.aether.block.FreezingBlock;
 import com.aetherteam.aether.item.AetherItems;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonElement;
-import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener;
-import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceLocation;
+import net.fabricmc.fabric.api.resource.v1.ResourceLoader;
+import net.minecraft.resources.Identifier;
+import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.resources.ResourceManager;
-import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
+import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
+import net.minecraft.util.Unit;
 import net.minecraft.util.profiling.ProfilerFiller;
-
-import java.util.Map;
-
 
 public class ReloadListeners {
     /**
-     * @see Aether#eventSetup()
+     * @see Aether#onInitialize()
      */
-    public static void reloadListenerSetup(ResourceManagerHelper helper) {
-        helper.registerReloadListener(new RecipeReloadListener());
-        helper.registerReloadListener(new BannerReloadListener());
-    }
-
-    public static class RecipeReloadListener extends SimpleJsonResourceReloadListener implements IdentifiableResourceReloadListener {
-        public static final Gson GSON_INSTANCE = new GsonBuilder().create();
-
-        public RecipeReloadListener() {
-            super(GSON_INSTANCE, Registries.elementsDirPath(Registries.RECIPE));
-        }
-
-        /**
-         * Resets the block caches for {@link FreezingBlock} recipes.
-         */
-        @Override
-        protected void apply(Map<ResourceLocation, JsonElement> object, ResourceManager resourceManager, ProfilerFiller profiler) {
+    public static void reloadListenerSetup() {
+        ResourceLoader loader = ResourceLoader.get(PackType.SERVER_DATA);
+        loader.registerReloadListener(Identifier.fromNamespaceAndPath(Aether.MODID, "freezing_block_cache"), new CacheResetListener(() -> {
             FreezingBlock.cachedBlocks.clear();
             FreezingBlock.cachedResults.clear();
-        }
-
-        @Override
-        public ResourceLocation getFabricId() {
-            return ResourceLocation.fromNamespaceAndPath(Aether.MODID, Registries.elementsDirPath(Registries.RECIPE));
-        }
+        }));
+        loader.registerReloadListener(Identifier.fromNamespaceAndPath(Aether.MODID, "swet_banner_cache"), new CacheResetListener(() -> AetherItems.SWET_BANNER = null));
     }
 
-    public static class BannerReloadListener extends SimpleJsonResourceReloadListener implements IdentifiableResourceReloadListener {
-        public static final Gson GSON_INSTANCE = new GsonBuilder().create();
+    /**
+     * Resets cached data whenever datapacks are reloaded, such as the block caches for {@link FreezingBlock} recipes, or the Swet Banner's patterns.
+     */
+    public static class CacheResetListener extends SimplePreparableReloadListener<Unit> {
+        private final Runnable reset;
 
-        public BannerReloadListener() {
-            super(GSON_INSTANCE, Registries.elementsDirPath(Registries.BANNER_PATTERN));
-        }
-
-        /**
-         * Resets the block caches for {@link FreezingBlock} recipes.
-         */
-        @Override
-        protected void apply(Map<ResourceLocation, JsonElement> object, ResourceManager resourceManager, ProfilerFiller profiler) {
-            AetherItems.SWET_BANNER = null;
+        public CacheResetListener(Runnable reset) {
+            this.reset = reset;
         }
 
         @Override
-        public ResourceLocation getFabricId() {
-            return ResourceLocation.fromNamespaceAndPath(Aether.MODID, Registries.elementsDirPath(Registries.BANNER_PATTERN));
+        protected Unit prepare(ResourceManager manager, ProfilerFiller profiler) {
+            return Unit.INSTANCE;
+        }
+
+        @Override
+        protected void apply(Unit preparations, ResourceManager manager, ProfilerFiller profiler) {
+            this.reset.run();
         }
     }
 }

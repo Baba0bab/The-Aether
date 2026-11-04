@@ -1,5 +1,7 @@
 package com.aetherteam.aether.entity.monster;
 
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.entity.Mob;
 import com.aetherteam.aether.client.AetherSoundEvents;
 import com.aetherteam.aether.entity.EntityUtil;
 import com.aetherteam.aether.entity.projectile.ZephyrSnowball;
@@ -27,7 +29,7 @@ import net.minecraft.world.phys.Vec3;
 
 import java.util.EnumSet;
 
-public class Zephyr extends FlyingMob implements Enemy {
+public class Zephyr extends Mob implements Enemy {
     private static final EntityDataAccessor<Integer> DATA_CHARGE_TIME_ID = SynchedEntityData.defineId(Zephyr.class, EntityDataSerializers.INT);
 
     private int cloudScale;
@@ -50,7 +52,7 @@ public class Zephyr extends FlyingMob implements Enemy {
     }
 
     public static AttributeSupplier.Builder createMobAttributes() {
-        return FlyingMob.createMobAttributes()
+        return Mob.createMobAttributes()
                 .add(Attributes.MAX_HEALTH, 5.0)
                 .add(Attributes.FOLLOW_RANGE, 50.0);
     }
@@ -62,21 +64,21 @@ public class Zephyr extends FlyingMob implements Enemy {
     }
 
     /**
-     * Zephyrs can spawn if {@link Mob#checkMobSpawnRules(EntityType, LevelAccessor, MobSpawnType, BlockPos, RandomSource)} is true, if they are spawning in view of the sky,
+     * Zephyrs can spawn if {@link Mob#checkMobSpawnRules(EntityType, LevelAccessor, EntitySpawnReason, BlockPos, RandomSource)} is true, if they are spawning in view of the sky,
      * if the difficulty isn't peaceful, and they spawn with a random chance of 1/11.
      *
      * @param zephyr The {@link Zephyr} {@link EntityType}.
      * @param level  The {@link LevelAccessor}.
-     * @param reason The {@link MobSpawnType} reason.
+     * @param reason The {@link EntitySpawnReason} reason.
      * @param pos    The spawn {@link BlockPos}.
      * @param random The {@link RandomSource}.
      * @return Whether this entity can spawn, as a {@link Boolean}.
      */
-    public static boolean checkZephyrSpawnRules(EntityType<? extends Zephyr> zephyr, LevelAccessor level, MobSpawnType reason, BlockPos pos, RandomSource random) {
+    public static boolean checkZephyrSpawnRules(EntityType<? extends Zephyr> zephyr, LevelAccessor level, EntitySpawnReason reason, BlockPos pos, RandomSource random) {
         return Mob.checkMobSpawnRules(zephyr, level, reason, pos, random)
                 && EntityUtil.wholeHitboxCanSeeSky(level, pos, 2)
                 && level.getDifficulty() != Difficulty.PEACEFUL
-                && (reason != MobSpawnType.NATURAL || random.nextInt(11) == 0);
+                && (reason != EntitySpawnReason.NATURAL || random.nextInt(11) == 0);
     }
 
     /**
@@ -85,7 +87,7 @@ public class Zephyr extends FlyingMob implements Enemy {
     @Override
     public void aiStep() {
         super.aiStep();
-        if (this.getY() < this.level().getMinBuildHeight() - 2 || this.getY() > this.level().getMaxBuildHeight()) {
+        if (this.getY() < this.level().getMinY() - 2 || this.getY() > this.level().getMaxY()) {
             this.discard();
         }
         if (this.level().isClientSide()) {
@@ -165,10 +167,6 @@ public class Zephyr extends FlyingMob implements Enemy {
         return true;
     }
 
-    @Override
-    protected boolean shouldDespawnInPeaceful() {
-        return true;
-    }
 
     /**
      * [CODE COPY] - {@link net.minecraft.world.entity.monster.Ghast.GhastLookGoal}.
@@ -337,5 +335,19 @@ public class Zephyr extends FlyingMob implements Enemy {
             double d2 = this.zephyr.getZ() + (random.nextFloat() * 2.0F - 1.0F) * 16.0F;
             this.zephyr.getMoveControl().setWantedPosition(d0, d1, d2, 1.0);
         }
+    }
+
+    @Override
+    protected void checkFallDamage(double y, boolean onGround, BlockState state, BlockPos pos) {
+    }
+
+    @Override
+    public boolean onClimbable() {
+        return false;
+    }
+
+    @Override
+    public void travel(Vec3 travelVector) {
+        this.travelFlying(travelVector, 0.02F);
     }
 }

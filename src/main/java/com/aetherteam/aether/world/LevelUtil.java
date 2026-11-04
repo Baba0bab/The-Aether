@@ -1,9 +1,10 @@
 package com.aetherteam.aether.world;
 
+import com.aetherteam.aether.data.resources.registries.AetherDimensions;
 import com.aetherteam.aether.AetherConfig;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.Level;
 
 public final class LevelUtil {
@@ -16,7 +17,7 @@ public final class LevelUtil {
      * @see com.aetherteam.aether.event.hooks.DimensionHooks
      */
     public static ResourceKey<Level> destinationDimension() {
-        return ResourceKey.create(Registries.DIMENSION, ResourceLocation.parse(AetherConfig.SERVER.portal_destination_dimension_ID.get()));
+        return ResourceKey.create(Registries.DIMENSION, Identifier.parse(AetherConfig.SERVER.portal_destination_dimension_ID.get()));
     }
 
     /**
@@ -28,6 +29,16 @@ public final class LevelUtil {
      * @see com.aetherteam.aether.event.hooks.DimensionHooks
      */
     public static ResourceKey<Level> returnDimension() {
-        return ResourceKey.create(Registries.DIMENSION, ResourceLocation.parse(AetherConfig.SERVER.portal_return_dimension_ID.get()));
+        return ResourceKey.create(Registries.DIMENSION, Identifier.parse(AetherConfig.SERVER.portal_return_dimension_ID.get()));
+    }
+
+    /**
+     * Checks whether a level uses the Aether's dimension type, which determines whether Aether-specific behavior like the day/night cycle should apply.
+     *
+     * @param level The {@link Level}.
+     * @return Whether the level uses the Aether's dimension type, as a {@link Boolean}.
+     */
+    public static boolean isAetherDimensionType(Level level) {
+        return level.dimensionTypeRegistration().is(AetherDimensions.AETHER_DIMENSION_TYPE);
     }
 }

@@ -1,5 +1,6 @@
 package com.aetherteam.aether.block.natural;
 
+import net.minecraft.world.level.block.sounds.AmbientLeavesBlockSoundPlayer;
 import com.aetherteam.aether.block.AetherBlockStateProperties;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleOptions;
@@ -16,7 +17,7 @@ public class LeavesWithParticlesBlock extends LeavesBlock {
     private final Supplier<? extends ParticleOptions> particle;
 
     public LeavesWithParticlesBlock(Supplier<? extends ParticleOptions> particle, Properties properties) {
-        super(properties);
+        super(AmbientLeavesBlockSoundPlayer.noAmbientSound(), properties);
         this.registerDefaultState(this.defaultBlockState().setValue(AetherBlockStateProperties.DOUBLE_DROPS, false));
         this.particle = particle;
     }

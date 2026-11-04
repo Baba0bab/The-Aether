@@ -5,12 +5,11 @@ import com.aetherteam.aether.item.combat.abilities.weapon.ZaniteWeapon;
 import com.aetherteam.nitrogen.fabric.events.ItemAttributeModifierHelper;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.SwordItem;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
 
-public class ZaniteSwordItem extends SwordItem implements ZaniteWeapon {
-    public ZaniteSwordItem() {
-        super(AetherItemTiers.ZANITE, new Item.Properties().attributes(SwordItem.createAttributes(AetherItemTiers.ZANITE, 3, -2.4F)));
+public class ZaniteSwordItem extends Item implements ZaniteWeapon {
+    public ZaniteSwordItem(Properties properties) {
+        super(properties.sword(AetherItemTiers.ZANITE, 3.0F, -2.4F));
     }
 
     /**

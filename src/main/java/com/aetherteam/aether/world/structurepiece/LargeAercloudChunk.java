@@ -1,7 +1,7 @@
 package com.aetherteam.aether.world.structurepiece;
 
+import net.minecraft.core.Holder;
 import com.aetherteam.aether.Aether;
-import com.mojang.serialization.Dynamic;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.*;
@@ -25,9 +25,9 @@ import java.util.Set;
  */
 public class LargeAercloudChunk extends StructurePiece {
     private final Set<BlockPos> positions = new HashSet<>();
-    private final BlockStateProvider blocks;
+    private final Holder<BlockStateProvider> blocks;
 
-    public LargeAercloudChunk(Set<BlockPos> positions, BlockStateProvider blocks, BoundingBox bounds, Direction direction) {
+    public LargeAercloudChunk(Set<BlockPos> positions, Holder<BlockStateProvider> blocks, BoundingBox bounds, Direction direction) {
         super(AetherStructurePieceTypes.LARGE_AERCLOUD.get(), 0, bounds);
         this.setOrientation(direction);
         this.positions.addAll(positions);
@@ -36,27 +36,30 @@ public class LargeAercloudChunk extends StructurePiece {
 
     public LargeAercloudChunk(StructurePieceSerializationContext context, CompoundTag tag) {
         super(AetherStructurePieceTypes.LARGE_AERCLOUD.get(), tag);
-        ListTag positions = tag.getList("Positions", Tag.TAG_INT_ARRAY);
+
+        ListTag positions = tag.getListOrEmpty("Positions");
         for (Tag value : positions) {
-            int[] position = ((IntArrayTag) value).getAsIntArray();
-            this.positions.add(new BlockPos(position[0], position[1], position[2]));
+            if (value instanceof IntArrayTag intArrayTag && intArrayTag.size() == 3) {
+                int[] position = intArrayTag.getAsIntArray();
+                this.positions.add(new BlockPos(position[0], position[1], position[2]));
+            }
         }
-        this.blocks = BlockStateProvider.CODEC.parse(new Dynamic<>(NbtOps.INSTANCE, tag.get("Blocks"))).getPartialOrThrow();
+        this.blocks = BlockStateProvider.CODEC.parse(context.registryAccess().createSerializationContext(NbtOps.INSTANCE), tag.get("Blocks")).getPartialOrThrow();
     }
 
     protected void addAdditionalSaveData(StructurePieceSerializationContext context, CompoundTag tag) {
         ListTag positions = new ListTag();
         for (BlockPos position : this.positions) {
-            positions.add(NbtUtils.writeBlockPos(position));
+            positions.add(new IntArrayTag(new int[]{position.getX(), position.getY(), position.getZ()}));
         }
         tag.put("Positions", positions);
-        BlockStateProvider.CODEC.encodeStart(NbtOps.INSTANCE, this.blocks).resultOrPartial(Aether.LOGGER::error).ifPresent(value -> tag.put("Blocks", value));
+        BlockStateProvider.CODEC.encodeStart(context.registryAccess().createSerializationContext(NbtOps.INSTANCE), this.blocks).resultOrPartial(Aether.LOGGER::error).ifPresent(value -> tag.put("Blocks", value));
     }
 
     @Override
     public void postProcess(WorldGenLevel level, StructureManager manager, ChunkGenerator generator, RandomSource random, BoundingBox bounds, ChunkPos chunkPos, BlockPos blockPos) {
         if (!this.positions.isEmpty()) {
-            this.positions.removeIf(pos -> this.placeBlock(level, this.blocks.getState(random, pos), pos, bounds));
+            this.positions.removeIf(pos -> this.placeBlock(level, this.blocks.value().getState(level, random, pos), pos, bounds));
         }
     }
 

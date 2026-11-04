@@ -9,16 +9,18 @@ import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderBuffers;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.culling.Frustum;
+import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.client.renderer.texture.TextureAtlas;
+import net.minecraft.data.AtlasIds;
+import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.client.event.SubmitCustomGeometryEvent;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RenderShape;
@@ -36,13 +38,12 @@ public class LevelClientHooks {
      * [CODE COPY] - {@link ClientLevel#animateTick(int, int, int)}.
      * Checks to set up positions and render overlays for dungeon blocks from whatever block item the player is holding.
      *
-     * @see com.aetherteam.aether.client.event.listeners.LevelClientListener#onRenderLevelLast(WorldRenderContext)
+     * @see com.aetherteam.aether.client.event.listeners.LevelClientListener#onSubmitCustomGeometry(SubmitCustomGeometryEvent)
      */
-    public static void renderDungeonBlockOverlays(PoseStack poseStack, Camera camera, Frustum frustum, Minecraft minecraft) {
+    public static void renderDungeonBlockOverlays(SubmitNodeCollector submitNodeCollector, PoseStack poseStack, CameraRenderState camera, Minecraft minecraft) {
         if (minecraft.level != null) {
             LocalPlayer player = minecraft.player;
             ClientLevel level = minecraft.level;
-            RenderBuffers renderBuffers = minecraft.renderBuffers();
             int range = 32; // Range for how far the overlays can be rendered at.
             if (player != null && player.isCreative()) {
                 BlockPos playerPos = player.blockPosition();
@@ -52,7 +53,7 @@ public class LevelClientHooks {
                     updatePositions(playerPos, level, stack, range, type, false); // Check to add overlays to the map.
                 }
                 for (int i = 0; i < positionsForTypes.size(); i++) {
-                    renderOverlays(level, poseStack, renderBuffers, camera, frustum, i); // Render any overlays at positions in the map.
+                    renderOverlays(level, poseStack, submitNodeCollector, camera, i); // Render any overlays at positions in the map.
                     updatePositions(playerPos, level, stack, range, i, true); // Check to remove overlays from the map.
                 }
             }
@@ -99,41 +100,48 @@ public class LevelClientHooks {
     /**
      * Renders all the overlays for block positions as stored in {@link LevelClientHooks#positionsForTypes}.
      *
-     * @param level         The {@link ClientLevel} to render in.
-     * @param poseStack     The rendering {@link PoseStack}.
-     * @param renderBuffers The rendering {@link RenderBuffers}.
-     * @param camera        The {@link Camera} viewing the overlays.
-     * @param frustum       The camera's {@link Frustum}, for checking things in view of the camera.
-     * @param type          The {@link Integer} type ID for an overlay.
+     * @param level               The {@link ClientLevel} to render in.
+     * @param poseStack           The rendering {@link PoseStack}.
+     * @param submitNodeCollector The {@link SubmitNodeCollector} to submit the geometry to.
+     * @param camera              The {@link CameraRenderState} viewing the overlays.
+     * @param type                The {@link Integer} type ID for an overlay.
      */
-    private static void renderOverlays(ClientLevel level, PoseStack poseStack, RenderBuffers renderBuffers, Camera camera, Frustum frustum, int type) {
+    private static void renderOverlays(ClientLevel level, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, CameraRenderState camera, int type) {
+        TextureAtlasSprite sprite = spriteForId(type);
+        if (sprite == null) {
+            return;
+        }
+        Vec3 cameraPos = camera.pos;
+        List<BlockPos> visiblePositions = new ArrayList<>();
         for (BlockPos blockPos : positionsForTypes.get(type)) {
-            if (frustum.isVisible(new AABB(blockPos)) && level.getBlockState(blockPos).getRenderShape() != RenderShape.INVISIBLE) {
-                drawSurfaces(renderBuffers.bufferSource(), poseStack.last(), blockPos, camera,
-                        (float) (blockPos.getX() - camera.getPosition().x()) - 0.001F,
-                        (float) (blockPos.getZ() - camera.getPosition().z()) - 0.001F,
-                        (float) (blockPos.getX() - camera.getPosition().x()) + 1.001F,
-                        (float) (blockPos.getZ() - camera.getPosition().z()) + 1.001F,
-                        (float) (blockPos.getY() - camera.getPosition().y()) - 0.001F,
-                        (float) (blockPos.getY() - camera.getPosition().y()) + 1.001F,
-                        type);
+            if ((!camera.isFrustumCaptured || camera.cullFrustum.isVisible(new AABB(blockPos))) && level.getBlockState(blockPos).getRenderShape() != RenderShape.INVISIBLE) {
+                visiblePositions.add(blockPos);
             }
         }
-        renderBuffers.bufferSource().endBatch();
+        if (!visiblePositions.isEmpty()) {
+            submitNodeCollector.submitCustomGeometry(poseStack, RenderTypes.entityTranslucent(TextureAtlas.LOCATION_BLOCKS), (pose, builder) -> {
+                for (BlockPos blockPos : visiblePositions) {
+                    drawSurfaces(builder, pose, blockPos, cameraPos, sprite,
+                        (float) (blockPos.getX() - cameraPos.x()) - 0.001F,
+                        (float) (blockPos.getZ() - cameraPos.z()) - 0.001F,
+                        (float) (blockPos.getX() - cameraPos.x()) + 1.001F,
+                        (float) (blockPos.getZ() - cameraPos.z()) + 1.001F,
+                        (float) (blockPos.getY() - cameraPos.y()) - 0.001F,
+                        (float) (blockPos.getY() - cameraPos.y()) + 1.001F);
+                }
+            });
+        }
     }
 
-    private static void drawSurfaces(MultiBufferSource buffer, PoseStack.Pose pose, BlockPos blockPos, Camera camera, float startX, float startZ, float endX, float endZ, float botY, float topY, int type) {
-        VertexConsumer builder = buffer.getBuffer(RenderType.cutout());
-        TextureAtlasSprite sprite = spriteForId(type);
-
-        if (sprite != null) {
+    private static void drawSurfaces(VertexConsumer builder, PoseStack.Pose pose, BlockPos blockPos, Vec3 camera, TextureAtlasSprite sprite, float startX, float startZ, float endX, float endZ, float botY, float topY) {
+        {
             float minU = sprite.getU1();
             float maxU = sprite.getU0();
             float minV = sprite.getV1();
             float maxV = sprite.getV0();
 
             // Renders an overlay on the bottom face of a block if the camera is below it, i.e. the camera can see the block face.
-            if (camera.getPosition().y() < blockPos.getY() + botY) {
+            if (camera.y() < blockPos.getY() + botY) {
                 buildVertex(builder, pose, startX, botY, startZ, minU, minV, 0, -1, 0);
                 buildVertex(builder, pose, endX, botY, startZ, maxU, minV, 0, -1, 0);
                 buildVertex(builder, pose, endX, botY, endZ, maxU, maxV, 0, -1, 0);
@@ -141,7 +149,7 @@ public class LevelClientHooks {
             }
 
             // Renders an overlay on the top face of a block if the camera is above it, i.e. the camera can see the block face.
-            if (camera.getPosition().y() > blockPos.getY() + topY) {
+            if (camera.y() > blockPos.getY() + topY) {
                 buildVertex(builder, pose, endX, topY, startZ, minU, minV, 0, 1, 0);
                 buildVertex(builder, pose, startX, topY, startZ, maxU, minV, 0, 1, 0);
                 buildVertex(builder, pose, startX, topY, endZ, maxU, maxV, 0, 1, 0);
@@ -149,7 +157,7 @@ public class LevelClientHooks {
             }
 
             // Renders an overlay on the north face of a block if the camera's z-coordinate is less than the block's z-coordinate, i.e. the camera can see the block face.
-            if (camera.getPosition().z() < blockPos.getZ() + startZ) {
+            if (camera.z() < blockPos.getZ() + startZ) {
                 buildVertex(builder, pose, startX, botY, startZ, minU, minV, 0, 0, -1);
                 buildVertex(builder, pose, startX, topY, startZ, minU, maxV, 0, 0, -1);
                 buildVertex(builder, pose, endX, topY, startZ, maxU, maxV, 0, 0, -1);
@@ -157,7 +165,7 @@ public class LevelClientHooks {
             }
 
             // Renders an overlay on the south face of a block if the camera's z-coordinate is greater than the block's z-coordinate, i.e. the camera can see the block face.
-            if (camera.getPosition().z() > blockPos.getZ() + endZ) {
+            if (camera.z() > blockPos.getZ() + endZ) {
                 buildVertex(builder, pose, endX, botY, endZ, minU, minV, 0, 0, 1);
                 buildVertex(builder, pose, endX, topY, endZ, minU, maxV, 0, 0, 1);
                 buildVertex(builder, pose, startX, topY, endZ, maxU, maxV, 0, 0, 1);
@@ -165,7 +173,7 @@ public class LevelClientHooks {
             }
 
             // Renders an overlay on the west face of a block if the camera's x-coordinate is less than the block's x-coordinate, i.e. the camera can see the block face.
-            if (camera.getPosition().x() < blockPos.getX() + startX) {
+            if (camera.x() < blockPos.getX() + startX) {
                 buildVertex(builder, pose, startX, botY, endZ, minU, minV, -1, 0, 0);
                 buildVertex(builder, pose, startX, topY, endZ, minU, maxV, -1, 0, 0);
                 buildVertex(builder, pose, startX, topY, startZ, maxU, maxV, -1, 0, 0);
@@ -173,7 +181,7 @@ public class LevelClientHooks {
             }
 
             // Renders an overlay on the east face of a block if the camera's x-coordinate is greater than the block's x-coordinate, i.e. the camera can see the block face.
-            if (camera.getPosition().x() > blockPos.getX() + endX) {
+            if (camera.x() > blockPos.getX() + endX) {
                 buildVertex(builder, pose, endX, botY, startZ, minU, minV, 1, 0, 0);
                 buildVertex(builder, pose, endX, topY, startZ, minU, maxV, 1, 0, 0);
                 buildVertex(builder, pose, endX, topY, endZ, maxU, maxV, 1, 0, 0);
@@ -196,16 +204,16 @@ public class LevelClientHooks {
     private static TextureAtlasSprite spriteForId(int id) {
         switch (id) {
             case 0 -> {
-                return Minecraft.getInstance().getTextureAtlas(InventoryMenu.BLOCK_ATLAS).apply(ResourceLocation.fromNamespaceAndPath(Aether.MODID, "block/dungeon/lock"));
+                return Minecraft.getInstance().getAtlasManager().getAtlasOrThrow(AtlasIds.BLOCKS).getSprite(Identifier.fromNamespaceAndPath(Aether.MODID, "block/dungeon/lock"));
             }
             case 1 -> {
-                return Minecraft.getInstance().getTextureAtlas(InventoryMenu.BLOCK_ATLAS).apply(ResourceLocation.fromNamespaceAndPath(Aether.MODID, "block/dungeon/exclamation"));
+                return Minecraft.getInstance().getAtlasManager().getAtlasOrThrow(AtlasIds.BLOCKS).getSprite(Identifier.fromNamespaceAndPath(Aether.MODID, "block/dungeon/exclamation"));
             }
             case 2 -> {
-                return Minecraft.getInstance().getTextureAtlas(InventoryMenu.BLOCK_ATLAS).apply(ResourceLocation.fromNamespaceAndPath(Aether.MODID, "block/dungeon/door"));
+                return Minecraft.getInstance().getAtlasManager().getAtlasOrThrow(AtlasIds.BLOCKS).getSprite(Identifier.fromNamespaceAndPath(Aether.MODID, "block/dungeon/door"));
             }
             case 3 -> {
-                return Minecraft.getInstance().getTextureAtlas(InventoryMenu.BLOCK_ATLAS).apply(ResourceLocation.fromNamespaceAndPath(Aether.MODID, "block/dungeon/treasure"));
+                return Minecraft.getInstance().getAtlasManager().getAtlasOrThrow(AtlasIds.BLOCKS).getSprite(Identifier.fromNamespaceAndPath(Aether.MODID, "block/dungeon/treasure"));
             }
             default -> {
                 return null;

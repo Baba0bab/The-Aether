@@ -7,7 +7,7 @@ import com.aetherteam.cumulus.CumulusConfig;
 import com.aetherteam.cumulus.client.gui.screen.DynamicMenuButton;
 import com.aetherteam.cumulus.mixin.mixins.client.accessor.SplashRendererAccessor;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.PlainTextButton;
@@ -71,16 +71,16 @@ public class VanillaLeftTitleScreen extends TitleScreen implements TitleScreenBe
     }
 
     /**
-     * [CODE COPY] - {@link TitleScreen#render(GuiGraphics, int, int, float)}.<br><br>
+     * [CODE COPY] - {@link TitleScreen#render(GuiGraphicsExtractor, int, int, float)}.<br><br>
      * Modified and abstracted using {@link TitleScreenBehavior}.
      */
     @Override
-    public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
-        super.render(guiGraphics, mouseX, mouseY, partialTicks);
+    public void extractRenderState(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTicks) {
+        super.extractRenderState(guiGraphics, mouseX, mouseY, partialTicks);
         int xOffset = CumulusConfig.CLIENT.enable_menu_api.get() && CumulusConfig.CLIENT.enable_menu_list_button.get() ? -62 : 0;
         for (GuiEventListener child : this.children()) { // Increases the x-offset to the left for image buttons if there are menu buttons on the screen.
             if (child instanceof DynamicMenuButton dynamicMenuButton) {
-                if (dynamicMenuButton.enabled) {
+                if (dynamicMenuButton.visible) {
                     xOffset -= 24;
                 }
             }
@@ -91,18 +91,19 @@ public class VanillaLeftTitleScreen extends TitleScreen implements TitleScreenBe
     }
 
     @Override
-    public int getBrandingTextX(Font font, String text, int x) {
-        return this.width - font.width(text) - 2;
+    public boolean forEachLineBranding(boolean includeMC, boolean reverse, BiConsumer<Integer, String> lineConsumer, GuiGraphicsExtractor guiGraphics, int i) {
+        BrandingControl.forEachLine(true, true, (brandingLine, branding) ->
+            guiGraphics.text(font, branding, this.width - font.width(branding) - 1, this.height - (10 + (brandingLine + 1) * (font.lineHeight + 1)), 16777215 | i)
+        );
+        return true;
     }
 
     @Override
-    public int getBrandingTextY(Font font, String text, int y) {
-        int creditsY = this.renderables.stream()
-            .filter(renderable -> renderable instanceof PlainTextButton btn && btn.getMessage().equals(Component.translatable("title.credits")))
-            .findFirst()
-            .map(renderable -> ((PlainTextButton) renderable).getY())
-            .orElse(0);
-        return creditsY - font.lineHeight - 2;
+    public boolean forEachAboveCopyrightLineBranding(BiConsumer<Integer, String> lineConsumer, GuiGraphicsExtractor guiGraphics, int i) {
+        BrandingControl.forEachAboveCopyrightLine((brandingLine, branding) ->
+            guiGraphics.text(font, branding, 1, this.height - (brandingLine + 1) * (font.lineHeight + 1), 16777215 | i)
+        );
+        return true;
     }
 
     @Override

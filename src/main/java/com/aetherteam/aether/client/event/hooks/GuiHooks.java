@@ -1,5 +1,7 @@
 package com.aetherteam.aether.client.event.hooks;
 
+import net.minecraft.client.renderer.RenderPipelines;
+import com.aetherteam.nitrogen.fabric.network.PacketDistributor;
 import com.aetherteam.aether.Aether;
 import com.aetherteam.aether.AetherConfig;
 import com.aetherteam.aether.client.AetherKeys;
@@ -17,20 +19,23 @@ import com.aetherteam.nitrogen.fabric.network.PacketDistributor;
 import com.aetherteam.nitrogen.api.users.User;
 import com.aetherteam.nitrogen.api.users.UserData;
 import com.mojang.blaze3d.platform.InputConstants;
-import io.wispforest.accessories.client.gui.AccessoriesScreen;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.*;
+import net.minecraft.client.gui.components.ImageButton;
+import net.minecraft.client.gui.components.LerpingBossEvent;
+import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.layouts.FrameLayout;
 import net.minecraft.client.gui.layouts.GridLayout;
 import net.minecraft.client.gui.screens.*;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
+import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.FormattedCharSequence;
-import net.minecraft.util.Tuple;
+import com.mojang.datafixers.util.Pair;
 import net.minecraft.world.BossEvent;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
@@ -68,10 +73,10 @@ public class GuiHooks {
      * @see com.aetherteam.aether.client.event.listeners.GuiListener#onGuiInitialize(ScreenEvent.Init.Post)
      */
     @Nullable
-    public static AccessoryButton setupAccessoryButton(Screen screen, Tuple<Integer, Integer> offsets) {
+    public static AccessoryButton setupAccessoryButton(Screen screen, Pair<Integer, Integer> offsets) {
         AbstractContainerScreen<?> containerScreen = canCreateAccessoryButtonForScreen(screen);
         if (containerScreen != null) {
-            return new AccessoryButton(containerScreen, containerScreen.nitrogen_fabric$getGuiLeft() + offsets.getA(), containerScreen.nitrogen_fabric$getGuiTop() + offsets.getB(), AetherAccessoriesScreen.ACCESSORIES_BUTTON);
+            return new AccessoryButton(containerScreen, containerScreen.nitrogen_fabric$getGuiLeft() + offsets.getFirst(), containerScreen.nitrogen_fabric$getGuiTop() + offsets.getSecond(), AetherAccessoriesScreen.ACCESSORIES_BUTTON);
         }
         return null;
     }
@@ -85,7 +90,7 @@ public class GuiHooks {
      */
     @Nullable
     private static AbstractContainerScreen<?> canCreateAccessoryButtonForScreen(Screen screen) {
-        if (screen instanceof InventoryScreen || screen instanceof AccessoriesScreen || screen instanceof CreativeModeInventoryScreen || (screen instanceof AetherAccessoriesScreen && shouldAddButton)) {
+        if (screen instanceof InventoryScreen || screen instanceof CreativeModeInventoryScreen || (screen instanceof AetherAccessoriesScreen && shouldAddButton)) {
             return (AbstractContainerScreen<?>) screen;
         } else if (screen instanceof AetherAccessoriesScreen) {
             shouldAddButton = true;
@@ -144,7 +149,7 @@ public class GuiHooks {
      */
     private static void createSkinsButton(Screen screen, GridLayout.RowHelper rowHelper) {
         ImageButton skinsButton = new ImageButton(0, 0, 20, 20, AetherAccessoriesScreen.SKINS_BUTTON,
-                (pressed) -> Minecraft.getInstance().setScreen(new MoaSkinsScreen(screen)),
+                (pressed) -> Minecraft.getInstance().gui.setScreen(new MoaSkinsScreen(screen)),
                 Component.translatable("gui.aether.accessories.skins_button"));
         skinsButton.setTooltip(Tooltip.create(Component.translatable("gui.aether.accessories.skins_button")));
         rowHelper.addChild(skinsButton);
@@ -158,7 +163,7 @@ public class GuiHooks {
      */
     private static void createCustomizationsButton(Screen screen, GridLayout.RowHelper rowHelper) {
         ImageButton customizationButton = new ImageButton(0, 0, 20, 20, AetherAccessoriesScreen.CUSTOMIZATION_BUTTON,
-                (pressed) -> Minecraft.getInstance().setScreen(new AetherCustomizationsScreen(screen)),
+                (pressed) -> Minecraft.getInstance().gui.setScreen(new AetherCustomizationsScreen(screen)),
                 Component.translatable("gui.aether.accessories.customization_button"));
         customizationButton.setTooltip(Tooltip.create(Component.translatable("gui.aether.accessories.customization_button")));
         rowHelper.addChild(customizationButton);
@@ -168,18 +173,18 @@ public class GuiHooks {
      * Generates and draws the Aether's trivia lines in various loading screens.
      *
      * @param screen      The current {@link Screen}.
-     * @param guiGraphics The rendering {@link GuiGraphics}.
+     * @param guiGraphics The rendering {@link GuiGraphicsExtractor}.
      * @see com.aetherteam.aether.client.event.listeners.GuiListener#onGuiDraw(ScreenEvent.Render.Post)
      */
-    public static void drawTrivia(Screen screen, GuiGraphics guiGraphics) {
+    public static void drawTrivia(Screen screen, GuiGraphicsExtractor guiGraphics) {
         generateTrivia(screen);
-        if (screen instanceof GenericMessageScreen || screen instanceof LevelLoadingScreen || screen instanceof ReceivingLevelScreen) {
+        if (screen instanceof GenericMessageScreen || screen instanceof LevelLoadingScreen) {
             Component triviaLine = Aether.TRIVIA_READER.getTriviaLine(); // Get the current trivia line to display.
             if (triviaLine != null && AetherConfig.STARTUP.enable_trivia.get()) {
                 Font font = Minecraft.getInstance().font;
                 int y = (screen.height - 7) - font.wordWrapHeight(triviaLine, screen.width);
                 for (FormattedCharSequence sequence : font.split(triviaLine, screen.width)) {
-                    guiGraphics.drawCenteredString(font, sequence, screen.width / 2, y, 16777113);
+                    guiGraphics.centeredText(font, sequence, screen.width / 2, y, 0xFFFFFF99);
                     y += 9;
                 }
             }
@@ -220,17 +225,17 @@ public class GuiHooks {
      * Checks for when to display different text are handled by {@link DimensionHooks}.
      *
      * @param screen      The current {@link Screen}.
-     * @param guiGraphics The rendering {@link GuiGraphics}.
+     * @param guiGraphics The rendering {@link GuiGraphicsExtractor}.
      * @see com.aetherteam.aether.client.event.listeners.GuiListener#onGuiDraw(ScreenEvent.Render.Post)
      */
-    public static void drawAetherTravelMessage(Screen screen, GuiGraphics guiGraphics) {
-        if (screen instanceof ReceivingLevelScreen || screen instanceof ProgressScreen) {
+    public static void drawAetherTravelMessage(Screen screen, GuiGraphicsExtractor guiGraphics) {
+        if (screen instanceof LevelLoadingScreen || screen instanceof ProgressScreen) {
             if (Minecraft.getInstance().player != null) {
                 if (DimensionHooks.displayAetherTravel) {
                     if (DimensionHooks.playerLeavingAether) {
-                        guiGraphics.drawCenteredString(screen.nitrogen_fabric$getMinecraft().font, Component.translatable("gui.aether.descending"), screen.width / 2, AetherConfig.CLIENT.portal_text_y.get(), 16777215);
+                        guiGraphics.centeredText(Minecraft.getInstance().font, Component.translatable("gui.aether.descending"), screen.width / 2, AetherConfig.CLIENT.portal_text_y.get(), 0xFFFFFFFF);
                     } else {
-                        guiGraphics.drawCenteredString(screen.nitrogen_fabric$getMinecraft().font, Component.translatable("gui.aether.ascending"), screen.width / 2, AetherConfig.CLIENT.portal_text_y.get(), 16777215);
+                        guiGraphics.centeredText(Minecraft.getInstance().font, Component.translatable("gui.aether.ascending"), screen.width / 2, AetherConfig.CLIENT.portal_text_y.get(), 0xFFFFFFFF);
                     }
                 }
             }
@@ -260,7 +265,7 @@ public class GuiHooks {
      */
     public static void openAccessoryMenu() {
         Minecraft minecraft = Minecraft.getInstance();
-        if (minecraft.player != null && minecraft.getOverlay() == null && minecraft.screen == null) {
+        if (minecraft.player != null && minecraft.gui.overlay() == null && minecraft.gui.screen() == null) {
             if (!AetherConfig.CLIENT.disable_accessory_button.get() && AetherKeys.OPEN_ACCESSORY_INVENTORY.consumeClick()) {
                 if (minecraft.gameMode != null && minecraft.gameMode.isServerControlledInventory()) {
                     minecraft.player.sendOpenInventory();
@@ -281,23 +286,20 @@ public class GuiHooks {
      */
     public static void closeContainerMenu(int key, int action) {
         Minecraft minecraft = Minecraft.getInstance();
-        if (minecraft.screen instanceof AbstractContainerScreen<?> abstractContainerScreen) {
-            var focused = abstractContainerScreen.getFocused();
-            if (!(focused instanceof EditBox || focused instanceof MultiLineEditBox)) {
-                if (!AetherConfig.CLIENT.disable_accessory_button.get() && AetherKeys.OPEN_ACCESSORY_INVENTORY.nitrogen_fabric$getKey().getValue() == key && (action == InputConstants.PRESS || action == InputConstants.REPEAT)) {
-                    abstractContainerScreen.onClose();
-                }
+        if (minecraft.gui.screen() instanceof AbstractContainerScreen<?> abstractContainerScreen) {
+            if (!AetherConfig.CLIENT.disable_accessory_button.get() && AetherKeys.OPEN_ACCESSORY_INVENTORY.getKey().getValue() == key && (action == InputConstants.PRESS || action == InputConstants.REPEAT)) {
+                abstractContainerScreen.onClose();
             }
         }
     }
 
     /**
-     * [CODE COPY] - {@link net.minecraft.client.gui.components.BossHealthOverlay#render(GuiGraphics)}
+     * [CODE COPY] - {@link net.minecraft.client.gui.components.BossHealthOverlay#render(GuiGraphicsExtractor)}
      * Modified to draw the Aether's custom boss health bars.
      *
-     * @see com.aetherteam.aether.client.event.listeners.GuiListener#onRenderBossBar(GuiGraphics, int, int, BossEvent)
+     * @see com.aetherteam.aether.client.event.listeners.GuiListener#onRenderBossBar(GuiGraphicsExtractor, int, int, BossEvent)
      */
-    public static void drawBossHealthBar(GuiGraphics guiGraphics, int x, int y, LerpingBossEvent bossEvent) {
+    public static void drawBossHealthBar(GuiGraphicsExtractor guiGraphics, int x, int y, LerpingBossEvent bossEvent) {
         int entityID = BOSS_EVENTS.get(bossEvent.getId());
         if (Minecraft.getInstance().level != null && Minecraft.getInstance().level.getEntity(entityID) instanceof AetherBossMob<?> aetherBossMob) {
             drawBar(guiGraphics, x + 2, y + 2, bossEvent, aetherBossMob);
@@ -305,21 +307,21 @@ public class GuiHooks {
             int nameLength = Minecraft.getInstance().font.width(component);
             int nameX = Minecraft.getInstance().getWindow().getGuiScaledWidth() / 2 - nameLength / 2;
             int nameY = y - 9;
-            guiGraphics.drawString(Minecraft.getInstance().font, component, nameX, nameY, 16777215);
+            guiGraphics.text(Minecraft.getInstance().font, component, nameX, nameY, 0xFFFFFFFF);
         }
     }
 
     /**
-     * [CODE COPY] - {@link net.minecraft.client.gui.components.BossHealthOverlay#drawBar(GuiGraphics, int, int, BossEvent)}
+     * [CODE COPY] - {@link net.minecraft.client.gui.components.BossHealthOverlay#drawBar(GuiGraphicsExtractor, int, int, BossEvent)}
      * This version of the method doesn't account for other types of boss bars because the Aether only has one.
      */
-    public static void drawBar(GuiGraphics guiGraphics, int x, int y, BossEvent bossEvent, AetherBossMob<?> aetherBossMob) {
+    public static void drawBar(GuiGraphicsExtractor guiGraphics, int x, int y, BossEvent bossEvent, AetherBossMob<?> aetherBossMob) {
         if (aetherBossMob.getBossBarBackgroundTexture() != null && aetherBossMob.getBossBarTexture() != null) {
             x -= 37; // The default boss health bar is offset by -91. We need -128.
-            guiGraphics.blitSprite(aetherBossMob.getBossBarBackgroundTexture(), 256, 16, 0, 0, x, y, 256, 16);
+            guiGraphics.blitSprite(RenderPipelines.GUI_TEXTURED, aetherBossMob.getBossBarBackgroundTexture(), 256, 16, 0, 0, x, y, 256, 16);
             int health = (int) (bossEvent.getProgress() * 256.0F);
             if (health > 0) {
-                guiGraphics.blitSprite(aetherBossMob.getBossBarTexture(), 256, 16, 0, 0, x, y, health, 16);
+                guiGraphics.blitSprite(RenderPipelines.GUI_TEXTURED, aetherBossMob.getBossBarTexture(), 256, 16, 0, 0, x, y, health, 16);
             }
         }
     }

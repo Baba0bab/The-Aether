@@ -1,9 +1,11 @@
 package com.aetherteam.aether.entity.projectile;
 
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
+import com.aetherteam.aether.entity.EntityUtil;
 import com.aetherteam.aether.client.particle.AetherParticleTypes;
 import com.aetherteam.aether.entity.AetherEntityTypes;
 import com.aetherteam.aether.item.EquipmentUtil;
-import com.aetherteam.aether.mixin.mixins.common.accessor.PlayerAccessor;
 import com.aetherteam.aether.network.packet.clientbound.ZephyrSnowballHitPacket;
 import com.aetherteam.nitrogen.fabric.events.CancellableCallbackImpl;
 import com.aetherteam.nitrogen.fabric.events.ProjectileEvents;
@@ -17,8 +19,8 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.projectile.AbstractHurtingProjectile;
-import net.minecraft.world.entity.projectile.Fireball;
+import net.minecraft.world.entity.projectile.hurtingprojectile.AbstractHurtingProjectile;
+import net.minecraft.world.entity.projectile.hurtingprojectile.Fireball;
 import net.minecraft.world.entity.projectile.ItemSupplier;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.item.ItemStack;
@@ -65,7 +67,7 @@ public class ZephyrSnowball extends Fireball implements ItemSupplier {
                 this.onHit(hitResult);
             }
 
-            this.checkInsideBlocks();
+            this.applyEffectsFromBlocks();
             Vec3 vec3 = this.getDeltaMovement();
             double d0 = this.getX() + vec3.x();
             double d1 = this.getY() + vec3.y();
@@ -105,8 +107,7 @@ public class ZephyrSnowball extends Fireball implements ItemSupplier {
         Entity entity = result.getEntity();
         if (entity instanceof LivingEntity livingEntity && !EquipmentUtil.hasSentryBoots(livingEntity)) {
             if (livingEntity instanceof Player player && player.isBlocking()) { // Damages the player's shield.
-                PlayerAccessor playerAccessor = (PlayerAccessor) player;
-                playerAccessor.callHurtCurrentlyUsedShield(3.0F);
+                EntityUtil.hurtBlockingItem(player, 3.0F);
             } else { // Knocks the player back.
                 entity.setDeltaMovement(entity.getDeltaMovement().x(), entity.getDeltaMovement().y() + 0.5, entity.getDeltaMovement().z());
                 entity.setDeltaMovement(entity.getDeltaMovement().x() + (this.getDeltaMovement().x() * 1.5), entity.getDeltaMovement().y(), entity.getDeltaMovement().z() + (this.getDeltaMovement().z() * 1.5));
@@ -138,16 +139,14 @@ public class ZephyrSnowball extends Fireball implements ItemSupplier {
     }
 
     @Override
-    public void addAdditionalSaveData(CompoundTag tag) {
+    protected void addAdditionalSaveData(ValueOutput tag) {
         super.addAdditionalSaveData(tag);
         tag.putInt("TicksInAir", this.ticksInAir);
     }
 
     @Override
-    public void readAdditionalSaveData(CompoundTag tag) {
+    protected void readAdditionalSaveData(ValueInput tag) {
         super.readAdditionalSaveData(tag);
-        if (tag.contains("TicksInAir")) {
-            this.ticksInAir = tag.getInt("TicksInAir");
-        }
+        this.ticksInAir = tag.getIntOr("TicksInAir", this.ticksInAir);
     }
 }

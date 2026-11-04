@@ -3,29 +3,26 @@ package com.aetherteam.aether.integration.jei.categories.ban;
 import com.aetherteam.aether.integration.jei.categories.BiomeTooltip;
 import com.aetherteam.aether.mixin.mixins.common.accessor.LiquidBlockAccessor;
 import com.aetherteam.aether.recipe.recipes.ban.AbstractPlacementBanRecipe;
-import com.aetherteam.nitrogen.integration.jei.BlockStateRenderer;
-import com.aetherteam.nitrogen.integration.jei.FluidStateRenderer;
-import com.aetherteam.nitrogen.integration.jei.categories.AbstractRecipeCategory;
+import com.aetherteam.nitrogen.integration.jei.BlockStateIngredientRenderer;
 import com.aetherteam.nitrogen.recipe.BlockPropertyPair;
 import com.aetherteam.nitrogen.recipe.BlockStateIngredient;
 import com.aetherteam.nitrogen.recipe.BlockStateRecipeUtil;
 import mezz.jei.api.constants.VanillaTypes;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
+import mezz.jei.api.gui.builder.ITooltipBuilder;
 import mezz.jei.api.gui.drawable.IDrawable;
 import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
 import mezz.jei.api.helpers.IGuiHelper;
 import mezz.jei.api.helpers.IPlatformFluidHelper;
 import mezz.jei.api.recipe.IFocusGroup;
 import mezz.jei.api.recipe.RecipeIngredientRole;
-import mezz.jei.api.recipe.RecipeType;
-import mezz.jei.common.platform.Services;
-import mezz.jei.common.util.Translator;
+import mezz.jei.api.recipe.category.AbstractRecipeCategory;
+import mezz.jei.api.recipe.types.IRecipeType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeInput;
 import net.minecraft.world.level.block.Blocks;
@@ -35,7 +32,6 @@ import net.minecraft.world.level.block.state.properties.Property;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.function.Predicate;
 
@@ -43,15 +39,10 @@ public abstract class AbstractPlacementBanRecipeCategory<T, S extends Predicate<
     protected final IPlatformFluidHelper<?> fluidHelper;
     private final IDrawable slot;
 
-    public AbstractPlacementBanRecipeCategory(IGuiHelper guiHelper, String id, ResourceLocation uid, IDrawable background, IDrawable icon, RecipeType<R> recipeType, IPlatformFluidHelper<?> fluidHelper) {
-        super(id, uid, background, icon, recipeType);
+    public AbstractPlacementBanRecipeCategory(IGuiHelper guiHelper, String id, IRecipeType<R> recipeType, IDrawable icon, IPlatformFluidHelper<?> fluidHelper) {
+        super(recipeType, Component.translatable("gui.aether.jei." + id), icon, 116, 18);
         this.fluidHelper = fluidHelper;
         this.slot = guiHelper.getSlotDrawable();
-    }
-
-    @Override
-    public Component getTitle() {
-        return Component.translatable("gui.aether.jei." + this.id);
     }
 
     @Override
@@ -60,18 +51,12 @@ public abstract class AbstractPlacementBanRecipeCategory<T, S extends Predicate<
         if (bypassBlockIngredient.isPresent() && !bypassBlockIngredient.get().isEmpty()) {
             BlockPropertyPair[] pairs = bypassBlockIngredient.get().getPairs();
             if (pairs != null) {
-                List<Object> ingredients = this.setupIngredients(pairs);
-                builder.addSlot(RecipeIngredientRole.INPUT, 99, 1).addIngredientsUnsafe(ingredients)
-                    .setCustomRenderer(Services.PLATFORM.getFluidHelper().getFluidIngredientType(), new FluidStateRenderer(Services.PLATFORM.getFluidHelper()))
-                    .setCustomRenderer(VanillaTypes.ITEM_STACK, new BlockStateRenderer(pairs));
+                builder.addSlot(RecipeIngredientRole.INPUT, 99, 1).addIngredientsUnsafe(this.setupIngredients(pairs))
+                    .setCustomRenderer(VanillaTypes.ITEM_STACK, new BlockStateIngredientRenderer(pairs));
             }
         }
     }
 
-    /**
-     * Warning for "deprecation" is suppressed because the non-sensitive version of {@link net.minecraft.world.level.block.Block#getCloneItemStack(net.minecraft.world.level.LevelReader, BlockPos, BlockState)} is needed in this context.
-     */
-    @SuppressWarnings("deprecation")
     protected List<Object> setupIngredients(BlockPropertyPair[] pairs) {
         List<Object> ingredients = new ArrayList<>();
         if (Minecraft.getInstance().level != null) {
@@ -81,13 +66,12 @@ public abstract class AbstractPlacementBanRecipeCategory<T, S extends Predicate<
                 } else {
                     BlockState state = pair.block().defaultBlockState();
                     if (pair.properties().isPresent()) {
-                        for (Map.Entry<Property<?>, Comparable<?>> propertyEntry : pair.properties().get().entrySet()) {
+                        for (Property.Value<?> propertyEntry : pair.properties().get()) {
                             state = BlockStateRecipeUtil.setHelper(propertyEntry, state);
                         }
                     }
-                    ItemStack stack = pair.block().getCloneItemStack(Minecraft.getInstance().level, BlockPos.ZERO, state);
-                    stack = stack.isEmpty() ? new ItemStack(Blocks.STONE) : stack;
-                    ingredients.add(stack);
+                    ItemStack stack = pair.block().getCloneItemStack(Minecraft.getInstance().level, BlockPos.ZERO, state, true, Minecraft.getInstance().player);
+                    ingredients.add(stack.isEmpty() ? new ItemStack(Blocks.STONE) : stack);
                 }
             }
         }
@@ -95,19 +79,18 @@ public abstract class AbstractPlacementBanRecipeCategory<T, S extends Predicate<
     }
 
     @Override
-    public void draw(R recipe, IRecipeSlotsView recipeSlotsView, GuiGraphics guiGraphics, double mouseX, double mouseY) {
+    public void draw(R recipe, IRecipeSlotsView recipeSlotsView, GuiGraphicsExtractor guiGraphics, double mouseX, double mouseY) {
         if (recipe.getBypassBlock().isEmpty() || recipe.getBypassBlock().get().isEmpty()) {
             this.slot.draw(guiGraphics, 49, 0);
         } else {
             this.slot.draw(guiGraphics);
             this.slot.draw(guiGraphics, 98, 0);
-            String text = Translator.translateToLocalFormatted("gui.aether.jei.bypass");
             Font font = Minecraft.getInstance().font;
-            guiGraphics.drawString(font, text, 24, 5, 0xFF808080);
+            guiGraphics.text(font, Component.translatable("gui.aether.jei.bypass").getVisualOrderText(), 24, 5, 0xFF808080, false);
         }
     }
 
-    protected void populateAdditionalInformation(R recipe, List<Component> tooltip) {
+    protected void populateAdditionalInformation(R recipe, ITooltipBuilder tooltip) {
         if (Minecraft.getInstance().level != null) {
             this.populateBiomeInformation(recipe.getBiome().left().orElse(null), recipe.getBiome().right().orElse(null), tooltip);
         }

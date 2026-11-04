@@ -7,6 +7,12 @@ import io.wispforest.accessories.api.events.OnDeathCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
 import net.fabricmc.fabric.api.event.player.UseEntityCallback;
 import net.fabricmc.fabric.api.util.TriState;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.resources.Identifier;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
@@ -86,23 +92,12 @@ public class EntityListener {
      * @see EntityHooks#pickupBucketable(Entity, Player, InteractionHand)
      * @see EntityHooks#interactWithArmorStand(Entity, Player, ItemStack, Vec3, InteractionHand)
      */
-    public static InteractionResult onInteractWithEntity(Entity targetEntity, Player player, InteractionHand interactionHand, @Nullable EntityHitResult hitResult) {
-        ItemStack itemStack = player.getItemInHand(interactionHand);
-        Vec3 position;
-
-        if (hitResult == null) {
-            WorldBorder border = player.level().getWorldBorder();
-            AABB bounds = player.getBoundingBox().expandTowards(targetEntity.position()).inflate(1.0);
-            AABB clampedBounds = AABB.encapsulatingFullBlocks(border.clampToBounds(bounds.getMinPosition()), border.clampToBounds(bounds.getMaxPosition()));
-            hitResult = ProjectileUtil.getEntityHitResult(player, player.getEyePosition(), targetEntity.position(), clampedBounds, entity -> entity == targetEntity, player.position().distanceTo(targetEntity.position()) + 1);
-        }
-
-        if (hitResult != null) {
-            position = hitResult.getLocation().subtract(targetEntity.position());
-        } else {
-            position = targetEntity.position();
-        }
-
+    public static void onInteractWithEntity(PlayerInteractEvent.EntityInteract event) {
+        Entity targetEntity = event.getTarget();
+        Player player = event.getEntity();
+        ItemStack itemStack = event.getItemStack();
+        Vec3 position = event.getLocation();
+        InteractionHand interactionHand = event.getHand();
         EntityHooks.skyrootBucketMilking(targetEntity, player, interactionHand);
         Optional<InteractionResult> result = EntityHooks.pickupBucketable(targetEntity, player, interactionHand);
         if (result.isEmpty()) {

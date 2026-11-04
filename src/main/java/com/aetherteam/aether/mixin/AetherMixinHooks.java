@@ -1,19 +1,17 @@
 package com.aetherteam.aether.mixin;
 
 import com.aetherteam.aether.Aether;
+import com.aetherteam.aether.item.EquipmentUtil;
+import net.minecraft.world.entity.EntityTypes;
+import com.aetherteam.aether.client.AetherClient;
 import com.aetherteam.aether.item.accessories.cape.CapeItem;
 import com.aetherteam.aether.item.accessories.gloves.GlovesItem;
 import com.aetherteam.aether.item.accessories.pendant.PendantItem;
 import com.aetherteam.aether.mixin.mixins.common.accessor.MinecraftServerAccessor;
 import com.mojang.datafixers.util.Pair;
-import io.wispforest.accessories.Accessories;
-import io.wispforest.accessories.api.AccessoriesCapability;
-import io.wispforest.accessories.api.AccessoriesContainer;
-import io.wispforest.accessories.api.slot.SlotTypeReference;
-import io.wispforest.accessories.impl.ExpandedSimpleContainer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.worldselection.SelectWorldScreen;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
@@ -24,7 +22,7 @@ import java.nio.file.Path;
 import java.util.stream.StreamSupport;
 
 public class AetherMixinHooks {
-    private static final ResourceLocation SWUFF_CAPE_LOCATION = ResourceLocation.fromNamespaceAndPath(Aether.MODID, "textures/models/accessory/capes/swuff_accessory.png");
+    private static final Identifier SWUFF_CAPE_LOCATION = Identifier.fromNamespaceAndPath(Aether.MODID, "textures/models/accessory/capes/swuff_accessory.png");
 
     /**
      * Checks whether a cape accessory is visible.
@@ -34,41 +32,21 @@ public class AetherMixinHooks {
      * @see com.aetherteam.aether.mixin.mixins.client.PlayerSkinMixin
      */
     public static ItemStack isCapeVisible(LivingEntity livingEntity) {
-        AccessoriesCapability accessories = AccessoriesCapability.get(livingEntity);
-        if (accessories != null) {
-            AccessoriesContainer accessoriesContainer = accessories.getContainer(CapeItem.getStaticIdentifier());
-
-            if (accessoriesContainer != null) {
-                ExpandedSimpleContainer simpleAccessoriesContainer = accessoriesContainer.getAccessories();
-                ExpandedSimpleContainer simpleCosmeticsContainer = accessoriesContainer.getCosmeticAccessories();
-
-                Pair<Integer, ItemStack> stack = StreamSupport.stream(simpleAccessoriesContainer.spliterator(), true).findFirst().orElse(null);
-                Pair<Integer, ItemStack> cosmeticStack = StreamSupport.stream(simpleCosmeticsContainer.spliterator(), true).findFirst().orElse(null);
-                if (cosmeticStack != null && !cosmeticStack.getSecond().isEmpty() && Accessories.config().clientOptions.showCosmeticAccessories()) {
-                    stack = cosmeticStack;
-                }
-                if (stack != null) {
-                    if (accessoriesContainer.shouldRender(stack.getFirst())) {
-                        return stack.getSecond();
-                    }
-                }
-            }
-        }
-        return ItemStack.EMPTY;
+        return EquipmentUtil.getVisibleStackInSlot(livingEntity, CapeItem.getStaticIdentifier());
     }
 
     /**
      * Gets the cape texture from a {@link CapeItem}.
      *
      * @param stack The {@link ItemStack}.
-     * @return The {@link ResourceLocation} texture from the cape.
+     * @return The {@link Identifier} texture from the cape.
      */
-    public static ResourceLocation getCapeTexture(ItemStack stack) {
+    public static Identifier getCapeTexture(ItemStack stack) {
         if (stack.getItem() instanceof CapeItem capeItem) {
-            if (stack.getHoverName().getString().equalsIgnoreCase("swuff_'s cape")) { // Easter Egg cape texture.
-                return SWUFF_CAPE_LOCATION;
-            } else {
-                return capeItem.getCapeTexture();
+            for (Map.Entry<Predicate<ItemStack>, Identifier> entry : AetherClient.CAPE_SECRETS.entrySet()) {
+                if (entry.getKey().test(stack)) {
+                    return entry.getValue();
+                }
             }
         }
         return null;
@@ -82,7 +60,7 @@ public class AetherMixinHooks {
      * @see com.aetherteam.aether.mixin.mixins.common.DirectoryLockMixin
      */
     public static boolean canUnlockLevel(Path basePath) {
-        if (Minecraft.getInstance().screen != null && Minecraft.getInstance().screen instanceof SelectWorldScreen && Minecraft.getInstance().getSingleplayerServer() != null) {
+        if (Minecraft.getInstance().gui.screen() != null && Minecraft.getInstance().gui.screen() instanceof SelectWorldScreen && Minecraft.getInstance().getSingleplayerServer() != null) {
             return basePath.getFileName().toString().equals(((MinecraftServerAccessor) Minecraft.getInstance().getSingleplayerServer()).aether$getStorageSource().getLevelId());
         }
         return false;
@@ -128,10 +106,10 @@ public class AetherMixinHooks {
      * @param stack        The accessory {@link ItemStack}.
      * @return The slot identifier {@link String}.
      */
-    public static SlotTypeReference getIdentifierForItem(LivingEntity livingEntity, ItemStack stack) {
+    public static String getIdentifierForItem(LivingEntity livingEntity, ItemStack stack) {
         if (stack.getItem() instanceof GlovesItem glovesItem) {
             return glovesItem.getIdentifier();
-        } else if (stack.getItem() instanceof PendantItem pendantItem && (livingEntity.getType() == EntityType.PIGLIN || livingEntity.getType() == EntityType.ZOMBIFIED_PIGLIN)) {
+        } else if (stack.getItem() instanceof PendantItem pendantItem && (livingEntity.getType() == EntityTypes.PIGLIN || livingEntity.getType() == EntityTypes.ZOMBIFIED_PIGLIN)) {
             return pendantItem.getIdentifier();
         }
         return null;
@@ -141,18 +119,11 @@ public class AetherMixinHooks {
      * Gets an accessory from an entity.
      *
      * @param livingEntity The {@link LivingEntity} to get the accessory from.
-     * @param identifier The {@link SlotTypeReference} for the slot identifier.
+     * @param identifier The {@link String} for the slot identifier.
      * @return The accessory {@link ItemStack} gotten from the entity.
      */
-    public static ItemStack getItemByIdentifier(LivingEntity livingEntity, SlotTypeReference identifier) {
-        AccessoriesCapability accessories = AccessoriesCapability.get(livingEntity);
-        if (accessories != null) {
-            AccessoriesContainer accessoriesContainer = accessories.getContainer(identifier);
-            if (accessoriesContainer != null) {
-                return accessoriesContainer.getAccessories().getItem(0);
-            }
-        }
-        return ItemStack.EMPTY;
+    public static ItemStack getItemByIdentifier(LivingEntity livingEntity, String identifier) {
+        return EquipmentUtil.getStackInSlot(livingEntity, identifier, 0);
     }
 
     /**
@@ -160,15 +131,9 @@ public class AetherMixinHooks {
      *
      * @param livingEntity The {@link LivingEntity} to equip to.
      * @param itemStack    The {@link ItemStack} to equip.
-     * @param identifier   The {@link SlotTypeReference} for the slot identifier.
+     * @param identifier   The {@link String} for the slot identifier.
      */
-    public static void setItemByIdentifier(LivingEntity livingEntity, ItemStack itemStack, SlotTypeReference identifier) {
-        AccessoriesCapability accessories = AccessoriesCapability.get(livingEntity);
-        if (accessories != null) {
-            AccessoriesContainer accessoriesContainer = accessories.getContainer(identifier);
-            if (accessoriesContainer != null) {
-                accessoriesContainer.getAccessories().setItem(0, itemStack);
-            }
-        }
+    public static void setItemByIdentifier(LivingEntity livingEntity, ItemStack itemStack, String identifier) {
+        EquipmentUtil.setStackInSlot(livingEntity, identifier, 0, itemStack);
     }
 }

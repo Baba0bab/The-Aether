@@ -1,25 +1,22 @@
 package com.aetherteam.aether.client.renderer.accessory.layer;
 
 import com.aetherteam.aether.Aether;
+import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
+import com.aetherteam.aether.client.AetherClient;
 import com.aetherteam.aether.client.renderer.AetherModelLayers;
+import com.aetherteam.aether.client.renderer.AetherRenderStateModifiers;
 import com.aetherteam.aether.client.renderer.accessory.model.CapeModel;
-import com.aetherteam.aether.item.accessories.cape.CapeItem;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
-import io.wispforest.accessories.api.AccessoriesCapability;
-import io.wispforest.accessories.api.AccessoriesContainer;
-import io.wispforest.accessories.api.slot.SlotTypeReference;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.model.ArmorStandModel;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.model.object.armorstand.ArmorStandModel;
+import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
+import net.minecraft.client.renderer.entity.state.ArmorStandRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.decoration.ArmorStand;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
@@ -27,45 +24,29 @@ import net.minecraft.world.item.Items;
  * [CODE COPY] - {@link net.minecraft.client.renderer.entity.layers.CapeLayer}.<br><br>
  * Modified to check for capes in the Armor Stand's slots, as well as remove rotational fields and instead keep rotations constant.
  */
-public class ArmorStandCapeLayer extends RenderLayer<ArmorStand, ArmorStandModel> {
-    private static final ResourceLocation SWUFF_CAPE_LOCATION = ResourceLocation.fromNamespaceAndPath(Aether.MODID, "textures/models/accessory/capes/swuff_accessory.png");
+public class ArmorStandCapeLayer extends RenderLayer<ArmorStandRenderState, ArmorStandModel> {
+    public static final Identifier SWUFF_CAPE_LOCATION = Identifier.fromNamespaceAndPath(Aether.MODID, "textures/models/accessory/capes/swuff_accessory.png");
 
     private final CapeModel cape;
 
-    public ArmorStandCapeLayer(RenderLayerParent<ArmorStand, ArmorStandModel> renderer) {
+    public ArmorStandCapeLayer(RenderLayerParent<ArmorStandRenderState, ArmorStandModel> renderer) {
         super(renderer);
         this.cape = new CapeModel(Minecraft.getInstance().getEntityModels().bakeLayer(AetherModelLayers.CAPE));
     }
 
     @Override
-    public void render(PoseStack poseStack, MultiBufferSource buffer, int packedLight, ArmorStand livingEntity, float limbSwing, float limbSwingAmount, float partialTick, float ageInTicks, float netHeadYaw, float headPitch) {
-        SlotTypeReference identifier = CapeItem.getStaticIdentifier();
-        AccessoriesCapability accessories = AccessoriesCapability.get(livingEntity);
-        if (accessories != null) {
-            AccessoriesContainer accessoriesContainer = accessories.getContainer(identifier);
-            if (accessoriesContainer != null) {
-                ItemStack itemStack = accessoriesContainer.getAccessories().getItem(0);
-                if (!itemStack.isEmpty()) {
-                    if (itemStack.getItem() instanceof CapeItem capeItem) {
-                        ResourceLocation texture = capeItem.getCapeTexture();
-                        if (itemStack.getHoverName().getString().equalsIgnoreCase("swuff_'s cape")) { // Easter Egg cape texture.
-                            texture = SWUFF_CAPE_LOCATION;
-                        }
-                        if (!livingEntity.isInvisible() && texture != null) {
-                            ItemStack itemstack = livingEntity.getItemBySlot(EquipmentSlot.CHEST);
-                            if (!itemstack.is(Items.ELYTRA)) {
-                                poseStack.pushPose();
-                                poseStack.translate(0.0F, 0.0F, 0.0925F);
-                                poseStack.mulPose(Axis.XP.rotationDegrees(3.0F));
-                                poseStack.mulPose(Axis.ZP.rotationDegrees(0.0F));
-                                poseStack.mulPose(Axis.YP.rotationDegrees(180.0F));
-                                VertexConsumer vertexconsumer = buffer.getBuffer(RenderType.entitySolid(texture));
-                                this.cape.renderToBuffer(poseStack, vertexconsumer, packedLight, OverlayTexture.NO_OVERLAY);
-                                poseStack.popPose();
-                            }
-                        }
-                    }
-                }
+    public void submit(PoseStack poseStack, SubmitNodeCollector submitNodeCollector, int packedLight, ArmorStandRenderState armorStandRenderState, float netHeadYaw, float headPitch) {
+        Identifier texture = armorStandRenderState.getRenderData(AetherRenderStateModifiers.CAPE_TEXTURE);
+        if (!armorStandRenderState.isInvisible && texture != null) {
+            ItemStack itemstack = armorStandRenderState.chestEquipment;
+            if (!itemstack.is(Items.ELYTRA)) {
+                poseStack.pushPose();
+                poseStack.translate(0.0F, 0.0F, 0.0925F);
+                poseStack.rotate(Axis.XP.rotationDegrees(3.0F));
+                poseStack.rotate(Axis.ZP.rotationDegrees(0.0F));
+                poseStack.rotate(Axis.YP.rotationDegrees(180.0F));
+                submitNodeCollector.submitModel(this.cape, armorStandRenderState, poseStack, RenderTypes.entitySolid(texture), packedLight, OverlayTexture.NO_OVERLAY, -1, null, armorStandRenderState.outlineColor);
+                poseStack.popPose();
             }
         }
     }

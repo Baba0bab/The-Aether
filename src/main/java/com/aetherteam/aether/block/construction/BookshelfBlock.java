@@ -1,9 +1,17 @@
 package com.aetherteam.aether.block.construction;
 
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 
 public class BookshelfBlock extends Block {
     public BookshelfBlock(Properties properties) {
         super(properties);
+    }
+
+    @Override
+    public float getEnchantPowerBonus(BlockState state, BlockGetter level, BlockPos pos) {
+        return 1;
     }
 }

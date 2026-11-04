@@ -1,5 +1,6 @@
 package com.aetherteam.aether.event.listeners;
 
+import net.minecraft.world.attribute.BedRule;
 import com.aetherteam.aether.Aether;
 import com.aetherteam.aether.event.hooks.DimensionHooks;
 import com.aetherteam.nitrogen.fabric.events.*;
@@ -38,7 +39,6 @@ public class DimensionListener {
         EntityEvents.BEFORE_DIMENSION_CHANGE.register(DimensionListener::onEntityTravelToDimension);
         ServerEntityWorldChangeEvents.AFTER_PLAYER_CHANGE_WORLD.register((player, origin, destination) -> DimensionListener.onPlayerChangedDimension(player));
         PlayerTickEvents.AFTER.register(DimensionListener::onPlayerTraveling);
-        ServerWorldEvents.LOAD.register((server, world) -> onWorldLoad(world));
         // ServerLevelMixin.nitrogen_fabric$adjustSleepTime -> DimensionListener::onSleepFinish
         EntitySleepEvents.ALLOW_SLEEPING.register((player, sleepingPos) -> DimensionListener.onTriedToSleep(player));
 //        bus.addListener(DimensionListener::onAlterGround);
@@ -107,29 +107,12 @@ public class DimensionListener {
     }
 
     /**
-     * @see DimensionHooks#initializeLevelData(LevelAccessor)
-     */
-    public static void onWorldLoad(LevelAccessor level) {
-        DimensionHooks.initializeLevelData(level);
-    }
-
-    /**
-     * @see DimensionHooks#finishSleep(LevelAccessor, MutableLong)
-     */
-    public static void onSleepFinish(LevelAccessor level, MutableLong newTime, Function<Long, Boolean> consumer) {
-        Long time = DimensionHooks.finishSleep(level, newTime);
-        if (time != null) {
-            consumer.apply(time);
-        }
-    }
-
-    /**
      * @see DimensionHooks#isEternalDay(Player)
      */
     @Nullable
     public static Player.BedSleepingProblem onTriedToSleep(Player player) {
         if (DimensionHooks.isEternalDay(player)) {
-            return Player.BedSleepingProblem.NOT_POSSIBLE_NOW;
+            event.setProblem(BedRule.CAN_SLEEP_WHEN_DARK.asProblem());
         }
 
         return null;

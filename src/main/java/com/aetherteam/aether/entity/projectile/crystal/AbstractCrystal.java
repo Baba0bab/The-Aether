@@ -2,6 +2,8 @@ package com.aetherteam.aether.entity.projectile.crystal;
 
 import com.aetherteam.nitrogen.fabric.events.CancellableCallbackImpl;
 import com.aetherteam.nitrogen.fabric.events.ProjectileEvents;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -52,7 +54,7 @@ public abstract class AbstractCrystal extends Projectile {
         if (result.getType() != HitResult.Type.MISS && !flag && !callBack.isCanceled()) {
             this.onHit(result);
         }
-        this.checkInsideBlocks();
+        this.applyEffectsFromBlocks();
         this.tickMovement();
     }
 
@@ -124,16 +126,14 @@ public abstract class AbstractCrystal extends Projectile {
     }
 
     @Override
-    public void addAdditionalSaveData(CompoundTag tag) {
+    protected void addAdditionalSaveData(ValueOutput tag) {
         super.addAdditionalSaveData(tag);
         tag.putInt("TicksInAir", this.ticksInAir);
     }
 
     @Override
-    public void readAdditionalSaveData(CompoundTag tag) {
+    protected void readAdditionalSaveData(ValueInput tag) {
         super.readAdditionalSaveData(tag);
-        if (tag.contains("TicksInAir")) {
-            this.ticksInAir = tag.getInt("TicksInAir");
-        }
+        this.ticksInAir = tag.getIntOr("TicksInAir", this.ticksInAir);
     }
 }

@@ -1,5 +1,6 @@
 package com.aetherteam.aether.block.natural;
 
+import net.minecraft.world.level.block.sounds.AmbientLeavesBlockSoundPlayer;
 import com.aetherteam.aether.block.AetherBlockStateProperties;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.LeavesBlock;
@@ -8,7 +9,7 @@ import net.minecraft.world.level.block.state.StateDefinition;
 
 public class AetherDoubleDropsLeaves extends LeavesBlock {
     public AetherDoubleDropsLeaves(Properties properties) {
-        super(properties);
+        super(AmbientLeavesBlockSoundPlayer.noAmbientSound(), properties);
         this.registerDefaultState(this.defaultBlockState().setValue(AetherBlockStateProperties.DOUBLE_DROPS, false));
     }
 

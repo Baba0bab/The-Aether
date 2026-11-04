@@ -8,17 +8,16 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.SwordItem;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
 
-public class FlamingSwordItem extends SwordItem {
-    public FlamingSwordItem() {
-        super(AetherItemTiers.FLAMING, new Item.Properties().rarity(AetherItems.AETHER_LOOT).attributes(SwordItem.createAttributes(AetherItemTiers.FLAMING, 3, -2.4F)));
+public class FlamingSwordItem extends Item {
+    public FlamingSwordItem(Properties properties) {
+        super(properties.sword(AetherItemTiers.FLAMING, 3.0F, -2.4F));
     }
 
     /**
-     * @see Aether#eventSetup()
+     * @see Aether#eventSetup(IEventBus)
      * @see FlamingSwordItem#handleFlamingSwordAbility(LivingEntity, DamageSource)
      */
     public static void onLivingDamage(LivingEntity target, DamageSource damageSource) {

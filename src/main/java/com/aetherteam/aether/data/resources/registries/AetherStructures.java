@@ -12,17 +12,18 @@ import com.aetherteam.aether.world.structure.SilverDungeonStructure;
 import com.aetherteam.aether.world.structurepiece.bronzedungeon.BronzeProcessorSettings;
 import com.aetherteam.aether.world.structurepiece.golddungeon.GoldProcessorSettings;
 import com.aetherteam.aether.world.structurepiece.silverdungeon.SilverProcessorSettings;
+import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.data.worldgen.placement.PlacementUtils;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.random.WeightedRandomList;
+import net.minecraft.resources.Identifier;
+import net.minecraft.util.random.WeightedList;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.levelgen.GenerationStep;
-import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
+import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvider;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 import net.minecraft.world.level.levelgen.placement.RarityFilter;
@@ -42,23 +43,23 @@ public class AetherStructures {
     public static final ResourceKey<Structure> GOLD_DUNGEON = createKey("gold_dungeon");
 
     private static ResourceKey<Structure> createKey(String name) {
-        return ResourceKey.create(Registries.STRUCTURE, ResourceLocation.fromNamespaceAndPath(Aether.MODID, name));
+        return ResourceKey.create(Registries.STRUCTURE, Identifier.fromNamespaceAndPath(Aether.MODID, name));
     }
 
     public static void bootstrap(BootstrapContext<Structure> context) {
         Map<MobCategory, StructureSpawnOverride> mobSpawnsBox = Arrays.stream(MobCategory.values())
-                .collect(Collectors.toMap((category) -> category, (category) -> new StructureSpawnOverride(StructureSpawnOverride.BoundingBoxType.STRUCTURE, WeightedRandomList.create())));
+                .collect(Collectors.toMap((category) -> category, (category) -> new StructureSpawnOverride(StructureSpawnOverride.BoundingBoxType.STRUCTURE, WeightedList.of())));
 
         Map<MobCategory, StructureSpawnOverride> mobSpawnsPiece = Arrays.stream(MobCategory.values())
-                .collect(Collectors.toMap((category) -> category, (category) -> new StructureSpawnOverride(StructureSpawnOverride.BoundingBoxType.PIECE, WeightedRandomList.create())));
+                .collect(Collectors.toMap((category) -> category, (category) -> new StructureSpawnOverride(StructureSpawnOverride.BoundingBoxType.PIECE, WeightedList.of())));
 
         HolderGetter<Biome> biomes = context.lookup(Registries.BIOME);
         HolderGetter<PlacedFeature> placements = context.lookup(Registries.PLACED_FEATURE);
-        HolderGetter<ConfiguredFeature<?, ?>> configurations = context.lookup(Registries.CONFIGURED_FEATURE);
+        HolderGetter<Feature> configurations = context.lookup(Registries.FEATURE);
         HolderGetter<StructureProcessorList> processors = context.lookup(Registries.PROCESSOR_LIST);
         context.register(LARGE_AERCLOUD, new LargeAercloudStructure(
                 AetherStructureBuilders.structure(biomes.getOrThrow(AetherTags.Biomes.HAS_LARGE_AERCLOUD), GenerationStep.Decoration.SURFACE_STRUCTURES, TerrainAdjustment.NONE),
-                BlockStateProvider.simple(AetherBlocks.COLD_AERCLOUD.get().defaultBlockState().setValue(AetherBlockStateProperties.DOUBLE_DROPS, true)),
+                Holder.direct(BlockStateProvider.of(AetherBlocks.COLD_AERCLOUD.get().defaultBlockState().setValue(AetherBlockStateProperties.DOUBLE_DROPS, true))),
                 3, 32));
         context.register(BRONZE_DUNGEON, new BronzeDungeonStructure(AetherStructureBuilders.structure(
                 biomes.getOrThrow(AetherTags.Biomes.HAS_BRONZE_DUNGEON),

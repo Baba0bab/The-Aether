@@ -7,7 +7,7 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 
@@ -15,7 +15,7 @@ import net.minecraft.world.entity.player.Player;
  * Handles syncing {@link HammerProjectile} damage to the server.
  */
 public record HammerProjectileLaunchPacket(int targetID, int projectileID) implements CustomPacketPayload {
-    public static final Type<HammerProjectileLaunchPacket> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Aether.MODID, "launch_hammer_projectile"));
+    public static final Type<HammerProjectileLaunchPacket> TYPE = new Type<>(Identifier.fromNamespaceAndPath(Aether.MODID, "launch_hammer_projectile"));
 
     public static final StreamCodec<RegistryFriendlyByteBuf, HammerProjectileLaunchPacket> STREAM_CODEC = StreamCodec.composite(
         ByteBufCodecs.INT,
@@ -31,7 +31,7 @@ public record HammerProjectileLaunchPacket(int targetID, int projectileID) imple
 
     public static void execute(HammerProjectileLaunchPacket payload, IPayloadContext context) {
         Player playerEntity = context.player();
-        if (playerEntity.getServer() != null) {
+        if (playerEntity.level().getServer() != null) {
             Entity target = playerEntity.level().getEntity(payload.targetID());
             Entity projectile = playerEntity.level().getEntity(payload.projectileID());
             if (projectile instanceof HammerProjectile hammerProjectile) {

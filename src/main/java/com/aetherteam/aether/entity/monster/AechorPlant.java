@@ -1,5 +1,8 @@
 package com.aetherteam.aether.entity.monster;
 
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
+import com.aetherteam.aether.Aether;
 import com.aetherteam.aether.AetherTags;
 import com.aetherteam.aether.client.AetherSoundEvents;
 import com.aetherteam.aether.effect.AetherEffects;
@@ -11,6 +14,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -97,14 +101,14 @@ public class AechorPlant extends PathfinderMob implements RangedAttackMob {
      *
      * @param level      The {@link ServerLevelAccessor} where the entity is spawned.
      * @param difficulty The {@link DifficultyInstance} of the game.
-     * @param reason     The {@link MobSpawnType} reason.
+     * @param reason     The {@link EntitySpawnReason} reason.
      * @param spawnData  The {@link SpawnGroupData}.
      * @return The {@link SpawnGroupData} to return.
      */
     @Nullable
     @Override
     @SuppressWarnings("deprecation")
-    public SpawnGroupData finalizeSpawn(ServerLevelAccessor level, DifficultyInstance difficulty, MobSpawnType reason, @Nullable SpawnGroupData spawnData) {
+    public SpawnGroupData finalizeSpawn(ServerLevelAccessor level, DifficultyInstance difficulty, EntitySpawnReason reason, @Nullable SpawnGroupData spawnData) {
         this.setSize(this.getRandom().nextInt(4) + 1);
         this.setPos(Vec3.atBottomCenterOf(this.blockPosition()));
         return spawnData;
@@ -116,16 +120,16 @@ public class AechorPlant extends PathfinderMob implements RangedAttackMob {
      *
      * @param aechorPlant The {@link AechorPlant} {@link EntityType}.
      * @param level       The {@link LevelAccessor}.
-     * @param reason      The {@link MobSpawnType} reason.
+     * @param reason      The {@link EntitySpawnReason} reason.
      * @param pos         The spawn {@link BlockPos}.
      * @param random      The {@link RandomSource}.
      * @return Whether this entity can spawn, as a {@link Boolean}.
      */
-    public static boolean checkAechorPlantSpawnRules(EntityType<? extends AechorPlant> aechorPlant, LevelAccessor level, MobSpawnType reason, BlockPos pos, RandomSource random) {
+    public static boolean checkAechorPlantSpawnRules(EntityType<? extends AechorPlant> aechorPlant, LevelAccessor level, EntitySpawnReason reason, BlockPos pos, RandomSource random) {
         return level.getBlockState(pos.below()).is(AetherTags.Blocks.AECHOR_PLANT_SPAWNABLE_ON)
             && level.getRawBrightness(pos, 0) > 8
             && level.getDifficulty() != Difficulty.PEACEFUL
-            && (reason != MobSpawnType.NATURAL || (random.nextInt(10) == 0 && !inRadiusOfFlowers(level, pos, 10, 40)));
+            && (reason != EntitySpawnReason.NATURAL || (random.nextInt(10) == 0 && !inRadiusOfFlowers(level, pos, 10, 40)));
     }
 
     /**
@@ -137,8 +141,8 @@ public class AechorPlant extends PathfinderMob implements RangedAttackMob {
      * @return Whether the blocks were found in the radius, as a {@link Boolean}.
      */
     public static boolean inRadiusOfFlowers(LevelAccessor level, BlockPos pos, int radius, int radiusEnchanted) {
-        for (ChunkPos chunk : ChunkPos.rangeClosed(new ChunkPos(pos), radiusEnchanted).toList()) {
-            ChunkAccess chunkAccess = level.getChunk(chunk.x, chunk.z, ChunkStatus.FULL, false);
+        for (ChunkPos chunk : ChunkPos.rangeClosed(ChunkPos.containing(pos), radiusEnchanted).toList()) {
+            ChunkAccess chunkAccess = level.getChunk(chunk.x(), chunk.z(), ChunkStatus.FULL, false);
             if (chunkAccess != null) {
                 for (BlockPos blockEntityPos : chunkAccess.getBlockEntitiesPos()) {
                     if (blockEntityPos.distSqr(pos) <= radius * radius) {
@@ -168,8 +172,8 @@ public class AechorPlant extends PathfinderMob implements RangedAttackMob {
     @Override
     public void tick() {
         super.tick();
-        if (!this.level().getBlockState(this.blockPosition().below()).is(AetherTags.Blocks.AECHOR_PLANT_SPAWNABLE_ON) && !this.isPassenger()) {
-            this.kill();
+        if (!this.level().getBlockState(this.blockPosition().below()).is(AetherTags.Blocks.AECHOR_PLANT_SPAWNABLE_ON) && !this.isPassenger() && this.level() instanceof ServerLevel serverLevel) {
+            this.kill(serverLevel);
         }
         if (!this.level().isClientSide()) {
             if (this.getTarget() != null) {
@@ -215,7 +219,7 @@ public class AechorPlant extends PathfinderMob implements RangedAttackMob {
             this.setPoisonRemaining(this.getPoisonRemaining() - 1);
             ItemStack itemStack1 = ItemUtils.createFilledResult(itemStack, player, AetherItems.SKYROOT_POISON_BUCKET.get().getDefaultInstance());
             player.setItemInHand(hand, itemStack1);
-            return InteractionResult.sidedSuccess(this.level().isClientSide());
+            return InteractionResult.SUCCESS;
         } else {
             return super.mobInteract(player, hand);
         }
@@ -255,7 +259,7 @@ public class AechorPlant extends PathfinderMob implements RangedAttackMob {
      * @return Whether the entity was hurt, as a {@link Boolean}.
      */
     @Override
-    public boolean hurt(DamageSource source, float amount) {
+    public boolean hurtServer(ServerLevel serverLevel, DamageSource source, float amount) {
         if (this.hurtTime == 0) {
             for (int i = 0; i < 8; ++i) {
                 double d1 = this.getX() + (double) (this.getRandom().nextFloat() - this.getRandom().nextFloat()) * 0.5;
@@ -266,7 +270,7 @@ public class AechorPlant extends PathfinderMob implements RangedAttackMob {
                 this.level().addParticle(ParticleTypes.PORTAL, d1, d2, d3, d4, 0.25, d5);
             }
         }
-        return super.hurt(source, amount);
+        return super.hurtServer(serverLevel, source, amount);
     }
 
     /**
@@ -380,10 +384,6 @@ public class AechorPlant extends PathfinderMob implements RangedAttackMob {
         return EntityDimensions.fixed(width, height).withEyeHeight(height / 1.15F);
     }
 
-    @Override
-    protected boolean shouldDespawnInPeaceful() {
-        return true;
-    }
 
     /**
      * Makes Aechor Plants immune to Inebriation.<br><br>
@@ -399,21 +399,17 @@ public class AechorPlant extends PathfinderMob implements RangedAttackMob {
     }
 
     @Override
-    public void addAdditionalSaveData(CompoundTag tag) {
+    protected void addAdditionalSaveData(ValueOutput tag) {
         super.addAdditionalSaveData(tag);
         tag.putInt("Size", this.getSize());
         tag.putInt("Poison Remaining", this.getPoisonRemaining());
     }
 
     @Override
-    public void readAdditionalSaveData(CompoundTag tag) {
+    protected void readAdditionalSaveData(ValueInput tag) {
         super.readAdditionalSaveData(tag);
-        if (tag.contains("Size")) {
-            this.setSize(tag.getInt("Size"));
-        }
-        if (tag.contains("Poison Remaining")) {
-            this.setPoisonRemaining(tag.getInt("Poison Remaining"));
-        }
+        tag.getInt("Size").ifPresent(this::setSize);
+        tag.getInt("Poison Remaining").ifPresent(this::setPoisonRemaining);
     }
 }
 

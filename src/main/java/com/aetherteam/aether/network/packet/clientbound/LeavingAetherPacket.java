@@ -4,21 +4,21 @@ import com.aetherteam.aether.Aether;
 import com.aetherteam.aether.event.hooks.DimensionHooks;
 import com.aetherteam.nitrogen.fabric.network.handling.IPayloadContext;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 /**
  * Marks the player as being in the process of leaving the Aether. This is used for displaying "Descending from the Aether" in the world loading screen.
  *
- * @see com.aetherteam.aether.client.event.hooks.GuiHooks#drawAetherTravelMessage(Screen, GuiGraphics)
+ * @see com.aetherteam.aether.client.event.hooks.GuiHooks#drawAetherTravelMessage(Screen, GuiGraphicsExtractor)
  */
 public record LeavingAetherPacket(boolean playerLeavingAether) implements CustomPacketPayload {
-    public static final Type<LeavingAetherPacket> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Aether.MODID, "leave_aether"));
+    public static final Type<LeavingAetherPacket> TYPE = new Type<>(Identifier.fromNamespaceAndPath(Aether.MODID, "leave_aether"));
 
     public static final StreamCodec<RegistryFriendlyByteBuf, LeavingAetherPacket> STREAM_CODEC = StreamCodec.composite(
         ByteBufCodecs.BOOL,

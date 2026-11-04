@@ -1,48 +1,66 @@
-package com.aetherteam.aether.data;
-
-import net.fabricmc.fabric.api.datagen.v1.DataGeneratorEntrypoint;
-import net.fabricmc.fabric.api.datagen.v1.FabricDataGenerator;
-
-public class AetherData implements DataGeneratorEntrypoint {
-    @Override
-    public void onInitializeDataGenerator(FabricDataGenerator fabricDataGenerator) {
-//        DataGenerator generator = event.getGenerator();
-//        ExistingFileHelper fileHelper = event.getExistingFileHelper();
-//        CompletableFuture<HolderLookup.Provider> lookupProvider = event.getLookupProvider();
-//        PackOutput packOutput = generator.getPackOutput();
+//package com.aetherteam.aether.data;
 //
+//import com.aetherteam.aether.data.generators.*;
+//import com.aetherteam.aether.data.generators.loot.*;
+//import com.aetherteam.aether.data.generators.tags.*;
+//import com.aetherteam.aether.data.resources.AetherMobCategory;
+//import com.google.common.reflect.Reflection;
+//import net.minecraft.DetectedVersion;
+//import net.minecraft.data.loot.LootTableProvider;
+//import net.minecraft.data.metadata.PackMetadataGenerator;
+//import net.minecraft.network.chat.Component;
+//import net.minecraft.server.packs.PackType;
+//import net.minecraft.server.packs.metadata.pack.PackMetadataSection;
+//import net.minecraft.util.InclusiveRange;
+//import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
+//import net.neoforged.neoforge.data.event.GatherDataEvent;
+//import net.neoforged.neoforge.data.event.GatherDataRegistryEntriesEvent;
+//
+//public class AetherData {
+//    /**
+//     * Gathers the Aether's datapack registry entries, including loot tables, advancements, and recipes.
+//     */
+//    public static void registrySetup(GatherDataRegistryEntriesEvent event) {
+//        Reflection.initialize(AetherMobCategory.class);
+//
+//        AetherRegistrySets.gatherEntries(event);
+//        event.lootTable(
+//                new LootTableProvider.SubProviderEntry(AetherChestLoot::new, LootContextParamSets.CHEST),
+//                new LootTableProvider.SubProviderEntry(AetherEntityLoot::new, LootContextParamSets.ENTITY),
+//                new LootTableProvider.SubProviderEntry(AetherBlockLoot::new, LootContextParamSets.BLOCK),
+//                new LootTableProvider.SubProviderEntry(AetherAdvancementLoot::new, LootContextParamSets.ADVANCEMENT_REWARD),
+//                new LootTableProvider.SubProviderEntry(AetherSelectorLoot::new, LootContextParamSets.SELECTOR),
+//                new LootTableProvider.SubProviderEntry(AetherShearingLoot::new, LootContextParamSets.SHEARING),
+//                new LootTableProvider.SubProviderEntry(AetherStrippingLoot::new, LootContextParamSets.BLOCK_INTERACT));
+//        event.advancement(AetherAdvancementData::new);
+//        event.recipe(AetherRecipeData::new);
+//    }
+//
+//    public static void dataSetup(GatherDataEvent.Client event) {
 //        Reflection.initialize(AetherMobCategory.class);
 //
 //        // Client Data
-////        generator.addProvider(event.includeClient(), new AetherBlockStateData(packOutput, fileHelper));
-////        generator.addProvider(event.includeClient(), new AetherItemModelData(packOutput, fileHelper));
-//        generator.addProvider(event.includeClient(), new AetherLanguageData(packOutput));
-//        generator.addProvider(event.includeClient(), new AetherSoundData(packOutput, fileHelper));
+//        event.createProvider(AetherModelData::new);
+//        event.createProvider(AetherEquipmentModelData::new);
+//        event.createProvider(AetherLanguageData::new);
+//        event.createProvider(AetherSoundData::new);
 //
 //        // Server Data
-//        generator.addProvider(event.includeServer(), new AetherRecipeData(packOutput, lookupProvider));
-//        generator.addProvider(event.includeServer(), AetherLootTableData.create(packOutput, lookupProvider));
-//        generator.addProvider(event.includeServer(), new AetherLootModifierData(packOutput, lookupProvider));
-//        generator.addProvider(event.includeServer(), new AetherAdvancementData(packOutput, lookupProvider, fileHelper));
-//        generator.addProvider(event.includeServer(), new AetherDataMapData(packOutput, lookupProvider));
-//        DatapackBuiltinEntriesProvider registrySets = new AetherRegistrySets(packOutput, lookupProvider);
-//        CompletableFuture<HolderLookup.Provider> registryProvider = registrySets.getRegistryProvider();
-//        generator.addProvider(event.includeServer(), registrySets);
+//        event.createProvider(AetherLootModifierData::new);
+//        event.createProvider(AetherDataMapData::new);
 //        // Tags
-//        AetherBlockTagData blockTags = new AetherBlockTagData(packOutput, lookupProvider, fileHelper);
-//        generator.addProvider(event.includeServer(), blockTags);
-//        generator.addProvider(event.includeServer(), new AetherItemTagData(packOutput, lookupProvider, blockTags.contentsGetter(), fileHelper));
-//        generator.addProvider(event.includeServer(), new AetherEntityTagData(packOutput, lookupProvider));
-//        generator.addProvider(event.includeServer(), new AetherFluidTagData(packOutput, lookupProvider, fileHelper));
-//        generator.addProvider(event.includeServer(), new AetherBiomeTagData(packOutput, lookupProvider, fileHelper));
-//        generator.addProvider(event.includeServer(), new AetherStructureTagData(packOutput, registryProvider, fileHelper));
-//        generator.addProvider(event.includeServer(), new AetherDamageTypeTagData(packOutput, registryProvider, fileHelper));
-//        generator.addProvider(event.includeServer(), new AetherSoundTagData(packOutput, registryProvider, fileHelper));
+//        event.createBlockAndItemTags(AetherBlockTagData::new, AetherItemTagData::new);
+//        event.createProvider(AetherEntityTagData::new);
+//        event.createProvider(AetherFluidTagData::new);
+//        event.createProvider(AetherBiomeTagData::new);
+//        event.createProvider(AetherStructureTagData::new);
+//        event.createProvider(AetherDamageTypeTagData::new);
+//        event.createProvider(AetherSoundTagData::new);
+//        event.createProvider(AetherTimelineTagData::new);
 //
 //        // pack.mcmeta
-//        generator.addProvider(true, new PackMetadataGenerator(packOutput).add(PackMetadataSection.TYPE, new PackMetadataSection(
+//        event.createProvider((output) -> new PackMetadataGenerator(output).add(PackMetadataSection.SERVER_TYPE, new PackMetadataSection(
 //                Component.translatable("pack.aether.mod.description"),
-//                DetectedVersion.BUILT_IN.getPackVersion(PackType.SERVER_DATA),
-//                Optional.of(new InclusiveRange<>(0, Integer.MAX_VALUE)))));
-    }
-}
+//                new InclusiveRange<>(DetectedVersion.BUILT_IN.packVersion(PackType.SERVER_DATA)))));
+//    }
+//}

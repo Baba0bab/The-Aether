@@ -5,8 +5,8 @@ import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.model.geom.ModelLayers;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.vehicle.Boat;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.entity.vehicle.boat.Boat;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
@@ -20,7 +20,7 @@ public abstract class ModelLayersMixin {
         var name = type.getName();
 
         return name.contains(":")
-            ? new ModelLayerLocation(ResourceLocation.parse(name).withPrefix(path.replace(name, "")), model)
+            ? new ModelLayerLocation(Identifier.parse(name).withPrefix(path.replace(name, "")), model)
             : original.call(path, model);
 
     }

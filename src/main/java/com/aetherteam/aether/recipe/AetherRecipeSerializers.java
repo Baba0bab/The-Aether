@@ -15,7 +15,6 @@ import com.aetherteam.nitrogen.fabric.registries.DeferredHolder;
 import com.aetherteam.nitrogen.fabric.registries.DeferredRegister;
 import com.aetherteam.nitrogen.recipe.BlockStateIngredient;
 import com.aetherteam.nitrogen.recipe.input.BlockStateRecipeInput;
-import com.aetherteam.nitrogen.recipe.serializer.BlockStateRecipeSerializer;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
@@ -26,15 +25,15 @@ import net.minecraft.world.level.block.state.BlockState;
 public class AetherRecipeSerializers {
     public static final DeferredRegister<RecipeSerializer<?>> RECIPE_SERIALIZERS = DeferredRegister.create(BuiltInRegistries.RECIPE_SERIALIZER, Aether.MODID);
 
-    public static final DeferredHolder<RecipeSerializer<?>, RecipeSerializer<AltarRepairRecipe>> REPAIRING = RECIPE_SERIALIZERS.register("repairing", AltarRepairRecipe.Serializer::new);
-    public static final DeferredHolder<RecipeSerializer<?>, AetherCookingSerializer<EnchantingRecipe>> ENCHANTING = RECIPE_SERIALIZERS.register("enchanting", EnchantingRecipe.Serializer::new);
-    public static final DeferredHolder<RecipeSerializer<?>, AetherCookingSerializer<FreezingRecipe>> FREEZING = RECIPE_SERIALIZERS.register("freezing", FreezingRecipe.Serializer::new);
-    public static final DeferredHolder<RecipeSerializer<?>, RecipeSerializer<IncubationRecipe>> INCUBATION = RECIPE_SERIALIZERS.register("incubation", IncubationRecipe.Serializer::new);
-    public static final DeferredHolder<RecipeSerializer<?>, BlockStateRecipeSerializer<AmbrosiumRecipe>> AMBROSIUM_ENCHANTING = RECIPE_SERIALIZERS.register("ambrosium_enchanting", AmbrosiumRecipe.Serializer::new);
-    public static final DeferredHolder<RecipeSerializer<?>, BiomeParameterRecipeSerializer<SwetBallRecipe>> SWET_BALL_CONVERSION = RECIPE_SERIALIZERS.register("swet_ball_conversion", SwetBallRecipe.Serializer::new);
-    public static final DeferredHolder<RecipeSerializer<?>, BlockStateRecipeSerializer<IcestoneFreezableRecipe>> ICESTONE_FREEZABLE = RECIPE_SERIALIZERS.register("icestone_freezable", IcestoneFreezableRecipe.Serializer::new);
-    public static final DeferredHolder<RecipeSerializer<?>, BlockStateRecipeSerializer<AccessoryFreezableRecipe>> ACCESSORY_FREEZABLE = RECIPE_SERIALIZERS.register("accessory_freezable", AccessoryFreezableRecipe.Serializer::new);
-    public static final DeferredHolder<RecipeSerializer<?>, BiomeParameterRecipeSerializer<PlacementConversionRecipe>> PLACEMENT_CONVERSION = RECIPE_SERIALIZERS.register("placement_conversion", PlacementConversionRecipe.Serializer::new);
-    public static final DeferredHolder<RecipeSerializer<?>, PlacementBanRecipeSerializer<ItemStack, Ingredient, SingleRecipeInput, ItemBanRecipe>> ITEM_PLACEMENT_BAN = RECIPE_SERIALIZERS.register("item_placement_ban", ItemBanRecipe.Serializer::new);
-    public static final DeferredHolder<RecipeSerializer<?>, PlacementBanRecipeSerializer<BlockState, BlockStateIngredient, BlockStateRecipeInput, BlockBanRecipe>> BLOCK_PLACEMENT_BAN = RECIPE_SERIALIZERS.register("block_placement_ban", BlockBanRecipe.Serializer::new);
+    public static final DeferredHolder<RecipeSerializer<?>, RecipeSerializer<AltarRepairRecipe>> REPAIRING = RECIPE_SERIALIZERS.register("repairing", () -> new AltarRepairRecipe.Serializer().build());
+    public static final DeferredHolder<RecipeSerializer<?>, RecipeSerializer<EnchantingRecipe>> ENCHANTING = RECIPE_SERIALIZERS.register("enchanting", () -> new EnchantingRecipe.Serializer().build());
+    public static final DeferredHolder<RecipeSerializer<?>, RecipeSerializer<FreezingRecipe>> FREEZING = RECIPE_SERIALIZERS.register("freezing", () -> new FreezingRecipe.Serializer().build());
+    public static final DeferredHolder<RecipeSerializer<?>, RecipeSerializer<IncubationRecipe>> INCUBATION = RECIPE_SERIALIZERS.register("incubation", () -> new IncubationRecipe.Serializer().build());
+    public static final DeferredHolder<RecipeSerializer<?>, RecipeSerializer<AmbrosiumRecipe>> AMBROSIUM_ENCHANTING = RECIPE_SERIALIZERS.register("ambrosium_enchanting", () -> new AmbrosiumRecipe.Serializer().build());
+    public static final DeferredHolder<RecipeSerializer<?>, RecipeSerializer<SwetBallRecipe>> SWET_BALL_CONVERSION = RECIPE_SERIALIZERS.register("swet_ball_conversion", () -> new SwetBallRecipe.Serializer().build());
+    public static final DeferredHolder<RecipeSerializer<?>, RecipeSerializer<IcestoneFreezableRecipe>> ICESTONE_FREEZABLE = RECIPE_SERIALIZERS.register("icestone_freezable", () -> new IcestoneFreezableRecipe.Serializer().build());
+    public static final DeferredHolder<RecipeSerializer<?>, RecipeSerializer<AccessoryFreezableRecipe>> ACCESSORY_FREEZABLE = RECIPE_SERIALIZERS.register("accessory_freezable", () -> new AccessoryFreezableRecipe.Serializer().build());
+    public static final DeferredHolder<RecipeSerializer<?>, RecipeSerializer<PlacementConversionRecipe>> PLACEMENT_CONVERSION = RECIPE_SERIALIZERS.register("placement_conversion", () -> new PlacementConversionRecipe.Serializer().build());
+    public static final DeferredHolder<RecipeSerializer<?>, RecipeSerializer<ItemBanRecipe>> ITEM_PLACEMENT_BAN = RECIPE_SERIALIZERS.register("item_placement_ban", () -> new ItemBanRecipe.Serializer().build());
+    public static final DeferredHolder<RecipeSerializer<?>, RecipeSerializer<BlockBanRecipe>> BLOCK_PLACEMENT_BAN = RECIPE_SERIALIZERS.register("block_placement_ban", () -> new BlockBanRecipe.Serializer().build());
 }

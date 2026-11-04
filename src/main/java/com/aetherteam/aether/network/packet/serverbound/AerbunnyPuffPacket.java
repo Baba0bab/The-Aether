@@ -6,7 +6,7 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Player;
 import com.aetherteam.nitrogen.fabric.network.handling.IPayloadContext;
 
@@ -14,7 +14,7 @@ import com.aetherteam.nitrogen.fabric.network.handling.IPayloadContext;
  * Sets the {@link Aerbunny#DATA_PUFFINESS_ID} value to 11. This is needed in a packet for precise animation syncing.
  */
 public record AerbunnyPuffPacket(int entityID) implements CustomPacketPayload {
-    public static final Type<AerbunnyPuffPacket> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Aether.MODID, "aerbunny_puff"));
+    public static final Type<AerbunnyPuffPacket> TYPE = new Type<>(Identifier.fromNamespaceAndPath(Aether.MODID, "aerbunny_puff"));
 
     public static final StreamCodec<RegistryFriendlyByteBuf, AerbunnyPuffPacket> STREAM_CODEC = StreamCodec.composite(
         ByteBufCodecs.INT,
@@ -28,7 +28,7 @@ public record AerbunnyPuffPacket(int entityID) implements CustomPacketPayload {
 
     public static void execute(AerbunnyPuffPacket payload, IPayloadContext context) {
         Player playerEntity = context.player();
-        if (playerEntity.getServer() != null && playerEntity.level().getEntity(payload.entityID()) instanceof Aerbunny aerbunny) {
+        if (playerEntity.level().getServer() != null && playerEntity.level().getEntity(payload.entityID()) instanceof Aerbunny aerbunny) {
             aerbunny.puff();
         }
     }

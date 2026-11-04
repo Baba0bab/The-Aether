@@ -4,6 +4,7 @@ import com.aetherteam.nitrogen.fabric.events.CancellableCallbackImpl;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.event.EventFactory;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 
 /**

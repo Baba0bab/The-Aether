@@ -1,0 +1,20 @@
+accessWidener v2 official
+
+accessible field net/minecraft/world/level/Level rainLevel F
+accessible field net/minecraft/world/level/Level thunderLevel F
+accessible field net/minecraft/world/entity/Mob goalSelector Lnet/minecraft/world/entity/ai/goal/GoalSelector;
+#extendable method net/minecraft/client/gui/components/AbstractButton getTextureY ()I # Blame porting lib
+accessible field net/minecraft/client/gui/screens/inventory/AbstractContainerScreen imageWidth I
+accessible field net/minecraft/client/gui/screens/inventory/AbstractContainerScreen imageHeight I
+accessible field net/minecraft/stats/RecipeBookSettings TAG_FIELDS Ljava/util/Map;
+mutable field net/minecraft/stats/RecipeBookSettings TAG_FIELDS Ljava/util/Map;
+
+accessible field net/minecraft/client/gui/screens/Screen renderables Ljava/util/List;
+accessible class net/minecraft/client/renderer/FogRenderer$FogData
+
+accessible class net/minecraft/client/gui/GuiGraphicsExtractor$ScissorStack
+accessible field net/minecraft/client/gui/GuiGraphicsExtractor scissorStack Lnet/minecraft/client/gui/GuiGraphicsExtractor$ScissorStack;
+accessible method net/minecraft/client/gui/GuiGraphicsExtractor$ScissorStack peek ()Lnet/minecraft/client/gui/navigation/ScreenRectangle;
+accessible field net/minecraft/world/level/block/LiquidBlock fluid Lnet/minecraft/world/level/material/FlowingFluid;
+accessible field net/minecraft/client/gui/GuiGraphicsExtractor guiRenderState Lnet/minecraft/client/renderer/state/gui/GuiRenderState;
+accessible method net/minecraft/world/level/block/state/BlockBehaviour getCloneItemStack (Lnet/minecraft/world/level/LevelReader;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;Z)Lnet/minecraft/world/item/ItemStack;

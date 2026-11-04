@@ -10,7 +10,7 @@ import net.fabricmc.fabric.api.attachment.v1.AttachmentType;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import oshi.util.tuples.Quartet;
 
 import java.util.function.Supplier;
@@ -19,7 +19,7 @@ import java.util.function.Supplier;
  * Sync packet for values in the {@link PhoenixArrowAttachment} class.
  */
 public class PhoenixArrowSyncPacket extends SyncEntityPacket<PhoenixArrowAttachment> {
-    public static final Type<PhoenixArrowSyncPacket> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Aether.MODID, "sync_phoenix_arrow_attachment"));
+    public static final Type<PhoenixArrowSyncPacket> TYPE = new Type<>(Identifier.fromNamespaceAndPath(Aether.MODID, "sync_phoenix_arrow_attachment"));
 
     public static final StreamCodec<RegistryFriendlyByteBuf, PhoenixArrowSyncPacket> STREAM_CODEC = CustomPacketPayload.codec(
         PhoenixArrowSyncPacket::write,

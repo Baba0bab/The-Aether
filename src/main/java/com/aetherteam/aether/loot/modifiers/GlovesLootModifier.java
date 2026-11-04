@@ -2,6 +2,7 @@ package com.aetherteam.aether.loot.modifiers;
 
 import com.aetherteam.nitrogen.fabric.loot.IGlobalLootModifier;
 import com.aetherteam.nitrogen.fabric.loot.LootModifier;
+import net.minecraft.core.component.DataComponents;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
@@ -9,15 +10,14 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.fabricmc.fabric.api.item.v1.EnchantingContext;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.tags.EnchantmentTags;
+import net.minecraft.tags.TagKey;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.item.ArmorItem;
-import net.minecraft.world.item.ArmorMaterial;
-import net.minecraft.world.item.ArmorMaterials;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
@@ -33,21 +33,21 @@ import java.util.Optional;
 
 public class GlovesLootModifier extends LootModifier {
     public static final MapCodec<GlovesLootModifier> CODEC = RecordCodecBuilder.mapCodec(instance -> codecStart(instance)
-            .and(ItemStack.CODEC.fieldOf("gloves").forGetter(modifier -> modifier.glovesStack))
-            .and(BuiltInRegistries.ARMOR_MATERIAL.holderByNameCodec().fieldOf("armor_material").forGetter(modifier -> modifier.armorMaterial))
+            .and(ItemStackTemplate.CODEC.fieldOf("gloves").forGetter(modifier -> modifier.glovesStack))
+            .and(TagKey.codec(Registries.ITEM).fieldOf("armor_tag").forGetter(modifier -> modifier.armorTag))
             .apply(instance, GlovesLootModifier::new));
 
-    public final ItemStack glovesStack;
-    public final Holder<ArmorMaterial> armorMaterial;
+    public final ItemStackTemplate glovesStack;
+    public final TagKey<Item> armorTag;
 
-    public GlovesLootModifier(LootItemCondition[] conditionsIn, ItemStack glovesStack, Holder<ArmorMaterial> armorMaterial) {
-        super(conditionsIn);
+    public GlovesLootModifier(Optional<Holder<LootItemCondition>> conditionsIn, int priority, ItemStackTemplate glovesStack, TagKey<Item> armorTag) {
+        super(conditionsIn, priority);
         this.glovesStack = glovesStack;
-        this.armorMaterial = armorMaterial;
+        this.armorTag = armorTag;
     }
 
     /**
-     * Randomly replaces {@link ArmorItem} {@link ItemStack}s in loot with gloves of the equivalent {@link ArmorMaterials} with a 1/10 chance for each armor item,
+     * Randomly replaces armor {@link ItemStack}s in loot with gloves of the equivalent {@link ArmorMaterials} with a 1/10 chance for each armor item,
      * with the gloves provided by {@link GlovesLootModifier#glovesStack} and the material provided by {@link GlovesLootModifier#armorMaterial}.
      * During replacement, the gloves will retain any enchantments from the respective armor piece.
      *
@@ -59,16 +59,16 @@ public class GlovesLootModifier extends LootModifier {
     protected ObjectArrayList<ItemStack> doApply(ObjectArrayList<ItemStack> lootStacks, LootContext context) {
         Level level = context.getLevel();
         RandomSource randomSource = context.getRandom();
-        Vec3 vec3 = context.getParamOrNull(LootContextParams.ORIGIN);
-        Entity entity = context.getParamOrNull(LootContextParams.THIS_ENTITY);
+        Vec3 vec3 = context.getOptional(LootContextParams.ORIGIN);
+        Entity entity = context.getOptional(LootContextParams.THIS_ENTITY);
         if (vec3 != null && entity != null) {
             BlockPos pos = BlockPos.containing(vec3);
             BlockEntity blockEntity = context.getLevel().getBlockEntity(pos);
             if (blockEntity instanceof BaseContainerBlockEntity) {
-                List<ItemStack> armorItems = lootStacks.stream().filter((itemStack) -> itemStack.getItem() instanceof ArmorItem armorItem && armorItem.getMaterial().equals(this.armorMaterial)).toList();
+                List<ItemStack> armorItems = lootStacks.stream().filter((itemStack) -> itemStack.has(DataComponents.EQUIPPABLE) && itemStack.is(this.armorTag)).toList();
                 for (ItemStack armorStack : armorItems) {
                     if (randomSource.nextInt(4) < 1) {
-                        ItemStack gloves = this.glovesStack.copy();
+                        ItemStack gloves = this.glovesStack.create();
                         int cost = 0;
                         boolean isTreasure = false;
                         for (Object2IntMap.Entry<Holder<Enchantment>> enchantmentInfo : armorStack.nitrogen_fabric$getAllEnchantments(level.registryAccess().lookupOrThrow(Registries.ENCHANTMENT))) {

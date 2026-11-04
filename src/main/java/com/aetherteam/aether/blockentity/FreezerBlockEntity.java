@@ -1,5 +1,8 @@
 package com.aetherteam.aether.blockentity;
 
+import com.aetherteam.nitrogen.fabric.registries.datamaps.DataMapType;
+import net.minecraft.world.item.Item;
+import com.aetherteam.aether.data.resources.AetherFuel;
 import com.aetherteam.aether.Aether;
 import com.aetherteam.aether.data.resources.registries.AetherDataMaps;
 import com.aetherteam.aether.inventory.menu.FreezerMenu;
@@ -28,13 +31,7 @@ public class FreezerBlockEntity extends AbstractAetherFurnaceBlockEntity {
     }
 
     @Override
-    protected int getBurnDuration(ItemStack fuelStack) {
-        if (!fuelStack.isEmpty()) {
-            var datamap = fuelStack.getItemHolder().nitrogen_fabric$getData(AetherDataMaps.FREEZER_FUEL);
-            if (datamap != null) {
-                return datamap.burnTime();
-            }
-        }
-        return 0;
+    protected DataMapType<Item, AetherFuel> getFuelDataMap() {
+        return AetherDataMaps.FREEZER_FUEL;
     }
 }

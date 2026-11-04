@@ -1,26 +1,27 @@
 package com.aetherteam.aether.client.renderer.player.layer;
 
+import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import com.aetherteam.aether.Aether;
-import com.aetherteam.aether.attachment.AetherDataAttachments;
 import com.aetherteam.aether.client.renderer.AetherModelLayers;
+import com.aetherteam.aether.client.renderer.AetherRenderStateModifiers;
 import com.aetherteam.aether.client.renderer.entity.model.ValkyrieWingsModel;
-import com.aetherteam.aether.item.EquipmentUtil;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
-import net.minecraft.client.model.PlayerModel;
+import net.minecraft.client.model.player.PlayerModel;
 import net.minecraft.client.model.geom.EntityModelSet;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
+import net.minecraft.client.renderer.entity.state.AvatarRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.player.Player;
 
-public class PlayerWingsLayer<T extends Player, M extends PlayerModel<T>> extends RenderLayer<T, M> {
-    private static final ResourceLocation VALKYRIE_TEXTURE = ResourceLocation.fromNamespaceAndPath(Aether.MODID, "textures/entity/mobs/valkyrie/valkyrie.png");
-    private final ValkyrieWingsModel<Player> wings;
+import java.util.Objects;
+
+public class PlayerWingsLayer<T extends AvatarRenderState, M extends PlayerModel> extends RenderLayer<T, M> {
+    private static final Identifier VALKYRIE_TEXTURE = Identifier.fromNamespaceAndPath(Aether.MODID, "textures/entity/mobs/valkyrie/valkyrie.png");
+    private final ValkyrieWingsModel<AvatarRenderState> wings;
 
     public PlayerWingsLayer(RenderLayerParent<T, M> entityRenderer, EntityModelSet modelSet) {
         super(entityRenderer);
@@ -31,23 +32,20 @@ public class PlayerWingsLayer<T extends Player, M extends PlayerModel<T>> extend
      * Renders wings for the player when wearing Valkyrie Armor.
      *
      * @param poseStack       The rendering {@link PoseStack}.
-     * @param buffer          The rendering {@link MultiBufferSource}.
+     * @param submitNodeCollector          The rendering {@link SubmitNodeCollector}.
      * @param packedLight     The {@link Integer} for the packed lighting for rendering.
      * @param entity          The entity.
-     * @param limbSwing       The {@link Float} for the limb swing rotation.
-     * @param limbSwingAmount The {@link Float} for the limb swing amount.
-     * @param partialTicks    The {@link Float} for the game's partial ticks.
-     * @param ageInTicks      The {@link Float} for the entity's age in ticks.
      * @param netHeadYaw      The {@link Float} for the head yaw rotation.
      * @param headPitch       The {@link Float} for the head pitch rotation.
      */
     @Override
-    public void render(PoseStack poseStack, MultiBufferSource buffer, int packedLight, T entity, float limbSwing, float limbSwingAmount, float partialTicks, float ageInTicks, float netHeadYaw, float headPitch) {
-        if (EquipmentUtil.hasFullValkyrieSet(entity)) {
-            var data = entity.getAttachedOrCreate(AetherDataAttachments.AETHER_PLAYER);
-            this.setupWingRotation(entity, Mth.lerp(partialTicks, data.getWingRotationO(), data.getWingRotation()));
-            VertexConsumer consumer = buffer.getBuffer(RenderType.entityCutoutNoCull(VALKYRIE_TEXTURE));
-            this.wings.renderToBuffer(poseStack, consumer, packedLight, OverlayTexture.NO_OVERLAY);
+    public void submit(PoseStack poseStack, SubmitNodeCollector submitNodeCollector, int packedLight, T entity, float netHeadYaw, float headPitch) {
+        boolean hasFullValkyrieSet = entity.getRenderDataOrDefault(AetherRenderStateModifiers.HAS_FULL_VALKYRIE_ARMOR, false);
+        int wingRotationO = entity.getRenderDataOrDefault(AetherRenderStateModifiers.VALKYRIE_WING_ROTATION_OLD, 0);
+        int wingRotation = entity.getRenderDataOrDefault(AetherRenderStateModifiers.VALKYRIE_WING_ROTATION, 0);
+        if (hasFullValkyrieSet) {
+            this.setupWingRotation(entity, Mth.lerp(entity.partialTick, wingRotationO, wingRotation));
+            submitNodeCollector.submitModel(this.wings, entity, poseStack, RenderTypes.entityCutout(VALKYRIE_TEXTURE), packedLight, OverlayTexture.NO_OVERLAY, -1, null, entity.outlineColor);
         }
     }
 
@@ -58,7 +56,12 @@ public class PlayerWingsLayer<T extends Player, M extends PlayerModel<T>> extend
      * @param sinage The {@link Float} for the rotation value.
      */
     public void setupWingRotation(T entity, float sinage) {
-        if (!entity.onGround() && !entity.nitrogen_fabric$isInFluidType() && (entity.getVehicle() != null && !entity.getVehicle().onGround())) {
+        boolean onGround = entity.getRenderDataOrDefault(AetherRenderStateModifiers.ON_GROUND, false);
+        boolean isInFluidType = entity.getRenderDataOrDefault(AetherRenderStateModifiers.IN_FLUID_TYPE, false);
+        boolean hasVehicle = entity.getRenderDataOrDefault(AetherRenderStateModifiers.HAS_VEHICLE, false);
+        boolean hasVehicleOnGround = entity.getRenderDataOrDefault(AetherRenderStateModifiers.HAS_VEHICLE_ON_GROUND, false);
+
+        if (!onGround && !isInFluidType && (hasVehicle && !hasVehicleOnGround)) {
             sinage *= 1.5F;
         } else {
             sinage *= 0.3F;
@@ -69,7 +72,7 @@ public class PlayerWingsLayer<T extends Player, M extends PlayerModel<T>> extend
         this.wings.leftWing.yRot = -0.4F;
         this.wings.leftWing.zRot = -0.125F;
 
-        if (entity.isCrouching()) {
+        if (entity.isCrouching) {
             this.wings.rightWing.xRot = 0.45F;
             this.wings.rightWing.y = 3.33F;
             this.wings.rightWing.z = 3.388F;
@@ -82,8 +85,8 @@ public class PlayerWingsLayer<T extends Player, M extends PlayerModel<T>> extend
         }
 
         this.wings.rightWing.yRot -= Mth.sin(sinage) / 6.0F;
-        this.wings.rightWing.zRot -= Mth.cos(sinage) / (entity.onGround() || entity.nitrogen_fabric$isInFluidType() ? 8.0F : 3.0F);
+        this.wings.rightWing.zRot -= Mth.cos(sinage) / (onGround || isInFluidType ? 8.0F : 3.0F);
         this.wings.leftWing.yRot += Mth.sin(sinage) / 6.0F;
-        this.wings.leftWing.zRot += Mth.cos(sinage) / (entity.onGround() || entity.nitrogen_fabric$isInFluidType() ? 8.0F : 3.0F);
+        this.wings.leftWing.zRot += Mth.cos(sinage) / (onGround || isInFluidType ? 8.0F : 3.0F);
     }
 }

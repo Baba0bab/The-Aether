@@ -1,0 +1,14 @@
+{
+  "order": 304,
+  "size": 1,
+  "icon": "aether:slot/shield",
+  "use_native_gui": false,
+  "render_toggle": true,
+  "validators": [
+    "curios:tag"
+  ],
+  "entities": [
+    "minecraft:player",
+    "minecraft:armor_stand"
+  ]
+}

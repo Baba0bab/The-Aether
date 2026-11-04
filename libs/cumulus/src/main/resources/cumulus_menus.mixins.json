@@ -1,0 +1,36 @@
+{
+  "required": true,
+  "package": "com.aetherteam.cumulus.mixin.mixins",
+  "compatibilityLevel": "JAVA_25",
+  "mixins": [],
+  "client": [
+    "client.CameraMixin",
+    "client.ConnectScreenMixin",
+    "client.CreateWorldScreenMixin",
+    "client.EntityRendererMixin",
+    "client.EntityRenderStateMixin",
+    "client.FaviconTextureMixin",
+    "client.MinecraftMixin",
+    "client.MinecraftServerMixin",
+    "client.MusicManagerMixin",
+    "client.PanoramaRendererMixin",
+    "client.SelectWorldScreenMixin",
+    "client.TitleScreenMixin",
+    "client.WorldListEntryMixin",
+    "client.WorldOpenFlowsMixin",
+    "client.accessor.ButtonBuilderAccessor",
+    "client.accessor.EntityRendererAccessor",
+    "client.accessor.GameRendererAccessor",
+    "client.accessor.GuiRendererAccessor",
+    "client.accessor.MinecraftAccessor",
+    "client.accessor.SplashRendererAccessor",
+    "client.accessor.TitleScreenAccessor",
+    "common.DirectoryLockMixin",
+    "common.accessor.MinecraftServerAccessor"
+  ],
+  "server": [],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
+

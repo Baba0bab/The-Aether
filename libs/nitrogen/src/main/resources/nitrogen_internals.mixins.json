@@ -1,0 +1,12 @@
+{
+  "required": true,
+  "package": "com.aetherteam.nitrogen.mixin.mixins",
+  "minVersion": "0.8",
+  "compatibilityLevel": "JAVA_25",
+  "mixins": [
+    "LiquidBlockAccessor"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

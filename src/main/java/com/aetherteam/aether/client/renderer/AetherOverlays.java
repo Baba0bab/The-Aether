@@ -1,5 +1,7 @@
 package com.aetherteam.aether.client.renderer;
 
+import net.minecraft.client.renderer.RenderPipelines;
+import org.joml.Matrix3x2fStack;
 import com.aetherteam.aether.Aether;
 import com.aetherteam.aether.AetherConfig;
 import com.aetherteam.aether.api.registers.MoaType;
@@ -14,18 +16,19 @@ import com.aetherteam.aether.item.AetherItems;
 import com.aetherteam.aether.mixin.mixins.client.accessor.GuiAccessor;
 import com.aetherteam.aether.mixin.mixins.client.accessor.HeartTypeAccessor;
 import com.mojang.blaze3d.platform.Window;
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
-import net.minecraft.Util;
+import net.minecraft.util.Util;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.Gui;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.Hud;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
+import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
@@ -44,44 +47,44 @@ import java.util.List;
 import java.util.Set;
 
 public class AetherOverlays {
-    private static final ResourceLocation TEXTURE_INEBRIATION_VIGNETTE = ResourceLocation.fromNamespaceAndPath(Aether.MODID, "textures/blur/inebriation_vignette.png");
-    private static final ResourceLocation TEXTURE_REMEDY_VIGNETTE = ResourceLocation.fromNamespaceAndPath(Aether.MODID, "textures/blur/remedy_vignette.png");
-    private static final ResourceLocation TEXTURE_SHIELD_OF_REPULSION_VIGNETTE = ResourceLocation.fromNamespaceAndPath(Aether.MODID, "textures/blur/shield_of_repulsion_vignette.png");
+    private static final Identifier TEXTURE_INEBRIATION_VIGNETTE = Identifier.fromNamespaceAndPath(Aether.MODID, "textures/blur/inebriation_vignette.png");
+    private static final Identifier TEXTURE_REMEDY_VIGNETTE = Identifier.fromNamespaceAndPath(Aether.MODID, "textures/blur/remedy_vignette.png");
+    private static final Identifier TEXTURE_SHIELD_OF_REPULSION_VIGNETTE = Identifier.fromNamespaceAndPath(Aether.MODID, "textures/blur/shield_of_repulsion_vignette.png");
 
-    private static final ResourceLocation TEXTURE_COOLDOWN_BAR = ResourceLocation.fromNamespaceAndPath(Aether.MODID, "hud/cooldown");
-    private static final ResourceLocation TEXTURE_COOLDOWN_BAR_BACKGROUND = ResourceLocation.fromNamespaceAndPath(Aether.MODID, "hud/cooldown_background");
+    private static final Identifier TEXTURE_COOLDOWN_BAR = Identifier.fromNamespaceAndPath(Aether.MODID, "hud/cooldown");
+    private static final Identifier TEXTURE_COOLDOWN_BAR_BACKGROUND = Identifier.fromNamespaceAndPath(Aether.MODID, "hud/cooldown_background");
 
-    public static final ResourceLocation TEXTURE_DEFAULT_JUMPS = ResourceLocation.fromNamespaceAndPath(Aether.MODID, "hud/jumps");
+    public static final Identifier TEXTURE_DEFAULT_JUMPS = Identifier.fromNamespaceAndPath(Aether.MODID, "hud/jumps");
 
-    private static final ResourceLocation TEXTURE_LIFE_SHARD_FULL = ResourceLocation.fromNamespaceAndPath(Aether.MODID, "hud/heart/shard_full");
-    private static final ResourceLocation TEXTURE_LIFE_SHARD_HALF = ResourceLocation.fromNamespaceAndPath(Aether.MODID, "hud/heart/shard_half");
-    private static final ResourceLocation TEXTURE_LIFE_SHARD_FULL_BLINKING = ResourceLocation.fromNamespaceAndPath(Aether.MODID, "hud/heart/shard_full_blinking");
-    private static final ResourceLocation TEXTURE_LIFE_SHARD_HALF_BLINKING = ResourceLocation.fromNamespaceAndPath(Aether.MODID, "hud/heart/shard_half_blinkin");
-    private static final ResourceLocation TEXTURE_LIFE_SHARD_POISONED_FULL = ResourceLocation.fromNamespaceAndPath(Aether.MODID, "hud/heart/shard_poisoned_full");
-    private static final ResourceLocation TEXTURE_LIFE_SHARD_POISONED_HALF = ResourceLocation.fromNamespaceAndPath(Aether.MODID, "hud/heart/shard_poisoned_half");
-    private static final ResourceLocation TEXTURE_LIFE_SHARD_POISONED_FULL_BLINKING = ResourceLocation.fromNamespaceAndPath(Aether.MODID, "hud/heart/shard_poisoned_full_blinking");
-    private static final ResourceLocation TEXTURE_LIFE_SHARD_POISONED_HALF_BLINKING = ResourceLocation.fromNamespaceAndPath(Aether.MODID, "hud/heart/shard_poisoned_half_blinking");
-    private static final ResourceLocation TEXTURE_LIFE_SHARD_WITHERED_FULL = ResourceLocation.fromNamespaceAndPath(Aether.MODID, "hud/heart/shard_withered_full");
-    private static final ResourceLocation TEXTURE_LIFE_SHARD_WITHERED_HALF = ResourceLocation.fromNamespaceAndPath(Aether.MODID, "hud/heart/shard_withered_half");
-    private static final ResourceLocation TEXTURE_LIFE_SHARD_WITHERED_FULL_BLINKING = ResourceLocation.fromNamespaceAndPath(Aether.MODID, "hud/heart/shard_withered_full_blinking");
-    private static final ResourceLocation TEXTURE_LIFE_SHARD_WITHERED_HALF_BLINKING = ResourceLocation.fromNamespaceAndPath(Aether.MODID, "hud/heart/shard_withered_half_blinking");
-    private static final ResourceLocation TEXTURE_LIFE_SHARD_ABSORBING_FULL = ResourceLocation.fromNamespaceAndPath(Aether.MODID, "hud/heart/shard_absorbing_full");
-    private static final ResourceLocation TEXTURE_LIFE_SHARD_ABSORBING_HALF = ResourceLocation.fromNamespaceAndPath(Aether.MODID, "hud/heart/shard_absorbing_half");
-    private static final ResourceLocation TEXTURE_LIFE_SHARD_FROZEN_FULL = ResourceLocation.fromNamespaceAndPath(Aether.MODID, "hud/heart/shard_frozen_full");
-    private static final ResourceLocation TEXTURE_LIFE_SHARD_FROZEN_HALF = ResourceLocation.fromNamespaceAndPath(Aether.MODID, "hud/heart/shard_frozen_half");
+    private static final Identifier TEXTURE_LIFE_SHARD_FULL = Identifier.fromNamespaceAndPath(Aether.MODID, "hud/heart/shard_full");
+    private static final Identifier TEXTURE_LIFE_SHARD_HALF = Identifier.fromNamespaceAndPath(Aether.MODID, "hud/heart/shard_half");
+    private static final Identifier TEXTURE_LIFE_SHARD_FULL_BLINKING = Identifier.fromNamespaceAndPath(Aether.MODID, "hud/heart/shard_full_blinking");
+    private static final Identifier TEXTURE_LIFE_SHARD_HALF_BLINKING = Identifier.fromNamespaceAndPath(Aether.MODID, "hud/heart/shard_half_blinkin");
+    private static final Identifier TEXTURE_LIFE_SHARD_POISONED_FULL = Identifier.fromNamespaceAndPath(Aether.MODID, "hud/heart/shard_poisoned_full");
+    private static final Identifier TEXTURE_LIFE_SHARD_POISONED_HALF = Identifier.fromNamespaceAndPath(Aether.MODID, "hud/heart/shard_poisoned_half");
+    private static final Identifier TEXTURE_LIFE_SHARD_POISONED_FULL_BLINKING = Identifier.fromNamespaceAndPath(Aether.MODID, "hud/heart/shard_poisoned_full_blinking");
+    private static final Identifier TEXTURE_LIFE_SHARD_POISONED_HALF_BLINKING = Identifier.fromNamespaceAndPath(Aether.MODID, "hud/heart/shard_poisoned_half_blinking");
+    private static final Identifier TEXTURE_LIFE_SHARD_WITHERED_FULL = Identifier.fromNamespaceAndPath(Aether.MODID, "hud/heart/shard_withered_full");
+    private static final Identifier TEXTURE_LIFE_SHARD_WITHERED_HALF = Identifier.fromNamespaceAndPath(Aether.MODID, "hud/heart/shard_withered_half");
+    private static final Identifier TEXTURE_LIFE_SHARD_WITHERED_FULL_BLINKING = Identifier.fromNamespaceAndPath(Aether.MODID, "hud/heart/shard_withered_full_blinking");
+    private static final Identifier TEXTURE_LIFE_SHARD_WITHERED_HALF_BLINKING = Identifier.fromNamespaceAndPath(Aether.MODID, "hud/heart/shard_withered_half_blinking");
+    private static final Identifier TEXTURE_LIFE_SHARD_ABSORBING_FULL = Identifier.fromNamespaceAndPath(Aether.MODID, "hud/heart/shard_absorbing_full");
+    private static final Identifier TEXTURE_LIFE_SHARD_ABSORBING_HALF = Identifier.fromNamespaceAndPath(Aether.MODID, "hud/heart/shard_absorbing_half");
+    private static final Identifier TEXTURE_LIFE_SHARD_FROZEN_FULL = Identifier.fromNamespaceAndPath(Aether.MODID, "hud/heart/shard_frozen_full");
+    private static final Identifier TEXTURE_LIFE_SHARD_FROZEN_HALF = Identifier.fromNamespaceAndPath(Aether.MODID, "hud/heart/shard_frozen_half");
 
     /**
      * @see AetherClient#eventSetup()
      */
-    public static void registerOverlays() {
-        HudRenderCallback.EVENT.register((guiGraphics, partialTicks) -> {
+    public static void registerOverlays(RegisterGuiLayersEvent event) {
+        event.registerAboveAll(Identifier.fromNamespaceAndPath(Aether.MODID, "aether_portal_overlay"), (guiGraphics, partialTicks) -> {
             Minecraft minecraft = Minecraft.getInstance();
             LocalPlayer player = minecraft.player;
             if (player != null) {
                 renderAetherPortalOverlay(guiGraphics, minecraft, player.getAttachedOrCreate(AetherDataAttachments.AETHER_PLAYER), partialTicks);
             }
         });
-        HudRenderCallback.EVENT.register((guiGraphics, partialTicks) -> {
+        event.registerAboveAll(Identifier.fromNamespaceAndPath(Aether.MODID, "inebriation_vignette"), (guiGraphics, partialTicks) -> {
             Minecraft minecraft = Minecraft.getInstance();
             Window window = minecraft.getWindow();
             LocalPlayer player = minecraft.player;
@@ -89,7 +92,7 @@ public class AetherOverlays {
                 renderInebriationOverlay(guiGraphics, minecraft, window, player);
             }
         });
-        HudRenderCallback.EVENT.register((guiGraphics, partialTicks) -> {
+        event.registerAboveAll(Identifier.fromNamespaceAndPath(Aether.MODID, "remedy_vignette"), (guiGraphics, partialTicks) -> {
             Minecraft minecraft = Minecraft.getInstance();
             Window window = minecraft.getWindow();
             LocalPlayer player = minecraft.player;
@@ -97,7 +100,7 @@ public class AetherOverlays {
                 renderRemedyOverlay(guiGraphics, minecraft, window, player);
             }
         });
-        HudRenderCallback.EVENT.register((guiGraphics, partialTicks) -> {
+        event.registerAboveAll(Identifier.fromNamespaceAndPath(Aether.MODID, "shield_of_repulsion_vignette"), (guiGraphics, partialTicks) -> {
             Minecraft minecraft = Minecraft.getInstance();
             Window window = minecraft.getWindow();
             LocalPlayer player = minecraft.player;
@@ -105,7 +108,7 @@ public class AetherOverlays {
                 renderRepulsionOverlay(guiGraphics, minecraft, window, player);
             }
         });
-        HudRenderCallback.EVENT.register((guiGraphics, partialTicks) -> {
+        event.registerAboveAll(Identifier.fromNamespaceAndPath(Aether.MODID, "hammer_cooldown"), (guiGraphics, partialTicks) -> {
             Minecraft minecraft = Minecraft.getInstance();
             Window window = minecraft.getWindow();
             LocalPlayer player = minecraft.player;
@@ -113,7 +116,7 @@ public class AetherOverlays {
                 renderHammerCooldownOverlay(guiGraphics, minecraft, window, player);
             }
         });
-        HudRenderCallback.EVENT.register((guiGraphics, partialTicks) -> {
+        event.registerAboveAll(Identifier.fromNamespaceAndPath(Aether.MODID, "moa_jumps"), (guiGraphics, partialTicks) -> {
             Minecraft minecraft = Minecraft.getInstance();
             Window window = minecraft.getWindow();
             LocalPlayer player = minecraft.player;
@@ -121,25 +124,24 @@ public class AetherOverlays {
                 renderMoaJumps(guiGraphics, window, player);
             }
         });
-        // Not much to do here besides a injection!!!
-//        event.registerAbove(ResourceLocation.withDefaultNamespace("player_health"), ResourceLocation.fromNamespaceAndPath(Aether.MODID, "silver_life_shard_hearts"), (guiGraphics, partialTicks) -> {
-//            Minecraft minecraft = Minecraft.getInstance();
-//            Window window = minecraft.getWindow();
-//            Gui gui = minecraft.gui;
-//            LocalPlayer player = minecraft.player;
-//            if (player != null) {
-//                renderSilverLifeShardHearts(guiGraphics, minecraft, window, gui, player);
-//            }
-//        });
+        event.registerAbove(Identifier.withDefaultNamespace("player_health"), Identifier.fromNamespaceAndPath(Aether.MODID, "silver_life_shard_hearts"), (guiGraphics, partialTicks) -> {
+            Minecraft minecraft = Minecraft.getInstance();
+            Window window = minecraft.getWindow();
+            Hud gui = minecraft.gui.hud;
+            LocalPlayer player = minecraft.player;
+            if (player != null) {
+                renderSilverLifeShardHearts(guiGraphics, minecraft, window, gui, player);
+            }
+        });
     }
 
 
     /**
-     * [CODE COPY] - {@link Gui#renderPortalOverlay(GuiGraphics, float)}.<br><br>
+     * [CODE COPY] - Hud#extractPortalOverlay.<br><br>
      * Warning for "deprecation" is suppressed because vanilla calls {@link net.minecraft.client.renderer.block.BlockModelShaper#getParticleIcon(BlockState)} just fine.
      */
-    @SuppressWarnings("deprecation")
-    private static void renderAetherPortalOverlay(GuiGraphics guiGraphics, Minecraft minecraft, AetherPlayerAttachment handler, DeltaTracker partialTicks) {
+    private static void renderAetherPortalOverlay(GuiGraphicsExtractor guiGraphics, Minecraft minecraft, AetherPlayerAttachment handler, DeltaTracker partialTicks) {
+        if (minecraft.gui.hud.isHidden()) return;
         float timeInPortal = Mth.lerp(partialTicks.getGameTimeDeltaPartialTick(false), handler.getOldPortalIntensity(), handler.getPortalIntensity());
         if (timeInPortal > 0.0F) {
             if (timeInPortal < 1.0F) {
@@ -148,29 +150,23 @@ public class AetherOverlays {
                 timeInPortal = timeInPortal * 0.8F + 0.2F;
             }
 
-            RenderSystem.disableDepthTest();
-            RenderSystem.depthMask(false);
-            RenderSystem.enableBlend();
-            guiGraphics.setColor(1.0F, 1.0F, 1.0F, timeInPortal);
-            TextureAtlasSprite textureatlassprite = minecraft.getBlockRenderer().getBlockModelShaper().getParticleIcon(AetherBlocks.AETHER_PORTAL.get().defaultBlockState());
-            guiGraphics.blit(0, 0, -90, guiGraphics.guiWidth(), guiGraphics.guiHeight(), textureatlassprite);
-            RenderSystem.disableBlend();
-            RenderSystem.depthMask(true);
-            RenderSystem.enableDepthTest();
-            guiGraphics.setColor(1.0F, 1.0F, 1.0F, 1.0F);
+            int i = ARGB.white(timeInPortal);
+            TextureAtlasSprite textureatlassprite = minecraft.getModelManager().getBlockStateModelSet().getParticleMaterial(AetherBlocks.AETHER_PORTAL.get().defaultBlockState()).sprite();
+            guiGraphics.blitSprite(RenderPipelines.GUI_TEXTURED, textureatlassprite, 0, 0, guiGraphics.guiWidth(), guiGraphics.guiHeight(), i);
         }
     }
 
     /**
      * Renders a purple vignette with pulsing opacity.
      *
-     * @param guiGraphics The {@link GuiGraphics} for rendering.
+     * @param guiGraphics The {@link GuiGraphicsExtractor} for rendering.
      * @param minecraft   The {@link Minecraft} instance.
      * @param window      The game {@link Window}.
      * @param player      The player that has the effect.
      */
-    private static void renderInebriationOverlay(GuiGraphics guiGraphics, Minecraft minecraft, Window window, Player player) {
-        MobEffectInstance inebriation = player.getEffect(AetherEffects.INEBRIATION.nitrogen_fabric$getDelegate());
+    private static void renderInebriationOverlay(GuiGraphicsExtractor guiGraphics, Minecraft minecraft, Window window, Player player) {
+        if (minecraft.gui.hud.isHidden()) return;
+        MobEffectInstance inebriation = player.getEffect(AetherEffects.INEBRIATION);
         double effectScale = minecraft.options.screenEffectScale().get();
         if (inebriation != null) {
             float inebriationDuration = (float) (inebriation.getDuration() % 50) / 50;
@@ -182,13 +178,14 @@ public class AetherOverlays {
     /**
      * Renders a green vignette with a gradually fading opacity.
      *
-     * @param guiGraphics The {@link GuiGraphics} for rendering.
+     * @param guiGraphics The {@link GuiGraphicsExtractor} for rendering.
      * @param minecraft   The {@link Minecraft} instance.
      * @param window      The game {@link Window}.
      * @param player      The player that has the effect.
      */
-    private static void renderRemedyOverlay(GuiGraphics guiGraphics, Minecraft minecraft, Window window, Player player) {
-        MobEffectInstance remedy = player.getEffect(AetherEffects.REMEDY.nitrogen_fabric$getDelegate());
+    private static void renderRemedyOverlay(GuiGraphicsExtractor guiGraphics, Minecraft minecraft, Window window, Player player) {
+        if (minecraft.gui.hud.isHidden()) return;
+        MobEffectInstance remedy = player.getEffect(AetherEffects.REMEDY);
         double effectScale = minecraft.options.screenEffectScale().get();
         if (remedy != null) {
             int remedyStartDuration = player.getAttachedOrCreate(AetherDataAttachments.AETHER_PLAYER).getRemedyStartDuration();
@@ -203,12 +200,13 @@ public class AetherOverlays {
     /**
      * Renders a blue vignette with a gradually fading opacity.
      *
-     * @param guiGraphics The {@link GuiGraphics} for rendering.
+     * @param guiGraphics The {@link GuiGraphicsExtractor} for rendering.
      * @param minecraft   The {@link Minecraft} instance.
      * @param window      The game {@link Window}.
      * @param player      The player.
      */
-    private static void renderRepulsionOverlay(GuiGraphics guiGraphics, Minecraft minecraft, Window window, Player player) {
+    private static void renderRepulsionOverlay(GuiGraphicsExtractor guiGraphics, Minecraft minecraft, Window window, Player player) {
+        if (minecraft.gui.hud.isHidden()) return;
         var handler = player.getAttachedOrCreate(AetherDataAttachments.AETHER_PLAYER);
         int projectileImpactedMaximum = handler.getProjectileImpactedMaximum();
         int projectileImpactedTimer = handler.getProjectileImpactedTimer();
@@ -219,40 +217,33 @@ public class AetherOverlays {
         }
     }
 
-    private static void renderVignette(GuiGraphics guiGraphics, Window window, double effectScale, float alpha, ResourceLocation resource) {
-        PoseStack poseStack = guiGraphics.pose();
-        poseStack.pushPose();
+    private static void renderVignette(GuiGraphicsExtractor guiGraphics, Window window, double effectScale, float alpha, Identifier resource) {
+        Matrix3x2fStack poseStack = guiGraphics.pose();
+        poseStack.pushMatrix();
         alpha *= (float) Math.sqrt(effectScale);
-        RenderSystem.disableDepthTest();
-        RenderSystem.depthMask(false);
-        RenderSystem.enableBlend();
-        guiGraphics.setColor(1.0F, 1.0F, 1.0F, alpha);
-        guiGraphics.blit(resource, 0, 0, -90, 0.0F, 0.0F, window.getGuiScaledWidth(), window.getGuiScaledHeight(), window.getGuiScaledWidth(), window.getGuiScaledHeight());
-        guiGraphics.setColor(1.0F, 1.0F, 1.0F, 1.0F);
-        RenderSystem.disableBlend();
-        RenderSystem.depthMask(true);
-        RenderSystem.enableDepthTest();
-        poseStack.popPose();
+        int i = ARGB.white(alpha);
+        guiGraphics.blit(RenderPipelines.GUI_TEXTURED, resource, 0, 0, 0.0F, 0.0F, window.getGuiScaledWidth(), window.getGuiScaledHeight(), window.getGuiScaledWidth(), window.getGuiScaledHeight(), i);
+        poseStack.popMatrix();
     }
 
     /**
      * Renders a boss-esque bar at the top of the screen for the Hammer of Kingbdogz' item cooldown.
      *
-     * @param guiGraphics The {@link GuiGraphics} for rendering.
+     * @param guiGraphics The {@link GuiGraphicsExtractor} for rendering.
      * @param minecraft   The {@link Minecraft} instance.
      * @param window      The game {@link Window}.
      * @param player      The {@link LocalPlayer}.
      */
-    private static void renderHammerCooldownOverlay(GuiGraphics guiGraphics, Minecraft minecraft, Window window, LocalPlayer player) {
-        if (AetherConfig.CLIENT.enable_hammer_cooldown_overlay.get()) {
+    private static void renderHammerCooldownOverlay(GuiGraphicsExtractor guiGraphics, Minecraft minecraft, Window window, LocalPlayer player) {
+        if (AetherConfig.CLIENT.enable_hammer_cooldown_overlay.get() && !minecraft.gui.hud.isHidden()) {
             Inventory inventory = player.getInventory();
             if (inventory.contains((itemStack) -> itemStack.is(AetherItems.HAMMER_OF_KINGBDOGZ.get()))) {
-                List<ItemStack> items = new ArrayList<>(inventory.items);
-                items.addAll(inventory.offhand);
+                List<ItemStack> items = new ArrayList<>(inventory.getNonEquipmentItems());
+                items.add(inventory.getItem(Inventory.SLOT_OFFHAND));
                 for (ItemStack itemStack : items) {
                     Item item = itemStack.getItem();
                     if (item == AetherItems.HAMMER_OF_KINGBDOGZ.get()) {
-                        float cooldownPercent = player.getCooldowns().getCooldownPercent(item, 0.0F);
+                        float cooldownPercent = player.getCooldowns().getCooldownPercent(itemStack, 0.0F);
                         if (cooldownPercent > 0.0F) {
                             if (player.getMainHandItem().getItem() == item) {
                                 itemStack = player.getMainHandItem();
@@ -260,9 +251,9 @@ public class AetherOverlays {
                                 itemStack = player.getOffhandItem();
                             }
                             String text = itemStack.getHoverName().getString().concat(" ").concat(Component.translatable("aether.hammer_of_kingbdogz_cooldown").getString());
-                            guiGraphics.drawString(minecraft.font, text, (int) ((window.getGuiScaledWidth() / 2.0F) - (minecraft.font.width(text) / 2.0F)), 32, 16777215);
-                            guiGraphics.blitSprite(TEXTURE_COOLDOWN_BAR_BACKGROUND, 128, 8, 0, 0, window.getGuiScaledWidth() / 2 - 64, 42, 128, 8);
-                            guiGraphics.blitSprite(TEXTURE_COOLDOWN_BAR, 128, 8, 0, 0, window.getGuiScaledWidth() / 2 - 64, 42, (int) (cooldownPercent * 128), 8);
+                            guiGraphics.text(minecraft.font, text, (int) ((window.getGuiScaledWidth() / 2.0F) - (minecraft.font.width(text) / 2.0F)), 32, 0xFFFFFFFF);
+                            guiGraphics.blitSprite(RenderPipelines.GUI_TEXTURED, TEXTURE_COOLDOWN_BAR_BACKGROUND, 128, 8, 0, 0, window.getGuiScaledWidth() / 2 - 64, 42, 128, 8);
+                            guiGraphics.blitSprite(RenderPipelines.GUI_TEXTURED, TEXTURE_COOLDOWN_BAR, 128, 8, 0, 0, window.getGuiScaledWidth() / 2 - 64, 42, (int) (cooldownPercent * 128), 8);
                             break;
                         }
                     }
@@ -274,16 +265,16 @@ public class AetherOverlays {
     /**
      * Renders feathers at the top of the screen corresponding to the amount of jumps the currently mounted Moa has.
      *
-     * @param guiGraphics The {@link GuiGraphics} for rendering.
+     * @param guiGraphics The {@link GuiGraphicsExtractor} for rendering.
      * @param window      The game {@link Window}.
      * @param player      The {@link LocalPlayer}.
      */
-    private static void renderMoaJumps(GuiGraphics guiGraphics, Window window, LocalPlayer player) {
-        if (player.getVehicle() instanceof Moa moa) {
+    private static void renderMoaJumps(GuiGraphicsExtractor guiGraphics, Window window, LocalPlayer player) {
+        if (player.getVehicle() instanceof Moa moa && !Minecraft.getInstance().gui.hud.isHidden()) {
             for (int jumpCount = 0; jumpCount < moa.getMaxJumps(); jumpCount++) {
                 int xPos = ((window.getGuiScaledWidth() / 2) + (jumpCount * 8)) - (moa.getMaxJumps() * 8) / 2;
                 int yPos = 18;
-                guiGraphics.blitSprite(appendBackground(jumpCount >= moa.getRemainingJumps(), getMoaJumpTexture(moa, jumpCount)) , xPos, yPos, 9, 11);
+                guiGraphics.blitSprite(RenderPipelines.GUI_TEXTURED, appendBackground(jumpCount >= moa.getRemainingJumps(), getMoaJumpTexture(moa, jumpCount)), xPos, yPos, 9, 11);
             }
         }
     }
@@ -293,11 +284,11 @@ public class AetherOverlays {
      *
      * @param moa        The {@link Moa} being ridden
      * @param count      The current feather being rendered
-     * @return           The {@link ResourceLocation} of the feather that should be rendered
+     * @return           The {@link Identifier} of the feather that should be rendered
      */
-    private static ResourceLocation getMoaJumpTexture(Moa moa, double count) {
-        AttributeInstance instance = moa.getAttribute(AetherAttributes.MOA_MAX_JUMPS.nitrogen_fabric$getDelegate());
-        if(instance != null) {
+    private static Identifier getMoaJumpTexture(Moa moa, double count) {
+        AttributeInstance instance = moa.getAttribute(AetherAttributes.MOA_MAX_JUMPS);
+        if (instance != null) {
             if (count < instance.getBaseValue()) {
                 return getDefaultJumpsTexture(moa.getMoaType());
             }
@@ -324,49 +315,47 @@ public class AetherOverlays {
 
     /**
      * @param type The {@link MoaType} being rendered.
-     * @return The {@link ResourceLocation} of the texture that should be rendered on top of the screen.
+     * @return The {@link Identifier} of the texture that should be rendered on top of the screen.
      * Uses {@link AetherOverlays#TEXTURE_DEFAULT_JUMPS} as a fallback if no other texture has been specified inside the {@link MoaType}
      */
-    public static ResourceLocation getDefaultJumpsTexture(@Nullable MoaType type) {
-        if(type == null)
+    public static Identifier getDefaultJumpsTexture(@Nullable MoaType type) {
+        if (type == null)
             return TEXTURE_DEFAULT_JUMPS;
         else return type.jumpsTexture().isPresent() ? type.jumpsTexture().get() : TEXTURE_DEFAULT_JUMPS;
     }
 
     /**
      * @param background The {@link Boolean} determines the state of the feather being rendered
-     * @param location   The {@link ResourceLocation} of the jump texture being rendered
-     * @return           A {@link ResourceLocation} of the jump texture, with the correct suffix applied.
+     * @param location   The {@link Identifier} of the jump texture being rendered
+     * @return           A {@link Identifier} of the jump texture, with the correct suffix applied.
      */
-    private static ResourceLocation appendBackground(boolean background, ResourceLocation location) {
-        if(background) {
+    private static Identifier appendBackground(boolean background, Identifier location) {
+        if (background) {
             return location.withSuffix("_background");
         }
         else return location;
     }
 
     /**
-     * [CODE COPY] - {@link Gui#renderHealthLevel(GuiGraphics)}.<br><br>
+     * [CODE COPY] - Hud#extractHealthLevel.<br><br>
      * Stripped down to only use what is necessary.<br>
      * Renders silver heart textures over the extra hearts given by Life Shards.
      *
-     * @param guiGraphics The {@link GuiGraphics} for rendering.
+     * @param guiGraphics The {@link GuiGraphicsExtractor} for rendering.
      * @param minecraft   The {@link Minecraft} instance.
      * @param window      The {@link Window} of the screen.
-     * @param gui         The {@link Gui} included in rendering.
+     * @param gui         The {@link Hud} included in rendering.
      * @param player      The {@link LocalPlayer}.
      */
-    public static void renderSilverLifeShardHearts(GuiGraphics guiGraphics, Minecraft minecraft, Window window, Gui gui, LocalPlayer player) {
+    private static void renderSilverLifeShardHearts(GuiGraphicsExtractor guiGraphics, Minecraft minecraft, Window window, Hud gui, LocalPlayer player) {
         GuiAccessor guiAccessor = (GuiAccessor) gui;
-        if (AetherConfig.CLIENT.enable_silver_hearts.get() && minecraft.gameMode.canHurtPlayer()) {
+        if (AetherConfig.CLIENT.enable_silver_hearts.get() && minecraft.gameMode.canHurtPlayer() && !minecraft.gui.hud.isHidden()) {
             var aetherPlayer = player.getAttachedOrCreate(AetherDataAttachments.AETHER_PLAYER);
             if (aetherPlayer.getLifeShardCount() > 0) {
                 AttributeInstance attributeInstance = player.getAttribute(Attributes.MAX_HEALTH);
                 if (attributeInstance != null) {
                     int lastLifeShardHealth = 0;
                     int lastOverallHealth = 0;
-
-                    RenderSystem.enableBlend();
 
                     double overallHealth = attributeInstance.getValue();
                     double maxLifeShardHealth = aetherPlayer.getLifeShardHealthAttributeModifier().amount();
@@ -402,20 +391,18 @@ public class AetherOverlays {
                     }
 
                     renderHearts(guiGraphics, player, gui, left, top, regen, displayOverallHealth, displayLifeShardHealth, maxDefaultHealth, currentLifeShardHealth, rowHeight, absorption, highlight);
-
-                    RenderSystem.disableBlend();
                 }
             }
         }
     }
 
     /**
-     * [CODE COPY] - {@link Gui#renderHearts(GuiGraphics, Player, int, int, int, int, float, int, int, int, boolean)}.<br><br>
+     * [CODE COPY] - Hud#extractHearts.<br><br>
      * Stripped down to only use what is necessary.
      */
-    private static void renderHearts(GuiGraphics guiGraphics, Player player, Gui gui, int left, int top, int regen, float displayOverallHealth, float displayLifeShardHealth, int maxDefaultHealth, int lifeShardHealth, int rowHeight, int absorption, boolean highlight) {
+    private static void renderHearts(GuiGraphicsExtractor guiGraphics, Player player, Hud gui, int left, int top, int regen, float displayOverallHealth, float displayLifeShardHealth, int maxDefaultHealth, int lifeShardHealth, int rowHeight, int absorption, boolean highlight) {
         GuiAccessor guiAccessor = (GuiAccessor) gui;
-        Gui.HeartType heartType = HeartTypeAccessor.callForPlayer(player);
+        Hud.HeartType heartType = HeartTypeAccessor.callForPlayer(player);
         int overallHearts = Mth.ceil((double) displayOverallHealth / 2.0);
         int lifeShardHearts = Mth.ceil((double) displayLifeShardHealth / 2.0);
         int maxDefaultHearts = Mth.ceil((double) maxDefaultHealth / 2.0);
@@ -434,39 +421,39 @@ public class AetherOverlays {
             int selectedContainer = currentHeart * 2;
             if (highlight && selectedContainer < displayLifeShardHealth) {
                 boolean halfHeart = selectedContainer + 1 == displayLifeShardHealth;
-                guiGraphics.blitSprite(AetherOverlays.getSprite(heartType, halfHeart, true), x, y, 9, 9);
+                guiGraphics.blitSprite(RenderPipelines.GUI_TEXTURED, AetherOverlays.getSprite(heartType, halfHeart, true), x, y, 9, 9);
             }
             if (selectedContainer < lifeShardHealth) {
                 boolean halfHeart = selectedContainer + 1 == lifeShardHealth;
-                guiGraphics.blitSprite(AetherOverlays.getSprite(heartType, halfHeart, false), x, y, 9, 9);
+                guiGraphics.blitSprite(RenderPipelines.GUI_TEXTURED, AetherOverlays.getSprite(heartType, halfHeart, false), x, y, 9, 9);
             }
         }
     }
 
-    private static ResourceLocation getSprite(Gui.HeartType heartType, boolean halfHeart, boolean blinking) {
-        if (heartType == Gui.HeartType.NORMAL) {
+    private static Identifier getSprite(Hud.HeartType heartType, boolean halfHeart, boolean blinking) {
+        if (heartType == Hud.HeartType.NORMAL) {
             if (!halfHeart) {
                 return !blinking ? TEXTURE_LIFE_SHARD_FULL : TEXTURE_LIFE_SHARD_FULL_BLINKING;
             } else {
                 return !blinking ? TEXTURE_LIFE_SHARD_HALF : TEXTURE_LIFE_SHARD_HALF_BLINKING;
             }
-        } else if (heartType == Gui.HeartType.POISIONED) {
+        } else if (heartType == Hud.HeartType.POISIONED) {
             if (!halfHeart) {
                 return !blinking ? TEXTURE_LIFE_SHARD_POISONED_FULL : TEXTURE_LIFE_SHARD_POISONED_FULL_BLINKING;
             } else {
                 return !blinking ? TEXTURE_LIFE_SHARD_POISONED_HALF : TEXTURE_LIFE_SHARD_POISONED_HALF_BLINKING;
             }
-        } else if (heartType == Gui.HeartType.WITHERED) {
+        } else if (heartType == Hud.HeartType.WITHERED) {
             if (!halfHeart) {
                 return !blinking ? TEXTURE_LIFE_SHARD_WITHERED_FULL : TEXTURE_LIFE_SHARD_WITHERED_FULL_BLINKING;
             } else {
                 return !blinking ? TEXTURE_LIFE_SHARD_WITHERED_HALF : TEXTURE_LIFE_SHARD_WITHERED_HALF_BLINKING;
             }
-        } else if (heartType == Gui.HeartType.ABSORBING) {
+        } else if (heartType == Hud.HeartType.ABSORBING) {
             return !halfHeart ? TEXTURE_LIFE_SHARD_ABSORBING_FULL : TEXTURE_LIFE_SHARD_ABSORBING_HALF;
-        } else if (heartType == Gui.HeartType.FROZEN) {
+        } else if (heartType == Hud.HeartType.FROZEN) {
             return !halfHeart ? TEXTURE_LIFE_SHARD_FROZEN_FULL : TEXTURE_LIFE_SHARD_FROZEN_HALF;
         }
-        return Gui.HeartType.CONTAINER.getSprite(false, halfHeart, blinking);
+        return Hud.HeartType.CONTAINER.getSprite(false, halfHeart, blinking);
     }
 }

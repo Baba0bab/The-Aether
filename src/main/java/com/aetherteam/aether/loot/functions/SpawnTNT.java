@@ -1,5 +1,7 @@
 package com.aetherteam.aether.loot.functions;
 
+import net.minecraft.core.Holder;
+import java.util.Optional;
 import com.aetherteam.aether.entity.block.TntPresent;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -10,7 +12,6 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.functions.LootItemConditionalFunction;
-import net.minecraft.world.level.storage.loot.functions.LootItemFunctionType;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import net.minecraft.world.phys.Vec3;
@@ -20,7 +21,7 @@ import java.util.List;
 public class SpawnTNT extends LootItemConditionalFunction {
     public static final MapCodec<SpawnTNT> CODEC = RecordCodecBuilder.mapCodec(instance -> commonFields(instance).apply(instance, SpawnTNT::new));
 
-    protected SpawnTNT(List<LootItemCondition> conditions) {
+    protected SpawnTNT(Optional<Holder<LootItemCondition>> conditions) {
         super(conditions);
     }
 
@@ -34,7 +35,7 @@ public class SpawnTNT extends LootItemConditionalFunction {
     @Override
     protected ItemStack run(ItemStack stack, LootContext context) {
         ServerLevel serverLevel = context.getLevel();
-        Vec3 originVec = context.getParamOrNull(LootContextParams.ORIGIN);
+        Vec3 originVec = context.getOptional(LootContextParams.ORIGIN);
         if (originVec != null) {
             TntPresent tnt = new TntPresent(serverLevel, originVec.x(), originVec.y(), originVec.z(), null);
             serverLevel.addFreshEntity(tnt);
@@ -48,7 +49,7 @@ public class SpawnTNT extends LootItemConditionalFunction {
     }
 
     @Override
-    public LootItemFunctionType<SpawnTNT> getType() {
-        return AetherLootFunctions.SPAWN_TNT.get();
+    public MapCodec<SpawnTNT> codec() {
+        return CODEC;
     }
 }

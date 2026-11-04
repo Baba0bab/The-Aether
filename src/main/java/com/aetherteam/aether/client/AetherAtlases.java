@@ -2,40 +2,26 @@ package com.aetherteam.aether.client;
 
 import com.aetherteam.aether.Aether;
 import net.minecraft.client.renderer.Sheets;
-import net.minecraft.client.resources.model.Material;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.client.resources.model.sprite.Material;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.state.properties.WoodType;
+import net.minecraft.client.resources.model.sprite.SpriteId;
 
 public class AetherAtlases {
-    public static Material TREASURE_CHEST_MATERIAL;
-    public static Material TREASURE_CHEST_LEFT_MATERIAL;
-    public static Material TREASURE_CHEST_RIGHT_MATERIAL;
+    public static final SpriteId TREASURE_CHEST_MATERIAL = getChestMaterial("treasure_chest");
+    public static final SpriteId TREASURE_CHEST_LEFT_MATERIAL = getChestMaterial("treasure_chest_left");
+    public static final SpriteId TREASURE_CHEST_RIGHT_MATERIAL = getChestMaterial("treasure_chest_right");
 
-    /**
-     * Need to register these static values here from {@link AetherClient#clientSetup()},
-     * otherwise they'll be loaded too early from static initialization in the field.
-     */
-    public static void registerTreasureChestAtlases() {
-        TREASURE_CHEST_MATERIAL = getChestMaterial("treasure_chest");
-        TREASURE_CHEST_LEFT_MATERIAL = getChestMaterial("treasure_chest_left");
-        TREASURE_CHEST_RIGHT_MATERIAL = getChestMaterial("treasure_chest_right");
-    }
-
-    public static void registerWoodTypeAtlases() {
-//        Sheets.SIGN_MATERIALS.put(AetherWoodTypes.SKYROOT, Sheets.createSignMaterial(AetherWoodTypes.SKYROOT));
-//        Sheets.HANGING_SIGN_MATERIALS.put(AetherWoodTypes.SKYROOT, Sheets.createHangingSignMaterial(AetherWoodTypes.SKYROOT));
-    }
-
-    public static Material getChestMaterial(String chestName) {
-        return new Material(Sheets.CHEST_SHEET, ResourceLocation.fromNamespaceAndPath(Aether.MODID, "entity/tiles/chest/" + chestName));
+    public static SpriteId getChestMaterial(String chestName) {
+        return Sheets.CHEST_MAPPER.apply(Identifier.fromNamespaceAndPath(Aether.MODID, chestName));
     }
 
     private static Material createSignMaterial(WoodType woodType) {
-        return new Material(Sheets.SIGN_SHEET, ResourceLocation.withDefaultNamespace("entity/signs/" + woodType.name()));
+        return new Material(Sheets.SIGN_SHEET, Identifier.withDefaultNamespace("entity/signs/" + woodType.name()));
     }
 
     private static Material createHangingSignMaterial(WoodType woodType) {
-        return new Material(Sheets.SIGN_SHEET, ResourceLocation.withDefaultNamespace("entity/signs/hanging/" + woodType.name()));
+        return new Material(Sheets.SIGN_SHEET, Identifier.withDefaultNamespace("entity/signs/hanging/" + woodType.name()));
     }
 
 }

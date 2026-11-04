@@ -1,5 +1,9 @@
 package com.aetherteam.aether.event.listeners;
 
+import com.aetherteam.nitrogen.fabric.registries.DeferredHolder;
+import net.minecraft.world.item.crafting.RecipeType;
+import com.aetherteam.aether.recipe.AetherRecipeTypes;
+import net.neoforged.neoforge.event.OnDatapackSyncEvent;
 import com.aetherteam.aether.Aether;
 import com.aetherteam.aether.event.FreezeEvent;
 import com.aetherteam.aether.event.PlacementBanEvent;
@@ -10,7 +14,7 @@ import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -21,7 +25,7 @@ import net.minecraft.world.level.block.state.BlockState;
 
 public class RecipeListener {
 
-    public static final ResourceLocation LOWER_PRIORITY = ResourceLocation.fromNamespaceAndPath(Aether.MODID, "lower_priority");
+    public static final Identifier LOWER_PRIORITY = Identifier.fromNamespaceAndPath(Aether.MODID, "lower_priority");
 
     /**
      * @see Aether#eventSetup()
@@ -88,5 +92,14 @@ public class RecipeListener {
         if (!event.isCanceled()) {
             RecipeHooks.banOrConvert(levelAccessor, blockPos);
         }
+    }
+
+    /**
+     * Sends the Aether's recipes to clients, so that they can be displayed by recipe viewers.
+     *
+     * @see com.aetherteam.aether.client.AetherClientRecipes
+     */
+    public static void syncRecipes(OnDatapackSyncEvent event) {
+        event.sendRecipes(AetherRecipeTypes.RECIPE_TYPES.getEntries().stream().<RecipeType<?>>map(DeferredHolder::get).toList());
     }
 }

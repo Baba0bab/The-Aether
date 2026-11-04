@@ -10,7 +10,7 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import com.aetherteam.nitrogen.fabric.network.handling.IPayloadContext;
 
 import java.util.Map;
@@ -21,7 +21,7 @@ public class ClientDeveloperGlowPacket {
      * Applies the Developer Glow perk to a player on the client.
      */
     public record Apply(UUID playerUUID, DeveloperGlow developerGlow) implements CustomPacketPayload {
-        public static final Type<ClientDeveloperGlowPacket.Apply> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Aether.MODID, "apply_developer_glow"));
+        public static final Type<ClientDeveloperGlowPacket.Apply> TYPE = new Type<>(Identifier.fromNamespaceAndPath(Aether.MODID, "apply_developer_glow"));
 
         public static final StreamCodec<RegistryFriendlyByteBuf, ClientDeveloperGlowPacket.Apply> STREAM_CODEC = StreamCodec.composite(
             UUIDUtil.STREAM_CODEC,
@@ -46,7 +46,7 @@ public class ClientDeveloperGlowPacket {
      * Removes the Developer Glow perk from a player on the client.
      */
     public record Remove(UUID playerUUID) implements CustomPacketPayload {
-        public static final Type<ClientDeveloperGlowPacket.Remove> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Aether.MODID, "remove_developer_glow"));
+        public static final Type<ClientDeveloperGlowPacket.Remove> TYPE = new Type<>(Identifier.fromNamespaceAndPath(Aether.MODID, "remove_developer_glow"));
 
         public static final StreamCodec<RegistryFriendlyByteBuf, ClientDeveloperGlowPacket.Remove> STREAM_CODEC = StreamCodec.composite(
             UUIDUtil.STREAM_CODEC,
@@ -69,7 +69,7 @@ public class ClientDeveloperGlowPacket {
      * Syncs Developer Glow perk data for all players to the client.
      */
     public record Sync(Map<UUID, DeveloperGlow> developerGlows) implements CustomPacketPayload {
-        public static final Type<ClientDeveloperGlowPacket.Sync> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Aether.MODID, "sync_developer_glow"));
+        public static final Type<ClientDeveloperGlowPacket.Sync> TYPE = new Type<>(Identifier.fromNamespaceAndPath(Aether.MODID, "sync_developer_glow"));
 
         public static final StreamCodec<RegistryFriendlyByteBuf, ClientDeveloperGlowPacket.Sync> STREAM_CODEC = StreamCodec.composite(
             ByteBufCodecs.map(Maps::newHashMapWithExpectedSize, UUIDUtil.STREAM_CODEC, DeveloperGlow.STREAM_CODEC),

@@ -1,5 +1,6 @@
 package com.aetherteam.aether.mixin.mixins.common.accessor;
 
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.CraftingContainer;
@@ -15,7 +16,7 @@ import org.spongepowered.asm.mixin.gen.Invoker;
 @Mixin(CraftingMenu.class)
 public interface CraftingMenuAccessor {
     @Invoker
-    static void callSlotChangedCraftingGrid(AbstractContainerMenu menu, Level level, Player player, CraftingContainer craftSlots, ResultContainer resultSlots, @Nullable RecipeHolder<CraftingRecipe> recipe) {
+    static void callSlotChangedCraftingGrid(AbstractContainerMenu menu, ServerLevel level, Player player, CraftingContainer craftSlots, ResultContainer resultSlots, @Nullable RecipeHolder<CraftingRecipe> recipe) {
         throw new UnsupportedOperationException();
     }
 }

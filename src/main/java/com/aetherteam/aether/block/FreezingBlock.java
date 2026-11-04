@@ -1,5 +1,6 @@
 package com.aetherteam.aether.block;
 
+import java.util.Optional;
 import com.aetherteam.aether.event.AetherEventDispatch;
 import com.aetherteam.aether.event.FreezeEvent;
 import com.aetherteam.aether.recipe.AetherRecipeTypes;
@@ -9,6 +10,7 @@ import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 import net.minecraft.commands.CacheableFunction;
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeHolder;
@@ -89,14 +91,16 @@ public interface FreezingBlock extends FreezingBehavior<BlockState> {
      * @param level The {@link Level} that the recipe occurs in.
      */
     static void cacheRecipes(Level level) {
-        if (FreezingBlock.cachedBlocks.isEmpty()) {
-            for (RecipeHolder<IcestoneFreezableRecipe> recipe : level.getRecipeManager().getAllRecipesFor(AetherRecipeTypes.ICESTONE_FREEZABLE.get())) {
-                IcestoneFreezableRecipe freezableRecipe = recipe.value();
-                BlockPropertyPair[] pairs = freezableRecipe.getIngredient().getPairs();
-                if (pairs != null) {
-                    Arrays.stream(pairs).forEach(pair -> cachedBlocks.put(pair.block(), pair, freezableRecipe));
+        if (level instanceof ServerLevel serverLevel) {
+            if (FreezingBlock.cachedBlocks.isEmpty()) {
+                for (RecipeHolder<IcestoneFreezableRecipe> recipe : serverLevel.recipeAccess().recipeMap().byType(AetherRecipeTypes.ICESTONE_FREEZABLE.get())) {
+                    IcestoneFreezableRecipe freezableRecipe = recipe.value();
+                    BlockPropertyPair[] pairs = freezableRecipe.getIngredient().getPairs();
+                    if (pairs != null) {
+                        Arrays.stream(pairs).forEach(pair -> cachedBlocks.put(pair.block(), pair, freezableRecipe));
+                    }
+                    cachedResults.add(freezableRecipe.getResult().block());
                 }
-                cachedResults.add(freezableRecipe.getResult().block());
             }
         }
     }

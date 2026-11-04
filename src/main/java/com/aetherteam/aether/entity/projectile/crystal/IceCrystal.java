@@ -1,13 +1,17 @@
 package com.aetherteam.aether.entity.projectile.crystal;
 
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
 import com.aetherteam.aether.client.AetherSoundEvents;
 import com.aetherteam.aether.client.particle.AetherParticleTypes;
 import com.aetherteam.aether.data.resources.registries.AetherDamageTypes;
 import com.aetherteam.aether.entity.AetherEntityTypes;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
@@ -72,11 +76,11 @@ public class IceCrystal extends AbstractCrystal implements WeaknessDamage {
     }
 
     /**
-     * [CODE COPY] - {@link net.minecraft.world.entity.projectile.AbstractHurtingProjectile#hurt(DamageSource, float)}<br><br>
+     * [CODE COPY] - {@link net.minecraft.world.entity.projectile.hurtingprojectile.AbstractHurtingProjectile#hurtServer(ServerLevel, DamageSource, float)}<br><br>
      * The Ice Crystal needs to move only horizontally when attacked, so yPower isn't copied over.
      */
-    public boolean hurt(DamageSource source, float amount) {
-        if (this.isInvulnerableTo(source)) {
+    public boolean hurtServer(ServerLevel serverLevel, DamageSource source, float amount) {
+        if (!source.is(DamageTypeTags.BYPASSES_INVULNERABILITY)) {
             return false;
         } else {
             this.markHurt();
@@ -105,7 +109,7 @@ public class IceCrystal extends AbstractCrystal implements WeaknessDamage {
     public void doDamage(Entity entity) {
         if (this.getOwner() != entity) {
             if (entity instanceof LivingEntity livingEntity) {
-                if (livingEntity.hurt(AetherDamageTypes.indirectEntityDamageSource(this.level(), AetherDamageTypes.ICE_CRYSTAL, this, this.getOwner()), 7.0F)) {
+                if (livingEntity.hurtOrSimulate(AetherDamageTypes.indirectEntityDamageSource(this.level(), AetherDamageTypes.ICE_CRYSTAL, this, this.getOwner()), 7.0F)) {
                     WeaknessDamage.super.damageWithWeakness(this, livingEntity, this.random);
                 }
             }
@@ -129,7 +133,7 @@ public class IceCrystal extends AbstractCrystal implements WeaknessDamage {
     }
 
     @Override
-    public void addAdditionalSaveData(CompoundTag tag) {
+    protected void addAdditionalSaveData(ValueOutput tag) {
         super.addAdditionalSaveData(tag);
         tag.putDouble("XSpeed", this.xPower);
         tag.putDouble("ZSpeed", this.zPower);
@@ -137,10 +141,10 @@ public class IceCrystal extends AbstractCrystal implements WeaknessDamage {
     }
 
     @Override
-    public void readAdditionalSaveData(CompoundTag tag) {
+    protected void readAdditionalSaveData(ValueInput tag) {
         super.readAdditionalSaveData(tag);
-        this.xPower = tag.getDouble("XSpeed");
-        this.zPower = tag.getDouble("ZSpeed");
-        this.attacked = tag.getBoolean("Attacked");
+        this.xPower = tag.getDoubleOr("XSpeed", 0.0);
+        this.zPower = tag.getDoubleOr("ZSpeed", 0.0);
+        this.attacked = tag.getBooleanOr("Attacked", false);
     }
 }

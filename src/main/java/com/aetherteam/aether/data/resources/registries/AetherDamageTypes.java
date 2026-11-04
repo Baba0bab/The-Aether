@@ -4,7 +4,7 @@ import com.aetherteam.aether.Aether;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.damagesource.DamageEffects;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageType;
@@ -37,7 +37,7 @@ public class AetherDamageTypes {
     }
 
     private static ResourceKey<DamageType> createKey(String name) {
-        return ResourceKey.create(Registries.DAMAGE_TYPE, ResourceLocation.fromNamespaceAndPath(Aether.MODID, name));
+        return ResourceKey.create(Registries.DAMAGE_TYPE, Identifier.fromNamespaceAndPath(Aether.MODID, name));
     }
 
     public static DamageSource damageSource(Level level, ResourceKey<DamageType> key) {

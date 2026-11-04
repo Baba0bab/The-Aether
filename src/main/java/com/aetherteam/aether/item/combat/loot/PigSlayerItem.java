@@ -10,16 +10,16 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.monster.ZombifiedPiglin;
+import net.minecraft.world.entity.monster.zombie.ZombifiedPiglin;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.SwordItem;
-import org.apache.commons.lang3.mutable.MutableFloat;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
 
-public class PigSlayerItem extends SwordItem {
-    public PigSlayerItem() {
-        super(AetherItemTiers.PIG_SLAYER, new Item.Properties().rarity(AetherItems.AETHER_LOOT).attributes(SwordItem.createAttributes(AetherItemTiers.PIG_SLAYER, 3, -2.4F)));
+public class PigSlayerItem extends Item {
+    public PigSlayerItem(Properties properties) {
+        super(properties.sword(AetherItemTiers.PIG_SLAYER, 3.0F, -2.4F));
     }
 
     /**
@@ -31,9 +31,9 @@ public class PigSlayerItem extends SwordItem {
      * @return Whether the enemy was hurt or not, as a {@link Boolean}.
      */
     @Override
-    public boolean hurtEnemy(ItemStack stack, LivingEntity target, LivingEntity attacker) {
+    public void hurtEnemy(ItemStack stack, LivingEntity target, LivingEntity attacker) {
         if (EquipmentUtil.isFullStrength(attacker)) {
-            if (target.getType().is(AetherTags.Entities.PIGS)) {
+            if (target.is(AetherTags.Entities.PIGS)) {
                 if (target instanceof ZombifiedPiglin zombifiedPiglin) {
                     if (!(attacker instanceof Player player) || !player.isCreative()) {
                         ZombifiedPiglinAccessor zombifiedPiglinAccessor = (ZombifiedPiglinAccessor) zombifiedPiglin;
@@ -55,11 +55,11 @@ public class PigSlayerItem extends SwordItem {
                 }
             }
         }
-        return super.hurtEnemy(stack, target, attacker);
+        super.hurtEnemy(stack, target, attacker);
     }
 
     /**
-     * @see Aether#eventSetup()
+     * @see Aether#eventSetup(IEventBus)
      * Deals 20-22 hearts of damage to the target if they're a Pig-type entity and if the attacker attacked with full strength as determined by {@link EquipmentUtil#isFullStrength(LivingEntity)}.<br><br>
      */
     public static void onLivingDamage(LivingEntity target, DamageSource damageSource, MutableFloat newDamage) {
@@ -78,7 +78,7 @@ public class PigSlayerItem extends SwordItem {
     private static boolean canPerformAbility(LivingEntity target, DamageSource source) {
         if (source.getDirectEntity() instanceof LivingEntity attacker) {
             if (EquipmentUtil.isFullStrength(attacker)) {
-                if (target.getType().is(AetherTags.Entities.PIGS)) {
+                if (target.is(AetherTags.Entities.PIGS)) {
                     return attacker.getMainHandItem().is(AetherItems.PIG_SLAYER.get());
                 }
             }

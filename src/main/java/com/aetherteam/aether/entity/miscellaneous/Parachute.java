@@ -1,11 +1,15 @@
 package com.aetherteam.aether.entity.miscellaneous;
 
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
 import com.aetherteam.aether.entity.EntityUtil;
 import com.aetherteam.aether.mixin.mixins.common.accessor.ServerGamePacketListenerImplAccessor;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -40,11 +44,11 @@ public class Parachute extends Entity {
         super.tick();
         LivingEntity passenger = this.getControllingPassenger();
         if (passenger != null) {
-            this.checkSlowFallDistance(); // Resets the Parachute's fall distance.
+            this.checkFallDistanceAccumulation(); // Resets the Parachute's fall distance.
             this.moveParachute(passenger);
             this.spawnExplosionParticle();
             if (this.onGround() || this.nitrogen_fabric$isInFluidType() || this.verticalCollisionBelow) { // The parachute breaks when it collides with something.
-                passenger.checkSlowFallDistance(); // Fall distance reset safeguard.
+                passenger.checkFallDistanceAccumulation(); // Fall distance reset safeguard.
                 this.ejectPassengers();
                 this.die();
             }
@@ -104,13 +108,18 @@ public class Parachute extends Entity {
         return this.getDeltaMovement();
     }
 
+    @Override
+    public boolean hurtServer(ServerLevel level, DamageSource damageSource, float amount) {
+        return false;
+    }
+
     /**
      * Kills the parachute along with spawning particles.
      */
     public void die() {
         this.spawnExplosionParticle();
-        if (!this.level().isClientSide()) {
-            this.kill();
+        if (this.level() instanceof ServerLevel serverLevel) {
+            this.kill(serverLevel);
         }
     }
 
@@ -199,10 +208,10 @@ public class Parachute extends Entity {
     }
 
     @Override
-    protected void addAdditionalSaveData(CompoundTag tag) {
+    protected void addAdditionalSaveData(ValueOutput tag) {
     }
 
     @Override
-    protected void readAdditionalSaveData(CompoundTag tag) {
+    protected void readAdditionalSaveData(ValueInput tag) {
     }
 }

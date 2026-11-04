@@ -1,0 +1,66 @@
+plugins {
+    id 'java-library'
+    id 'net.fabricmc.fabric-loom'
+}
+
+// Nitrogen (https://github.com/The-Aether-Team/Nitrogen), Fabric edition, ported to this Minecraft version.
+var libProperties = [
+    mod_id                     : 'nitrogen_internals',
+    mod_name                   : 'Nitrogen',
+    mod_version                : project.nitrogen_version,
+    mod_license                : 'Assets: All Rights Reserved; Code: LGPL-3.0',
+    mod_url                    : 'https://github.com/The-Aether-Team/Nitrogen',
+    mod_tracker                : 'https://github.com/The-Aether-Team/Nitrogen/issues',
+    mod_credits                : 'The Aether Team',
+    mod_authors                : 'AlphaMode, baguchan, bconlon, Blodhgarm',
+    mod_description            : 'A library used for the Aether series of mods.',
+    minecraft_version          : project.minecraft_version,
+    minecraft_version_range    : project.minecraft_version_range,
+    fabric_minecraft_version_range: project.minecraft_version_range,
+    fabric_version_range       : project.fabric_version_range,
+    fabric_loader_version_range: project.fabric_loader_version_range,
+    java_version               : '25'
+]
+
+version = "${project.minecraft_version}-${project.nitrogen_version}-fabric"
+group = 'com.aetherteam.nitrogen'
+
+base {
+    archivesName = 'nitrogen_internals'
+}
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(25)
+
+loom {
+    def aw = file('src/main/resources/nitrogen_internals.accesswidener')
+    if (aw.exists()) {
+        accessWidenerPath = aw
+    }
+}
+
+sourceSets.main.resources {
+    srcDir 'src/generated/resources'
+    srcDir 'src/main/generated'
+    exclude '.cache/'
+}
+
+dependencies {
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    implementation "net.fabricmc:fabric-loader:${project.fabric_loader_version}"
+    implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+    implementation "fuzs.forgeconfigapiport:forgeconfigapiport-fabric:${project.forge_config_version}"
+    compileOnly "mezz.jei:jei-${project.minecraft_version}-common-api:${project.jei_version}"
+    compileOnly "mezz.jei:jei-${project.minecraft_version}-fabric:${project.jei_version}"
+}
+
+processResources {
+    inputs.properties libProperties
+    filesMatching(['fabric.mod.json']) {
+        expand libProperties
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.compilerArgs << "-Xmaxerrs" << "9000"
+}

@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "id": "charm",
+  "size": 2,
+  "entities": [
+    "minecraft:player",
+    "minecraft:armor_stand"
+  ]
+}

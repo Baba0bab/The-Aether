@@ -30,10 +30,6 @@ public class BlockBanRecipe extends AbstractPlacementBanRecipe<BlockState, Block
         super(AetherRecipeTypes.BLOCK_PLACEMENT_BAN.get(), biome, bypassBlock, ingredient);
     }
 
-    public BlockBanRecipe(Either<ResourceKey<Biome>, TagKey<Biome>> biome, Optional<BlockStateIngredient> bypassBlock) {
-        this(biome, bypassBlock, BlockStateIngredient.EMPTY);
-    }
-
     /**
      * Checks if the recipe matches the given parameters using {@link AbstractPlacementBanRecipe#matches(Level, BlockPos, Object)}.<br><br>
      * Then checks an event hook through {@link AetherEventDispatch#isBlockPlacementBanned(LevelAccessor, BlockPos, BlockState)}.<br><br>
@@ -55,7 +51,7 @@ public class BlockBanRecipe extends AbstractPlacementBanRecipe<BlockState, Block
     }
 
     @Override
-    public RecipeSerializer<?> getSerializer() {
+    public RecipeSerializer<BlockBanRecipe> getSerializer() {
         return AetherRecipeSerializers.BLOCK_PLACEMENT_BAN.get();
     }
 

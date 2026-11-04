@@ -6,44 +6,59 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.block.BlockRenderDispatcher;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
-import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.client.renderer.entity.state.FallingBlockRenderState;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.RandomSource;
-import net.minecraft.world.inventory.InventoryMenu;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.state.BlockState;
 
-public class FloatingBlockRenderer extends EntityRenderer<FloatingBlockEntity> {
+/**
+ * [CODE COPY] - {@link net.minecraft.client.renderer.entity.FallingBlockRenderer}.
+ */
+public class FloatingBlockRenderer extends EntityRenderer<FloatingBlockEntity, FallingBlockRenderState> {
     public FloatingBlockRenderer(EntityRendererProvider.Context context) {
         super(context);
         this.shadowRadius = 0.5F;
     }
 
     @Override
-    public void render(FloatingBlockEntity floatingBlock, float entityYaw, float partialTicks, PoseStack poseStack, MultiBufferSource buffer, int packedLightIn) {
-        BlockState blockState = floatingBlock.getBlockState();
-        if (blockState.getRenderShape() == RenderShape.MODEL) {
-            Level world = floatingBlock.level();
-            if (blockState != world.getBlockState(floatingBlock.blockPosition()) && blockState.getRenderShape() != RenderShape.INVISIBLE) {
-                poseStack.pushPose();
-                BlockPos blockPos = BlockPos.containing(floatingBlock.getX(), floatingBlock.getBoundingBox().maxY, floatingBlock.getZ());
-                poseStack.translate(-0.5, 0.0, -0.5);
-                BlockRenderDispatcher blockRenderDispatcher = Minecraft.getInstance().getBlockRenderer();
-                BakedModel model = blockRenderDispatcher.getBlockModel(blockState);
-                blockRenderDispatcher.getModelRenderer().tesselateBlock(world, model, blockState, blockPos, poseStack, buffer.getBuffer(ItemBlockRenderTypes.getChunkRenderType(blockState)), false, RandomSource.create(), blockState.getSeed(floatingBlock.getStartPos()), OverlayTexture.NO_OVERLAY);
-                poseStack.popPose();
-                super.render(floatingBlock, entityYaw, partialTicks, poseStack, buffer, packedLightIn);
-            }
+    public FallingBlockRenderState createRenderState() {
+        return new FallingBlockRenderState();
+    }
+
+    @Override
+    public void extractRenderState(FloatingBlockEntity entity, FallingBlockRenderState reusedState, float partialTick) {
+        super.extractRenderState(entity, reusedState, partialTick);
+        BlockPos blockpos = BlockPos.containing(entity.getX(), entity.getBoundingBox().maxY, entity.getZ());
+        reusedState.movingBlockRenderState.randomSeedPos = entity.getStartPos();
+        reusedState.movingBlockRenderState.blockPos = blockpos;
+        reusedState.movingBlockRenderState.blockState = entity.getBlockState();
+        if (entity.level() instanceof ClientLevel clientLevel) {
+            reusedState.movingBlockRenderState.biome = clientLevel.getBiome(blockpos);
+            reusedState.movingBlockRenderState.cardinalLighting = clientLevel.cardinalLighting();
+            reusedState.movingBlockRenderState.lightEngine = clientLevel.getLightEngine();
         }
     }
 
     @Override
-    public ResourceLocation getTextureLocation(FloatingBlockEntity floatingBlock) {
-        return InventoryMenu.BLOCK_ATLAS;
+    public boolean shouldRender(FloatingBlockEntity entity, Frustum frustum, double camX, double camY, double camZ, float partialTicks) {
+        return super.shouldRender(entity, frustum, camX, camY, camZ, partialTicks) && entity.getBlockState() != entity.level().getBlockState(entity.blockPosition());
+    }
+
+    @Override
+    public void submit(FallingBlockRenderState renderState, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, CameraRenderState camera) {
+        BlockState blockState = renderState.movingBlockRenderState.blockState;
+        if (blockState.getRenderShape() == RenderShape.MODEL) {
+            poseStack.pushPose();
+            poseStack.translate(-0.5, 0.0, -0.5);
+            submitNodeCollector.submitMovingBlock(poseStack, renderState.movingBlockRenderState, renderState.outlineColor);
+            poseStack.popPose();
+            super.submit(renderState, poseStack, submitNodeCollector, camera);
+        }
     }
 }

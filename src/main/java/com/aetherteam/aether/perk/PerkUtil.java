@@ -18,14 +18,14 @@ public final class PerkUtil {
      * @return A {@link Predicate} to check if a {@link User} has access to Valkyrie-tier Moa skins for a lifetime period.
      */
     public static Predicate<User> hasLifetimeValkyrieMoaSkins() {
-        return (user) -> hasAllSkins().test(user) || user.getCurrentTierLevel() >= User.Tier.VALKYRIE.getLevel() || (user.getCurrentTier() == null && user.getHighestPastTierLevel() >= User.Tier.VALKYRIE.getLevel());
+        return (user) -> hasAllSkins().test(user) || user.getCurrentTierLevel() >= User.Tier.VALKYRIE.getLevel() || (user.getCurrentTier().isEmpty() && user.getHighestPastTierLevel() >= User.Tier.VALKYRIE.getLevel());
     }
 
     /**
      * @return A {@link Predicate} to check if a {@link User} has access to Ascentan-tier Moa skins for a lifetime period.
      */
     public static Predicate<User> hasLifetimeAscentanMoaSkins() {
-        return (user) -> hasAllSkins().test(user) || hasBaseSkins().test(user) || user.getCurrentTierLevel() >= User.Tier.ASCENTAN.getLevel() || (user.getCurrentTier() == null && user.getHighestPastTierLevel() >= User.Tier.ASCENTAN.getLevel());
+        return (user) -> hasAllSkins().test(user) || hasBaseSkins().test(user) || user.getCurrentTierLevel() >= User.Tier.ASCENTAN.getLevel() || (user.getCurrentTier().isEmpty() && user.getHighestPastTierLevel() >= User.Tier.ASCENTAN.getLevel());
     }
 
     /**
@@ -53,7 +53,7 @@ public final class PerkUtil {
      * @return A {@link Predicate} to check if a {@link User} has access to a base set of Moa skins.
      */
     public static Predicate<User> hasBaseSkins() {
-        return (user) -> isContributor().test(user) || user.getHighestGroup() == User.Group.TRANSLATOR || user.getHighestGroup() == User.Group.CELEBRITY;
+        return (user) -> isContributor().test(user) || user.getHighestGroup().orElse(null) == User.Group.TRANSLATOR || user.getHighestGroup().orElse(null) == User.Group.CELEBRITY;
     }
 
     /**
@@ -81,21 +81,21 @@ public final class PerkUtil {
      * @return A {@link Predicate} to check if a {@link User} is a developer is staff.
      */
     public static Predicate<User> isDeveloperOrStaff() {
-        return (user) -> isDeveloper().test(user) || user.getHighestGroup() == User.Group.STAFF;
+        return (user) -> isDeveloper().test(user) || user.getHighestGroup().orElse(null) == User.Group.STAFF;
     }
 
     /**
      * @return A {@link Predicate} to check if a {@link User} is a developer.
      */
     public static Predicate<User> isDeveloper() {
-        return (user) -> user.getHighestGroup() == User.Group.AETHER_TEAM || user.getHighestGroup() == User.Group.MODDING_LEGACY;
+        return (user) -> user.getHighestGroup().orElse(null) == User.Group.AETHER_TEAM || user.getHighestGroup().orElse(null) == User.Group.MODDING_LEGACY;
     }
 
     /**
      * @return A {@link Predicate} to check if a {@link User} is a contributor.
      */
     public static Predicate<User> isContributor() {
-        return (user) -> user.getHighestGroup() == User.Group.CONTRIBUTOR || user.getHighestGroup() == User.Group.LEGACY_CONTRIBUTOR;
+        return (user) -> user.getHighestGroup().orElse(null) == User.Group.CONTRIBUTOR || user.getHighestGroup().orElse(null) == User.Group.LEGACY_CONTRIBUTOR;
     }
 
     /**

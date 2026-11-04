@@ -16,9 +16,7 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.Ingredient;
-import net.minecraft.world.item.crafting.RecipeSerializer;
-import net.minecraft.world.item.crafting.SingleRecipeInput;
+import net.minecraft.world.item.crafting.*;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.biome.Biome;
@@ -29,10 +27,6 @@ import java.util.Optional;
 public class ItemBanRecipe extends AbstractPlacementBanRecipe<ItemStack, Ingredient, SingleRecipeInput> {
     public ItemBanRecipe(Either<ResourceKey<Biome>, TagKey<Biome>> biome, Optional<BlockStateIngredient> bypassBlock, Ingredient ingredient) {
         super(AetherRecipeTypes.ITEM_PLACEMENT_BAN.get(), biome, bypassBlock, ingredient);
-    }
-
-    public ItemBanRecipe(Either<ResourceKey<Biome>, TagKey<Biome>> biome, Optional<BlockStateIngredient> bypassBlock) {
-        this(biome, bypassBlock, Ingredient.EMPTY);
     }
 
     /**
@@ -60,7 +54,7 @@ public class ItemBanRecipe extends AbstractPlacementBanRecipe<ItemStack, Ingredi
     }
 
     @Override
-    public RecipeSerializer<?> getSerializer() {
+    public RecipeSerializer<ItemBanRecipe> getSerializer() {
         return AetherRecipeSerializers.ITEM_PLACEMENT_BAN.get();
     }
 

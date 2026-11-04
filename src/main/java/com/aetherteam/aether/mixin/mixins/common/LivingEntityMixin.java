@@ -3,7 +3,6 @@ package com.aetherteam.aether.mixin.mixins.common;
 import com.aetherteam.aether.entity.monster.dungeon.boss.ValkyrieQueen;
 import com.aetherteam.aether.item.combat.abilities.armor.PhoenixArmor;
 import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
-import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -28,14 +27,14 @@ public abstract class LivingEntityMixin extends Entity {
      * @param ci The {@link CallbackInfo} for the void method return.
      * @see PhoenixArmor#boostVerticalLavaSwimming(LivingEntity)
      */
-    @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;getFluidJumpThreshold()D", shift = At.Shift.AFTER), method = "travel(Lnet/minecraft/world/phys/Vec3;)V")
+    @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;isInShallowFluid(Lnet/minecraft/tags/TagKey;)Z"), method = "travelInLava(Lnet/minecraft/world/phys/Vec3;DZD)V")
     private void travel(CallbackInfo ci) {
         LivingEntity livingEntity = (LivingEntity) (Object) this;
         PhoenixArmor.boostVerticalLavaSwimming(livingEntity);
     }
 
-    @WrapWithCondition(method = "hurt(Lnet/minecraft/world/damagesource/DamageSource;F)Z", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;knockback(DDD)V"))
-    private boolean hurt(LivingEntity instance, double strength, double x, double z, @Local(argsOnly = true) DamageSource source) {
+    @WrapWithCondition(method = "dealDefaultKnockback(Lnet/minecraft/world/damagesource/DamageSource;FZ)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;knockback(DDDLnet/minecraft/world/damagesource/DamageSource;F)V"))
+    private boolean dealDefaultKnockback(LivingEntity instance, double strength, double x, double z, DamageSource source, float damage) {
         return (!(instance instanceof ValkyrieQueen) || !(source.getDirectEntity() instanceof Projectile));
     }
 }

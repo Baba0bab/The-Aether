@@ -1,21 +1,21 @@
 package com.aetherteam.aether.item.combat.loot;
 
+import net.minecraft.world.item.Item;
+import net.minecraft.world.entity.EntityTypes;
 import com.aetherteam.aether.attachment.AetherDataAttachments;
-import com.aetherteam.aether.item.AetherItems;
 import com.aetherteam.aether.item.EquipmentUtil;
 import com.aetherteam.aether.item.combat.AetherItemTiers;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.SwordItem;
-import org.apache.commons.lang3.mutable.MutableBoolean;
+import net.neoforged.neoforge.event.entity.EntityStruckByLightningEvent;
 
-public class LightningSwordItem extends SwordItem {
-    public LightningSwordItem() {
-        super(AetherItemTiers.LIGHTNING, new Item.Properties().rarity(AetherItems.AETHER_LOOT).attributes(SwordItem.createAttributes(AetherItemTiers.LIGHTNING, 3, -2.4F)));
+public class LightningSwordItem extends Item {
+    public LightningSwordItem(Properties properties) {
+        super(properties.sword(AetherItemTiers.LIGHTNING, 3.0F, -2.4F));
     }
 
     /**
@@ -28,15 +28,15 @@ public class LightningSwordItem extends SwordItem {
      * @return Whether the enemy was hurt or not, as a {@link Boolean}.
      */
     @Override
-    public boolean hurtEnemy(ItemStack stack, LivingEntity target, LivingEntity attacker) {
+    public void hurtEnemy(ItemStack stack, LivingEntity target, LivingEntity attacker) {
         if (EquipmentUtil.isFullStrength(attacker)) {
-            LightningBolt lightningBolt = EntityType.LIGHTNING_BOLT.create(attacker.level());
+            LightningBolt lightningBolt = EntityTypes.LIGHTNING_BOLT.create(attacker.level(), EntitySpawnReason.MOB_SUMMONED);
             if (lightningBolt != null) {
                 lightningBolt.getAttachedOrCreate(AetherDataAttachments.LIGHTNING_TRACKER).setOwner(attacker);
                 lightningBolt.setPos(target.getX(), target.getY(), target.getZ());
                 attacker.level().addFreshEntity(lightningBolt);
             }
         }
-        return super.hurtEnemy(stack, target, attacker);
+        super.hurtEnemy(stack, target, attacker);
     }
 }

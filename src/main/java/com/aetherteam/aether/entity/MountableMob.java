@@ -1,11 +1,12 @@
 package com.aetherteam.aether.entity;
 
+import com.aetherteam.nitrogen.fabric.network.PacketDistributor;
 import com.aetherteam.aether.Aether;
 import com.aetherteam.aether.attachment.AetherDataAttachments;
 import com.aetherteam.aether.mixin.mixins.common.accessor.ServerGamePacketListenerImplAccessor;
 import com.aetherteam.aether.network.packet.serverbound.StepHeightPacket;
 import com.aetherteam.nitrogen.fabric.network.PacketDistributor;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
@@ -15,7 +16,6 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.ai.behavior.Swim;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 
@@ -23,8 +23,8 @@ import net.minecraft.world.phys.Vec3;
  * This interface has several methods for handling the movement for mounted mobs.
  */
 public interface MountableMob {
-    ResourceLocation MOUNT_HEIGHT_LOCATION = ResourceLocation.fromNamespaceAndPath(Aether.MODID, "mounted_step_height_increase");
-    ResourceLocation DEFAULT_HEIGHT_LOCATION = ResourceLocation.fromNamespaceAndPath(Aether.MODID, "default_step_height_increase");
+    Identifier MOUNT_HEIGHT_LOCATION = Identifier.fromNamespaceAndPath(Aether.MODID, "mounted_step_height_increase");
+    Identifier DEFAULT_HEIGHT_LOCATION = Identifier.fromNamespaceAndPath(Aether.MODID, "default_step_height_increase");
     AttributeModifier STEP_HEIGHT_MODIFIER = new AttributeModifier(MOUNT_HEIGHT_LOCATION, 0.4, AttributeModifier.Operation.ADD_VALUE);
     AttributeModifier DEFAULT_STEP_HEIGHT_MODIFIER = new AttributeModifier(DEFAULT_HEIGHT_LOCATION, -0.1, AttributeModifier.Operation.ADD_VALUE);
 
@@ -90,17 +90,17 @@ public interface MountableMob {
             if (vehicle.getPlayerJumped() && !vehicle.isMountJumping() && vehicle.canJump()) {
                 double jumpStrength = vehicle.getMountJumpStrength() * this.jumpFactor();
                 vehicle.setDeltaMovement(vehicle.getDeltaMovement().x(), jumpStrength, vehicle.getDeltaMovement().z());
-                if (vehicle.hasEffect(MobEffects.JUMP)) {
-                    MobEffectInstance jumpBoost = vehicle.getEffect(MobEffects.JUMP);
+                if (vehicle.hasEffect(MobEffects.JUMP_BOOST)) {
+                    MobEffectInstance jumpBoost = vehicle.getEffect(MobEffects.JUMP_BOOST);
                     if (jumpBoost != null) {
                         vehicle.push(0.0, 0.1 * (jumpBoost.getAmplifier() + 1), 0.0);
                     }
                 }
-                vehicle.hasImpulse = true;
+                vehicle.needsSync = true;
                 vehicle.onJump(vehicle);
-            } else if (vehicle.getPlayerJumped() && vehicle.isMountJumping() && vehicle.canJump() && Swim.shouldSwim(vehicle)) {
-                vehicle.setDeltaMovement(vehicle.getDeltaMovement().add(0.0F, 0.04F, 0.0F));
-                vehicle.hasImpulse = true;
+            } else if (vehicle.getPlayerJumped() && vehicle.isMountJumping() && vehicle.canJump() && EntityUtil.shouldSwim(vehicle)) {
+                vehicle.jumpInFluid(vehicle.level().getFluidState(vehicle.getOnPos()).getFluidType());
+                vehicle.needsSync = true;
                 vehicle.onJump(vehicle);
             }
             // Handles step height.
@@ -117,7 +117,7 @@ public interface MountableMob {
                 }
             }
             // Handles movement.
-            if (vehicle.isControlledByLocalInstance()) {
+            if (vehicle.isLocalInstanceAuthoritative()) {
                 vehicle.setSpeed(vehicle.getSteeringSpeed());
                 this.travelWithInput(new Vec3(f, motion.y, f1));
             } else if (passenger instanceof Player) {

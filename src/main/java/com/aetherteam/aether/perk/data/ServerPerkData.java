@@ -98,7 +98,7 @@ public class ServerPerkData<T> {
      */
     public void syncFromServer(Player player) {
         if (player instanceof ServerPlayer serverPlayer) {
-            PacketDistributor.sendToPlayer(serverPlayer, this.getSyncPacket(this.getServerPerkData(serverPlayer.getServer()))); // Send to client.
+            PacketDistributor.sendToPlayer(serverPlayer, this.getSyncPacket(this.getServerPerkData(serverPlayer.level().getServer()))); // Send to client.
         }
     }
 
@@ -166,7 +166,7 @@ public class ServerPerkData<T> {
      * @return The {@link PerkSavedData} for the "perks.dat" file of the world.
      */
     protected PerkSavedData getSavedData(MinecraftServer server) {
-        return PerkSavedData.compute(server.overworld().getDataStorage());
+        return PerkSavedData.compute(server.getDataStorage());
     }
 
     /**

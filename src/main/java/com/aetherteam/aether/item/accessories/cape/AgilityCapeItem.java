@@ -1,8 +1,8 @@
 package com.aetherteam.aether.item.accessories.cape;
 
 import com.aetherteam.aether.Aether;
-import io.wispforest.accessories.api.slot.SlotReference;
-import net.minecraft.resources.ResourceLocation;
+import com.aetherteam.aetherfabric.accessories.SlotContext;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -13,7 +13,7 @@ public class AgilityCapeItem extends CapeItem {
     /**
      * The unique identifier for the item's step height modifier.
      */
-    private static final ResourceLocation STEP_HEIGHT_ID = ResourceLocation.fromNamespaceAndPath(Aether.MODID, "agility_cape_step_height");
+    private static final Identifier STEP_HEIGHT_ID = Identifier.fromNamespaceAndPath(Aether.MODID, "agility_cape_step_height");
 
     public AgilityCapeItem(String capeLocation, Properties properties) {
         super(capeLocation, properties);
@@ -23,10 +23,10 @@ public class AgilityCapeItem extends CapeItem {
      * Applies a step height modifier to the wearer as long as they aren't holding shift. If they are, the modifier is removed until they stop holding shift.
      *
      * @param stack       The accessory {@link ItemStack}.
-     * @param reference   The {@link SlotReference} of the accessory.
+     * @param reference   The {@link SlotContext} of the accessory.
      */
     @Override
-    public void tick(ItemStack stack, SlotReference reference) {
+    public void curioTick(SlotContext reference, ItemStack stack) {
         LivingEntity livingEntity = reference.entity();
         AttributeInstance stepHeight = livingEntity.getAttribute(Attributes.STEP_HEIGHT);
         if (stepHeight != null) {
@@ -43,10 +43,10 @@ public class AgilityCapeItem extends CapeItem {
      * Removes the step height modifier when the Agility Cape is unequipped.
      *
      * @param stack       The accessory {@link ItemStack}.
-     * @param reference   The {@link SlotReference} of the accessory.
+     * @param reference   The {@link SlotContext} of the accessory.
      */
     @Override
-    public void onUnequip(ItemStack stack, SlotReference reference) {
+    public void onUnequip(SlotContext reference, ItemStack newStack, ItemStack stack) {
         LivingEntity livingEntity = reference.entity();
         AttributeInstance stepHeight = livingEntity.getAttribute(Attributes.STEP_HEIGHT);
         if (stepHeight != null) {

@@ -1,5 +1,6 @@
 package com.aetherteam.aether.block.natural;
 
+import net.minecraft.world.entity.InsideBlockEffectApplier;
 import com.aetherteam.aether.AetherConfig;
 import com.aetherteam.aether.client.AetherSoundEvents;
 import net.minecraft.core.BlockPos;
@@ -34,7 +35,7 @@ public class BlueAercloudBlock extends AercloudBlock {
      * @param entity The {@link Entity} in the block.
      */
     @Override
-    public void entityInside(BlockState state, Level level, BlockPos pos, Entity entity) {
+    protected void entityInside(BlockState state, Level level, BlockPos pos, Entity entity, InsideBlockEffectApplier effectApplier, boolean isPrecise) {
         if (!entity.isShiftKeyDown() && (!entity.isVehicle() || !(entity.getControllingPassenger() instanceof Player))) {
             Vec3 prevMotion = entity.getDeltaMovement();
             entity.resetFallDistance();
@@ -60,7 +61,7 @@ public class BlueAercloudBlock extends AercloudBlock {
                 entity.setOnGround(false);
             }
         } else {
-            super.entityInside(state, level, pos, entity);
+            super.entityInside(state, level, pos, entity, effectApplier, isPrecise);
         }
     }
 

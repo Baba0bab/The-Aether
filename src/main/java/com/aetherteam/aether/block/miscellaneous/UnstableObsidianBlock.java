@@ -13,6 +13,9 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
+import net.minecraft.world.level.material.PushReaction;
+import net.minecraft.world.level.redstone.Orientation;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * [CODE COPY] - {@link net.minecraft.world.level.block.FrostedIceBlock}.
@@ -41,17 +44,17 @@ public class UnstableObsidianBlock extends Block implements MeltingBehavior {
     }
 
     @Override
-    public void neighborChanged(BlockState state, Level level, BlockPos pos, Block block, BlockPos fromPos, boolean isMoving) {
-        if (block.defaultBlockState().is(this) && MeltingBehavior.super.fewerNeigboursThan(block, level, pos, 2)) {
+    protected void neighborChanged(BlockState state, Level level, BlockPos pos, Block neighborBlock, @Nullable Orientation orientation, boolean movedByPiston) {
+        if (state.is(this) && MeltingBehavior.super.fewerNeigboursThan(this, level, pos, 2)) {
             this.melt(state, level, pos, AGE);
         }
-        super.neighborChanged(state, level, pos, block, fromPos, isMoving);
+        super.neighborChanged(state, level, pos, neighborBlock, orientation, movedByPiston);
     }
 
     @Override
     public void melt(BlockState state, Level level, BlockPos pos, IntegerProperty age) {
         level.setBlockAndUpdate(pos, Blocks.LAVA.defaultBlockState());
-        level.neighborChanged(pos, Blocks.LAVA, pos);
+        level.neighborChanged(pos, Blocks.LAVA, null);
     }
 
     /**
@@ -59,7 +62,7 @@ public class UnstableObsidianBlock extends Block implements MeltingBehavior {
      */
     @SuppressWarnings("deprecation")
     @Override
-    public ItemStack getCloneItemStack(LevelReader level, BlockPos pos, BlockState state) {
+    protected ItemStack getCloneItemStack(LevelReader level, BlockPos pos, BlockState state, boolean includeData) {
         return ItemStack.EMPTY;
     }
 

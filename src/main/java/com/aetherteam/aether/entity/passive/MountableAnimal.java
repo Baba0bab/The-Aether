@@ -1,5 +1,12 @@
 package com.aetherteam.aether.entity.passive;
 
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.world.item.equipment.Equippable;
+import net.minecraft.core.Holder;
+import net.minecraft.world.entity.EquipmentSlot;
+import com.mojang.serialization.Codec;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
 import com.aetherteam.aether.entity.MountableMob;
 import com.aetherteam.aether.entity.NotGrounded;
 import net.minecraft.core.BlockPos;
@@ -8,6 +15,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
@@ -28,8 +36,7 @@ import org.jetbrains.annotations.Nullable;
  * [CODE COPY] - {@link net.minecraft.world.entity.animal.Pig}.<br><br>
  * Method copies with changes to make methods more abstracted through {@link MountableMob}.
  */
-public abstract class MountableAnimal extends AetherAnimal implements MountableMob, Saddleable, NotGrounded {
-    private static final EntityDataAccessor<Boolean> DATA_SADDLE_ID = SynchedEntityData.defineId(MountableAnimal.class, EntityDataSerializers.BOOLEAN);
+public abstract class MountableAnimal extends AetherAnimal implements MountableMob, NotGrounded {
     private static final EntityDataAccessor<Boolean> DATA_PLAYER_JUMPED_ID = SynchedEntityData.defineId(MountableAnimal.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Boolean> DATA_MOUNT_JUMPING_ID = SynchedEntityData.defineId(MountableAnimal.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Boolean> DATA_PLAYER_CROUCHED_ID = SynchedEntityData.defineId(MountableAnimal.class, EntityDataSerializers.BOOLEAN);
@@ -42,7 +49,6 @@ public abstract class MountableAnimal extends AetherAnimal implements MountableM
     @Override
     protected void defineSynchedData(SynchedEntityData.Builder builder) {
         super.defineSynchedData(builder);
-        builder.define(DATA_SADDLE_ID, false);
         builder.define(DATA_PLAYER_JUMPED_ID, false);
         builder.define(DATA_MOUNT_JUMPING_ID, false);
         builder.define(DATA_PLAYER_CROUCHED_ID, false);
@@ -100,12 +106,12 @@ public abstract class MountableAnimal extends AetherAnimal implements MountableM
             if (!this.level().isClientSide()) {
                 playerEntity.startRiding(this);
             }
-            return InteractionResult.sidedSuccess(this.level().isClientSide());
+            return InteractionResult.SUCCESS;
         } else {
             InteractionResult interactionResult = super.mobInteract(playerEntity, hand);
             if (!interactionResult.consumesAction()) {
                 ItemStack itemstack = playerEntity.getItemInHand(hand);
-                return itemstack.is(Items.SADDLE) ? itemstack.interactLivingEntity(playerEntity, this, hand) : InteractionResult.PASS;
+                return this.isEquippableInSlot(itemstack, EquipmentSlot.SADDLE) ? itemstack.interactLivingEntity(playerEntity, this, hand) : InteractionResult.PASS;
             } else {
                 return interactionResult;
             }
@@ -137,13 +143,6 @@ public abstract class MountableAnimal extends AetherAnimal implements MountableM
         return super.getDismountLocationForPassenger(livingEntity);
     }
 
-    @Override
-    protected void dropEquipment() {
-        super.dropEquipment();
-        if (this.isSaddled()) {
-            this.spawnAtLocation(Items.SADDLE);
-        }
-    }
 
     @Nullable
     @Override
@@ -159,25 +158,26 @@ public abstract class MountableAnimal extends AetherAnimal implements MountableM
         return true;
     }
 
-    @Override
-    public void equipSaddle(ItemStack stack, @Nullable SoundSource soundCategory) {
-        this.setSaddled(true);
-        if (soundCategory != null && this.getSaddledSound() != null) {
-            this.level().playSound(null, this, this.getSaddledSound(), soundCategory, 0.5F, 1.0F);
-        }
-    }
-
-    @Override
+    /**
+     * @return Whether this entity can be saddled, as a {@link Boolean}.
+     */
     public boolean isSaddleable() {
         return this.isAlive() && !this.isBaby();
     }
 
-    /**
-     * @return Whether this entity is saddled, as a {@link Boolean}.
-     */
     @Override
-    public boolean isSaddled() {
-        return this.getEntityData().get(DATA_SADDLE_ID);
+    public boolean canUseSlot(EquipmentSlot slot) {
+        return slot != EquipmentSlot.SADDLE ? super.canUseSlot(slot) : this.isSaddleable();
+    }
+
+    @Override
+    protected boolean canDispenserEquipIntoSlot(EquipmentSlot slot) {
+        return slot == EquipmentSlot.SADDLE || super.canDispenserEquipIntoSlot(slot);
+    }
+
+    @Override
+    protected Holder<SoundEvent> getEquipSound(EquipmentSlot slot, ItemStack stack, Equippable equippable) {
+        return slot == EquipmentSlot.SADDLE && this.getSaddledSound() != null ? BuiltInRegistries.SOUND_EVENT.wrapAsHolder(this.getSaddledSound()) : super.getEquipSound(slot, stack, equippable);
     }
 
     /**
@@ -186,7 +186,7 @@ public abstract class MountableAnimal extends AetherAnimal implements MountableM
      * @param isSaddled The {@link Boolean} value.
      */
     public void setSaddled(boolean isSaddled) {
-        this.getEntityData().set(DATA_SADDLE_ID, isSaddled);
+        this.setItemSlot(EquipmentSlot.SADDLE, isSaddled ? new ItemStack(Items.SADDLE) : ItemStack.EMPTY);
     }
 
     /**
@@ -298,16 +298,15 @@ public abstract class MountableAnimal extends AetherAnimal implements MountableM
     }
 
     @Override
-    public void addAdditionalSaveData(CompoundTag tag) {
+    protected void addAdditionalSaveData(ValueOutput tag) {
         super.addAdditionalSaveData(tag);
-        tag.putBoolean("Saddled", this.isSaddled());
     }
 
     @Override
-    public void readAdditionalSaveData(CompoundTag tag) {
+    protected void readAdditionalSaveData(ValueInput tag) {
         super.readAdditionalSaveData(tag);
-        if (tag.contains("Saddled")) {
-            this.setSaddled(tag.getBoolean("Saddled"));
+        if (tag.getBooleanOr("Saddled", false)) { // Converts saddles from older worlds to the saddle equipment slot.
+            this.setSaddled(true);
         }
     }
 }

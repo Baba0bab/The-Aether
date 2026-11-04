@@ -3,13 +3,13 @@ package com.aetherteam.aether.world.treedecorator;
 import com.aetherteam.aether.AetherTags;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.level.LevelSimulatedReader;
+import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvider;
 import net.minecraft.world.level.levelgen.feature.treedecorators.TreeDecorator;
 import net.minecraft.world.level.levelgen.feature.treedecorators.TreeDecoratorType;
@@ -21,9 +21,9 @@ import java.util.List;
  */
 public class HolidayTreeDecorator extends TreeDecorator {
     public static final MapCodec<HolidayTreeDecorator> CODEC = BlockStateProvider.CODEC.fieldOf("provider").xmap(HolidayTreeDecorator::new, (instance) -> instance.provider);
-    private final BlockStateProvider provider;
+    private final Holder<BlockStateProvider> provider;
 
-    public HolidayTreeDecorator(BlockStateProvider provider) {
+    public HolidayTreeDecorator(Holder<BlockStateProvider> provider) {
         this.provider = provider;
     }
 
@@ -47,7 +47,7 @@ public class HolidayTreeDecorator extends TreeDecorator {
      * @param pos     The initial {@link BlockPos} for placement.
      */
     private void placeCircle(Context context, BlockPos pos) {
-        LevelSimulatedReader level = context.level();
+        WorldGenLevel level = context.level();
         RandomSource random = context.random();
         this.placeBlockAt(context, level, random, pos, 0.0F);
         int radius = 10;
@@ -70,21 +70,21 @@ public class HolidayTreeDecorator extends TreeDecorator {
      * If the block is dirt or grass, a block from the provider will be placed above.
      *
      * @param context  The {@link TreeDecorator.Context}.
-     * @param level    The {@link LevelSimulatedReader} to place the block in.
+     * @param level    The {@link WorldGenLevel} to place the block in.
      * @param random   The  {@link RandomSource}.
      * @param pos      The initial {@link BlockPos} for placement.
      * @param distance The {@link Float} distance to place at.
      */
-    private void placeBlockAt(Context context, LevelSimulatedReader level, RandomSource random, BlockPos pos, float distance) {
+    private void placeBlockAt(Context context, WorldGenLevel level, RandomSource random, BlockPos pos, float distance) {
         for (int i = 9; i >= -4; i--) {
             BlockPos blockPos = pos.above(i);
             if (context.isAir(blockPos.above())) {
-                if ((level.isStateAtPosition(blockPos, HolidayTreeDecorator::isAetherGrass) || level.isStateAtPosition(blockPos, HolidayTreeDecorator::isLeaves) || Feature.isGrassOrDirt(level, blockPos)) && context.isAir(blockPos.above(4))) {
+                if ((level.isStateAtPosition(blockPos, HolidayTreeDecorator::isAetherGrass) || level.isStateAtPosition(blockPos, HolidayTreeDecorator::isLeaves) || level.isStateAtPosition(blockPos, (state) -> state.is(BlockTags.DIRT))) && context.isAir(blockPos.above(4))) {
                     if (distance <= random.nextFloat() / 2 * (1 - distance)) {
                         if (level.isStateAtPosition(blockPos, HolidayTreeDecorator::isLeaves)) {
                             context.setBlock(blockPos.above(), Blocks.SNOW.defaultBlockState());
                         } else {
-                            context.setBlock(blockPos.above(), this.provider.getState(random, blockPos));
+                            context.setBlock(blockPos.above(), this.provider.value().getState(level, random, blockPos));
                         }
                     }
                 }

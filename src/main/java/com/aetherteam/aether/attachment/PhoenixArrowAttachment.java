@@ -1,11 +1,12 @@
 package com.aetherteam.aether.attachment;
 
+import com.mojang.serialization.MapCodec;
 import com.aetherteam.aether.network.packet.PhoenixArrowSyncPacket;
 import com.aetherteam.nitrogen.attachment.INBTSynchable;
 import com.aetherteam.nitrogen.network.packet.SyncPacket;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.world.entity.projectile.AbstractArrow;
+import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.phys.HitResult;
 import org.apache.commons.lang3.tuple.Triple;
@@ -32,7 +33,7 @@ public class PhoenixArrowAttachment implements INBTSynchable {
             Map.entry("setPhoenixArrow", Triple.of(Type.BOOLEAN, (object) -> this.setPhoenixArrow((boolean) object), this::isPhoenixArrow))
     );
 
-    public static final Codec<PhoenixArrowAttachment> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+    public static final MapCodec<PhoenixArrowAttachment> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
             Codec.BOOL.fieldOf("is_phoenix_arrow").forGetter(PhoenixArrowAttachment::isPhoenixArrow),
             Codec.INT.fieldOf("fire_time").forGetter(PhoenixArrowAttachment::getFireTime)
     ).apply(instance, PhoenixArrowAttachment::new));

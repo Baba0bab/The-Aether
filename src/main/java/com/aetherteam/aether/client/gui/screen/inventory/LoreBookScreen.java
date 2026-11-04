@@ -1,16 +1,18 @@
 package com.aetherteam.aether.client.gui.screen.inventory;
 
+import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.locale.Language;
 import com.aetherteam.aether.Aether;
 import com.aetherteam.aether.client.gui.component.inventory.LorePageButton;
 import com.aetherteam.aether.inventory.menu.LoreBookMenu;
 import com.google.common.collect.Lists;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
-import net.minecraft.client.resources.language.I18n;
+import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
@@ -21,8 +23,8 @@ import java.util.List;
 import java.util.Map;
 
 public class LoreBookScreen extends AbstractContainerScreen<LoreBookMenu> {
-    private static final ResourceLocation TEXTURE_LORE_BACKING = ResourceLocation.fromNamespaceAndPath(Aether.MODID, "textures/gui/menu/lore_backing.png");
-    private static final ResourceLocation TEXTURE_LORE_BOOK = ResourceLocation.fromNamespaceAndPath(Aether.MODID, "textures/gui/menu/lore_book.png");
+    private static final Identifier TEXTURE_LORE_BACKING = Identifier.fromNamespaceAndPath(Aether.MODID, "textures/gui/menu/lore_backing.png");
+    private static final Identifier TEXTURE_LORE_BOOK = Identifier.fromNamespaceAndPath(Aether.MODID, "textures/gui/menu/lore_book.png");
 
     private final Map<Integer, List<FormattedCharSequence>> pages = new HashMap<>();
 
@@ -31,9 +33,7 @@ public class LoreBookScreen extends AbstractContainerScreen<LoreBookMenu> {
     private ItemStack lastStack;
 
     public LoreBookScreen(LoreBookMenu menu, Inventory playerInventory, Component title) {
-        super(menu, playerInventory, title);
-        this.imageWidth = 256;
-        this.imageHeight = 199;
+        super(menu, playerInventory, title, 256, 199);
     }
 
     @Override
@@ -54,14 +54,7 @@ public class LoreBookScreen extends AbstractContainerScreen<LoreBookMenu> {
     }
 
     @Override
-    public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
-        this.renderBg(guiGraphics, partialTicks, mouseX, mouseY);
-        super.render(guiGraphics, mouseX, mouseY, partialTicks);
-        this.renderTooltip(guiGraphics, mouseX, mouseY);
-    }
-
-    @Override
-    protected void renderLabels(GuiGraphics guiGraphics, int x, int y) {
+    protected void extractLabels(GuiGraphicsExtractor guiGraphics, int x, int y) {
         // Draws text for the page switching buttons.
         Component previous = Component.translatable("gui.aether.book_of_lore.previous");
         Component next = Component.translatable("gui.aether.book_of_lore.next");
@@ -82,7 +75,7 @@ public class LoreBookScreen extends AbstractContainerScreen<LoreBookMenu> {
         if (!itemStack.isEmpty()) { // Checks if there is an item placed in the book.
             String entryKey = this.getMenu().getLoreEntryKey(itemStack); // Get the translation key for the item's lore entry.
 
-            if (I18n.exists(entryKey)) { // Checks if the lore entry exists for that item.
+            if (Language.getInstance().has(entryKey)) { // Checks if the lore entry exists for that item.
                 Component entry = Component.translatable(entryKey);
                 this.createPages(entry); // Sets up pages.
 
@@ -136,12 +129,12 @@ public class LoreBookScreen extends AbstractContainerScreen<LoreBookMenu> {
     /**
      * Draws the given lines of text on a book page.
      *
-     * @param guiGraphics          The rendering {@link GuiGraphics}.
+     * @param guiGraphics          The rendering {@link GuiGraphicsExtractor}.
      * @param reorderingProcessors The {@link List} of {@link FormattedCharSequence} to render text with.
      * @param x                    The {@link Integer} for the text x-position.
      * @param y                    The {@link Integer} for the text y-position.
      */
-    private void createText(GuiGraphics guiGraphics, List<FormattedCharSequence> reorderingProcessors, int x, int y) {
+    private void createText(GuiGraphicsExtractor guiGraphics, List<FormattedCharSequence> reorderingProcessors, int x, int y) {
         int length = 0;
         for (FormattedCharSequence line : reorderingProcessors) {
             this.drawBookText(guiGraphics, this.font, line, x, y + (length * 10));
@@ -150,29 +143,29 @@ public class LoreBookScreen extends AbstractContainerScreen<LoreBookMenu> {
     }
 
     @Override
-    protected void renderBg(GuiGraphics guiGraphics, float partialTicks, int x, int y) {
+    public void extractBackground(GuiGraphicsExtractor guiGraphics, int x, int y, float partialTicks) {
         int xPos = (this.width - this.nitrogen_fabric$getXSize()) / 2;
         int yPos = (this.height - (this.nitrogen_fabric$getYSize())) / 2;
-        guiGraphics.blit(TEXTURE_LORE_BACKING, xPos, yPos - 4, 0, 0, this.nitrogen_fabric$getXSize(), this.nitrogen_fabric$getYSize() + 56, 256, 256); // Draws the grey GUI backing.
-        guiGraphics.blit(TEXTURE_LORE_BOOK, xPos + 12, yPos + 2, 0, 0, this.nitrogen_fabric$getXSize(), this.nitrogen_fabric$getYSize() + 56, 256, 256); // Draws the book GUI on top of backing.
+        guiGraphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE_LORE_BACKING, xPos, yPos - 4, 0, 0, this.nitrogen_fabric$getXSize(), this.nitrogen_fabric$getYSize() + 56, 256, 256); // Draws the grey GUI backing.
+        guiGraphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE_LORE_BOOK, xPos + 12, yPos + 2, 0, 0, this.nitrogen_fabric$getXSize(), this.nitrogen_fabric$getYSize() + 56, 256, 256); // Draws the book GUI on top of backing.
     }
 
-    private void drawNormalBookText(GuiGraphics guiGraphics, Font fontRenderer, Component component, int x, int y) {
+    private void drawNormalBookText(GuiGraphicsExtractor guiGraphics, Font fontRenderer, Component component, int x, int y) {
         FormattedCharSequence sequence = component.getVisualOrderText();
         this.drawBookText(guiGraphics, fontRenderer, sequence, x, y);
     }
 
-    private void drawRightBookText(GuiGraphics guiGraphics, Font fontRenderer, Component component, int x, int y) {
+    private void drawRightBookText(GuiGraphicsExtractor guiGraphics, Font fontRenderer, Component component, int x, int y) {
         FormattedCharSequence sequence = component.getVisualOrderText();
         this.drawBookText(guiGraphics, fontRenderer, sequence, x - fontRenderer.width(sequence), y);
     }
 
-    private void drawCenteredBookText(GuiGraphics guiGraphics, Font fontRenderer, Component component, int x, int y) {
+    private void drawCenteredBookText(GuiGraphicsExtractor guiGraphics, Font fontRenderer, Component component, int x, int y) {
         FormattedCharSequence sequence = component.getVisualOrderText();
         this.drawBookText(guiGraphics, fontRenderer, sequence, x - fontRenderer.width(sequence) / 2, y);
     }
 
-    private void drawBookText(GuiGraphics guiGraphics, Font fontRenderer, FormattedCharSequence sequence, int x, int y) {
-        guiGraphics.drawString(fontRenderer, sequence, x, y, 4210752, false);
+    private void drawBookText(GuiGraphicsExtractor guiGraphics, Font fontRenderer, FormattedCharSequence sequence, int x, int y) {
+        guiGraphics.text(fontRenderer, sequence, x, y, 0xFF404040, false);
     }
 }

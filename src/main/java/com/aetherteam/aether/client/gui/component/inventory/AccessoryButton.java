@@ -1,17 +1,18 @@
 package com.aetherteam.aether.client.gui.component.inventory;
 
+import com.aetherteam.nitrogen.fabric.network.PacketDistributor;
 import com.aetherteam.aether.client.gui.screen.inventory.AetherAccessoriesScreen;
 import com.aetherteam.aether.network.packet.serverbound.OpenAccessoriesPacket;
 import com.aetherteam.aether.network.packet.serverbound.OpenInventoryPacket;
 import com.aetherteam.nitrogen.fabric.network.PacketDistributor;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.ImageButton;
 import net.minecraft.client.gui.components.WidgetSprites;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
-import net.minecraft.util.Tuple;
+import com.mojang.datafixers.util.Pair;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 
@@ -32,7 +33,7 @@ public class AccessoryButton extends ImageButton {
 
                         if (parentScreen instanceof AetherAccessoriesScreen) {
                             InventoryScreen inventory = new InventoryScreen(player);
-                            minecraft.setScreen(inventory);
+                            minecraft.gui.setScreen(inventory);
                             player.inventoryMenu.setCarried(stack);
                             PacketDistributor.sendToServer(new OpenInventoryPacket(stack));
                         } else {
@@ -44,22 +45,22 @@ public class AccessoryButton extends ImageButton {
     }
 
     @Override
-    public void renderWidget(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
-        Tuple<Integer, Integer> offsets = AetherAccessoriesScreen.getButtonOffset(this.parentScreen);
-        this.setX(this.parentScreen.nitrogen_fabric$getGuiLeft() + offsets.getA());
-        this.setY(this.parentScreen.nitrogen_fabric$getGuiTop() + offsets.getB());
+    public void extractContents(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTicks) {
+        Pair<Integer, Integer> offsets = AetherAccessoriesScreen.getButtonOffset(this.parentScreen);
+        this.setX(this.parentScreen.nitrogen_fabric$getGuiLeft() + offsets.getFirst());
+        this.setY(this.parentScreen.nitrogen_fabric$getGuiTop() + offsets.getSecond());
         if (this.parentScreen instanceof CreativeModeInventoryScreen screen) {
             boolean isInventoryTab = screen.isInventoryOpen();
             this.active = isInventoryTab;
             if (isInventoryTab) {
-                super.renderWidget(guiGraphics, mouseX, mouseY, partialTicks);
+                super.extractContents(guiGraphics, mouseX, mouseY, partialTicks);
             }
         } else if (this.parentScreen instanceof AetherAccessoriesScreen screen) {
             if (screen.getMenu().hasButton) {
-                super.renderWidget(guiGraphics, mouseX, mouseY, partialTicks);
+                super.extractContents(guiGraphics, mouseX, mouseY, partialTicks);
             }
         } else {
-            super.renderWidget(guiGraphics, mouseX, mouseY, partialTicks);
+            super.extractContents(guiGraphics, mouseX, mouseY, partialTicks);
         }
     }
 }

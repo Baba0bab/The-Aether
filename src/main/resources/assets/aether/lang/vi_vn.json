@@ -723,7 +723,7 @@
   "itemGroup.aether.natural_blocks": "Khối Tự Nhiên Aether",
   "itemGroup.aether.redstone_blocks": "Khối Đá Đỏ Aether",
   "itemGroup.aether.spawn_eggs": "Trứng Sinh Ra Aether",
-  "key.aether.category": "Aether",
+  "key.category.aether.aether": "Aether",
   "key.aether.gravitite_jump_ability.desc": "Kích Hoạt Nhảy Gravitite",
   "key.aether.invisibility_toggle.desc": "Chuyển Đổi Tàng Hình",
   "key.aether.open_accessories.desc": "Mở/Đóng Túi Phụ Kiện",

@@ -1,5 +1,10 @@
 //package com.aetherteam.aether.data.generators.tags;
 //
+//import net.minecraft.world.level.block.Block;
+//import net.minecraft.tags.BlockItemTags;
+//import net.minecraft.tags.TagKey;
+//import net.minecraft.core.registries.BuiltInRegistries;
+//import com.aetherteam.nitrogen.data.providers.IntrinsicTagAppender;
 //import com.aetherteam.aether.Aether;
 //import com.aetherteam.aether.AetherTags;
 //import com.aetherteam.aether.block.AetherBlocks;
@@ -9,14 +14,17 @@
 //import net.minecraft.world.level.block.Blocks;
 //import net.neoforged.neoforge.common.Tags;
 //import net.neoforged.neoforge.common.data.BlockTagsProvider;
-//import net.neoforged.neoforge.common.data.ExistingFileHelper;
 //
-//import org.jetbrains.annotations.Nullable;
 //import java.util.concurrent.CompletableFuture;
 //
 //public class AetherBlockTagData extends BlockTagsProvider {
-//    public AetherBlockTagData(PackOutput output, CompletableFuture<HolderLookup.Provider> registries, @Nullable ExistingFileHelper helper) {
-//        super(output, registries, Aether.MODID, helper);
+//    public AetherBlockTagData(PackOutput output, CompletableFuture<HolderLookup.Provider> registries) {
+//        super(output, registries, Aether.MODID);
+//    }
+//
+//    @Override
+//    protected IntrinsicTagAppender<Block> tag(TagKey<Block> tag) {
+//        return new IntrinsicTagAppender<>(super.tag(tag), (element) -> BuiltInRegistries.BLOCK.getResourceKey(element).orElseThrow());
 //    }
 //
 //    @SuppressWarnings("unchecked")
@@ -180,6 +188,25 @@
 //                AetherTags.Blocks.TRAPPED_DUNGEON_BLOCKS,
 //                AetherTags.Blocks.BOSS_DOORWAY_DUNGEON_BLOCKS,
 //                AetherTags.Blocks.TREASURE_DOORWAY_DUNGEON_BLOCKS);
+//        this.tag(AetherTags.Blocks.SUN_SPIRIT_UNBREAKABLE).add(
+//                Blocks.WATER,
+//                Blocks.BEDROCK,
+//                Blocks.END_PORTAL,
+//                Blocks.END_PORTAL_FRAME,
+//                Blocks.END_GATEWAY,
+//                Blocks.COMMAND_BLOCK,
+//                Blocks.REPEATING_COMMAND_BLOCK,
+//                Blocks.CHAIN_COMMAND_BLOCK,
+//                Blocks.STRUCTURE_BLOCK,
+//                Blocks.JIGSAW,
+//                Blocks.MOVING_PISTON,
+//                Blocks.LIGHT,
+//                Blocks.REINFORCED_DEEPSLATE
+//        ).addTags(
+//                AetherTags.Blocks.LOCKED_DUNGEON_BLOCKS,
+//                AetherTags.Blocks.TRAPPED_DUNGEON_BLOCKS,
+//                AetherTags.Blocks.BOSS_DOORWAY_DUNGEON_BLOCKS,
+//                AetherTags.Blocks.TREASURE_DOORWAY_DUNGEON_BLOCKS);
 //        this.tag(AetherTags.Blocks.NON_RUINED_PORTAL_SPAWNABLE);
 //        this.tag(AetherTags.Blocks.RUINED_PORTAL_GROUND_REPLACEABLE)
 //                .addTag(BlockTags.BASE_STONE_OVERWORLD)
@@ -223,6 +250,18 @@
 //                AetherBlocks.LOCKED_ANGELIC_STONE.get(),
 //                AetherBlocks.LOCKED_LIGHT_ANGELIC_STONE.get());
 //        this.tag(AetherTags.Blocks.TREATED_AS_AETHER_BLOCK);
+//        this.tag(AetherTags.Blocks.DOUBLE_DROPS_OVERRIDE);
+//        this.tag(AetherTags.Blocks.HOLYSTONE_ORE_REPLACEABLES).add(AetherBlocks.HOLYSTONE.get());
+//        this.tag(AetherTags.Blocks.ORE_BEARING_GROUND_HOLYSTONE).add(AetherBlocks.HOLYSTONE.get());
+//        this.tag(AetherTags.Blocks.ORES_AMBROSIUM).add(AetherBlocks.AMBROSIUM_ORE.get());
+//        this.tag(AetherTags.Blocks.ORES_ZANITE).add(AetherBlocks.ZANITE_ORE.get());
+//        this.tag(AetherTags.Blocks.ORES_GRAVITITE).add(AetherBlocks.GRAVITITE_ORE.get());
+//        this.tag(AetherTags.Blocks.ORES_IN_GROUND_HOLYSTONE).add(
+//            AetherBlocks.AMBROSIUM_ORE.get(),
+//            AetherBlocks.ZANITE_ORE.get(),
+//            AetherBlocks.GRAVITITE_ORE.get());
+//        this.tag(AetherTags.Blocks.STORAGE_BLOCKS_AMBROSIUM).add(AetherBlocks.AMBROSIUM_BLOCK.get());
+//        this.tag(AetherTags.Blocks.STORAGE_BLOCKS_ZANITE).add(AetherBlocks.ZANITE_BLOCK.get());
 //
 //        // Vanilla
 //        this.tag(BlockTags.WOODEN_STAIRS).add(AetherBlocks.SKYROOT_STAIRS.get());
@@ -242,7 +281,7 @@
 //        this.tag(BlockTags.SAPLINGS).add(
 //                AetherBlocks.SKYROOT_SAPLING.get(),
 //                AetherBlocks.GOLDEN_OAK_SAPLING.get());
-//        this.tag(BlockTags.LOGS_THAT_BURN).addTags(
+//        this.tag(BlockItemTags.LOGS_THAT_BURN.block()).addTags(
 //                AetherTags.Blocks.SKYROOT_LOGS,
 //                AetherTags.Blocks.GOLDEN_OAK_LOGS);
 //        this.tag(BlockTags.STAIRS).add(
@@ -300,7 +339,7 @@
 //                AetherBlocks.WHITE_FLOWER.get());
 //        this.tag(BlockTags.VALID_SPAWN).addTag(AetherTags.Blocks.AETHER_DIRT);
 //        this.tag(BlockTags.IMPERMEABLE).add(AetherBlocks.QUICKSOIL_GLASS.get());
-//        this.tag(BlockTags.BAMBOO_PLANTABLE_ON).addTag(AetherTags.Blocks.AETHER_DIRT);
+//        this.tag(BlockTags.SUPPORTS_BAMBOO).addTag(AetherTags.Blocks.AETHER_DIRT);
 //        this.tag(BlockTags.SIGNS).add(
 //                AetherBlocks.SKYROOT_SIGN.get(),
 //                AetherBlocks.SKYROOT_WALL_SIGN.get());
@@ -455,7 +494,7 @@
 //                AetherBlocks.AEROGEL_STAIRS.get(),
 //                AetherBlocks.AEROGEL_SLAB.get(),
 //                AetherBlocks.AEROGEL_WALL.get());
-//        this.tag(BlockTags.CONVERTABLE_TO_MUD).add(AetherBlocks.AETHER_DIRT.get());
+//        this.tag(BlockTags.CONVERTIBLE_TO_MUD).add(AetherBlocks.AETHER_DIRT.get());
 //        this.tag(BlockTags.SCULK_REPLACEABLE).addTag(AetherTags.Blocks.HOLYSTONE).add(
 //                AetherBlocks.AETHER_DIRT.get(),
 //                AetherBlocks.QUICKSOIL.get()
@@ -467,7 +506,7 @@
 //                AetherBlocks.ZANITE_ORE.get(),
 //                AetherBlocks.GRAVITITE_ORE.get()
 //        );
-//        this.tag(BlockTags.SNOW_LAYER_CANNOT_SURVIVE_ON).add(AetherBlocks.ICESTONE.get());
+//        this.tag(BlockTags.CANNOT_SUPPORT_SNOW_LAYER).add(AetherBlocks.ICESTONE.get());
 //        this.tag(BlockTags.ENCHANTMENT_POWER_PROVIDER).add(AetherBlocks.SKYROOT_BOOKSHELF.get());
 //        this.tag(BlockTags.SNIFFER_DIGGABLE_BLOCK).add(
 //                AetherBlocks.AETHER_GRASS_BLOCK.get(),
@@ -489,9 +528,15 @@
 //                AetherBlocks.AMBROSIUM_ORE.get(),
 //                AetherBlocks.ZANITE_ORE.get(),
 //                AetherBlocks.GRAVITITE_ORE.get());
+//        this.tag(Tags.Blocks.RELOCATION_NOT_SUPPORTED).addTags(AetherTags.Blocks.TRAPPED_DUNGEON_BLOCKS,
+//            AetherTags.Blocks.LOCKED_DUNGEON_BLOCKS,
+//            AetherTags.Blocks.BOSS_DOORWAY_DUNGEON_BLOCKS,
+//            AetherTags.Blocks.TREASURE_DOORWAY_DUNGEON_BLOCKS);
 //        this.tag(Tags.Blocks.STONES).addTag(AetherTags.Blocks.HOLYSTONE);
 //        this.tag(Tags.Blocks.STORAGE_BLOCKS).add(
 //                AetherBlocks.AMBROSIUM_BLOCK.get(),
 //                AetherBlocks.ZANITE_BLOCK.get());
+//        this.tag(Tags.Blocks.STRIPPED_LOGS).add(AetherBlocks.STRIPPED_SKYROOT_LOG.get());
+//        this.tag(Tags.Blocks.STRIPPED_WOODS).add(AetherBlocks.STRIPPED_SKYROOT_WOOD.get());
 //    }
 //}

@@ -1,5 +1,7 @@
 package com.aetherteam.aether.loot.modifiers;
 
+import net.minecraft.core.Holder;
+import java.util.Optional;
 import com.aetherteam.aether.AetherTags;
 import com.aetherteam.nitrogen.fabric.loot.IGlobalLootModifier;
 import com.aetherteam.nitrogen.fabric.loot.LootModifier;
@@ -17,8 +19,8 @@ import net.minecraft.world.phys.Vec3;
 public class RemoveSeedsModifier extends LootModifier {
     public static final MapCodec<RemoveSeedsModifier> CODEC = RecordCodecBuilder.mapCodec((instance) -> LootModifier.codecStart(instance).apply(instance, RemoveSeedsModifier::new));
 
-    public RemoveSeedsModifier(LootItemCondition[] conditions) {
-        super(conditions);
+    public RemoveSeedsModifier(Optional<Holder<LootItemCondition>> conditions, int priority) {
+        super(conditions, priority);
     }
 
     /**
@@ -30,7 +32,7 @@ public class RemoveSeedsModifier extends LootModifier {
      */
     @Override
     public ObjectArrayList<ItemStack> doApply(ObjectArrayList<ItemStack> lootStacks, LootContext context) {
-        Vec3 originVec = context.getParamOrNull(LootContextParams.ORIGIN);
+        Vec3 originVec = context.getOptional(LootContextParams.ORIGIN);
         if (originVec != null && context.getLevel().getBiome(BlockPos.containing(originVec)).is(AetherTags.Biomes.NO_WHEAT_SEEDS)) {
             lootStacks.removeIf((itemStack) -> itemStack.is(Items.WHEAT_SEEDS));
         }

@@ -4,11 +4,17 @@ import com.aetherteam.aether.attachment.AetherDataAttachments;
 import com.aetherteam.aether.client.AetherClient;
 import com.aetherteam.nitrogen.fabric.client.events.PlayerRenderEvents;
 import com.aetherteam.nitrogen.fabric.events.CancellableCallback;
+import com.aetherteam.aether.client.renderer.AetherRenderStateModifiers;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.renderer.entity.state.AvatarRenderState;
 import net.minecraft.world.entity.player.Player;
+
+import java.util.Objects;
 
 public class AccessoryAbilityClientListener {
     /**
-     * @see AetherClient#eventSetup()
+     * @see AetherClient#eventSetup(IEventBus)
      */
     public static void listen() {
         PlayerRenderEvents.BEFORE_RENDER.register((player, renderer, partialTick, poseStack, multiBufferSource, packedLight, callback) -> onRenderPlayer(player, callback));
@@ -18,10 +24,11 @@ public class AccessoryAbilityClientListener {
     /**
      * Disables the player's rendering completely if wearing an Invisibility Cloak.
      */
-    public static void onRenderPlayer(Player player, CancellableCallback callback) {
-        if (!callback.isCanceled()) {
-            if (player.getAttachedOrCreate(AetherDataAttachments.AETHER_PLAYER).isWearingInvisibilityCloak()) {
-                callback.setCanceled(true);
+    public static void onRenderPlayer(RenderPlayerEvent.Pre<?> event) {
+        AvatarRenderState playerRenderState = event.getRenderState();
+        if (!event.isCanceled()) {
+            if (playerRenderState.getRenderDataOrDefault(AetherRenderStateModifiers.HAS_INVISIBILITY_CLOAK, false)) {
+                event.setCanceled(true);
             }
         }
     }

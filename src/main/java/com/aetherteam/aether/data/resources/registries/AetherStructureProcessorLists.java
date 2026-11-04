@@ -1,5 +1,7 @@
 package com.aetherteam.aether.data.resources.registries;
 
+import com.aetherteam.aether.AetherTags;
+import net.minecraft.world.level.levelgen.structure.templatesystem.ProtectedBlockProcessor;
 import com.aetherteam.aether.Aether;
 import com.aetherteam.aether.world.processor.*;
 import com.aetherteam.aether.world.structurepiece.bronzedungeon.BronzeDungeonPiece;
@@ -9,7 +11,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.levelgen.structure.templatesystem.AxisAlignedLinearPosTest;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessor;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessorList;
@@ -30,20 +32,22 @@ public class AetherStructureProcessorLists {
     public static final ResourceKey<StructureProcessorList> GOLD_BOSS_ROOM = createKey("gold_boss_room");
 
     private static ResourceKey<StructureProcessorList> createKey(String name) {
-        return ResourceKey.create(Registries.PROCESSOR_LIST, ResourceLocation.fromNamespaceAndPath(Aether.MODID, name));
+        return ResourceKey.create(Registries.PROCESSOR_LIST, Identifier.fromNamespaceAndPath(Aether.MODID, name));
     }
 
     private static final AxisAlignedLinearPosTest ON_FLOOR = new AxisAlignedLinearPosTest(1.0F, 0.0F, 0, 1, Direction.Axis.Y);
 
     public static void bootstrap(BootstrapContext<StructureProcessorList> context) {
+        // This helps Bronze Dungeons merge more cleanly when they overlap, and blends the tunnels in with the landscape.
+        ProtectedBlockProcessor avoidDungeons = new ProtectedBlockProcessor(context.lookup(Registries.BLOCK).getOrThrow(AetherTags.Blocks.NON_BRONZE_DUNGEON_REPLACEABLE));
         register(context, BRONZE_ROOM, List.of(
             BronzeDungeonPiece.BRONZE_DUNGEON_STONE,
             BronzeDungeonPiece.TRAPPED_CARVED_STONE,
-            BronzeDungeonPiece.AVOID_DUNGEONS,
+            avoidDungeons,
             DoubleDropsProcessor.INSTANCE
         ));
         register(context, BRONZE_TUNNEL, List.of(
-            BronzeDungeonPiece.AVOID_DUNGEONS,
+            avoidDungeons,
             BronzeDungeonPiece.BRONZE_DUNGEON_STONE,
             DoubleDropsProcessor.INSTANCE
         ));

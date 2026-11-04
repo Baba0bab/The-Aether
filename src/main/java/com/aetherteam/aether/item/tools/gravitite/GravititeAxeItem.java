@@ -3,13 +3,12 @@ package com.aetherteam.aether.item.tools.gravitite;
 import com.aetherteam.aether.item.combat.AetherItemTiers;
 import com.aetherteam.aether.item.tools.abilities.GravititeTool;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.item.AxeItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.context.UseOnContext;
 
-public class GravititeAxeItem extends AxeItem implements GravititeTool {
-    public GravititeAxeItem() {
-        super(AetherItemTiers.GRAVITITE, new Item.Properties().attributes(AxeItem.createAttributes(AetherItemTiers.GRAVITITE, 5.0F, -3.0F)));
+public class GravititeAxeItem extends Item implements GravititeTool {
+    public GravititeAxeItem(Properties properties) {
+        super(properties.axe(AetherItemTiers.GRAVITITE, 5.0F, -3.0F));
     }
 
     /**
@@ -23,7 +22,7 @@ public class GravititeAxeItem extends AxeItem implements GravititeTool {
         if (!this.floatBlock(context)) {
             return super.useOn(context);
         } else {
-            return InteractionResult.sidedSuccess(context.getLevel().isClientSide());
+            return InteractionResult.SUCCESS;
         }
     }
 }

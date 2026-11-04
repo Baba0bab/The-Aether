@@ -1,5 +1,7 @@
 package com.aetherteam.aether.entity.projectile.crystal;
 
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
 import com.aetherteam.aether.client.AetherSoundEvents;
 import com.aetherteam.aether.data.resources.registries.AetherDamageTypes;
 import com.aetherteam.aether.entity.AetherEntityTypes;
@@ -7,6 +9,7 @@ import com.aetherteam.aether.entity.monster.dungeon.boss.SunSpirit;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
@@ -72,13 +75,15 @@ public class FireCrystal extends AbstractCrystal {
     protected void onHitEntity(EntityHitResult result) {
         Entity entity = result.getEntity();
         if (entity instanceof LivingEntity livingEntity) {
-            if (livingEntity.hurt(AetherDamageTypes.indirectEntityDamageSource(this.level(), AetherDamageTypes.FIRE_CRYSTAL, this, this.getOwner()), 15.0F)) {
-                livingEntity.igniteForSeconds(6);
-                if (this.getImpactExplosionSoundEvent() != null) {
-                    this.level().playSound(null, this.getX(), this.getY(), this.getZ(), this.getImpactExplosionSoundEvent(), SoundSource.HOSTILE, 2.0F, this.random.nextFloat() - this.random.nextFloat() * 0.2F + 1.2F);
-                }
-                if (!this.level().isClientSide()) {
-                    this.discard();
+            if (this.level() instanceof ServerLevel serverLevel) {
+                if (livingEntity.hurtServer(serverLevel, AetherDamageTypes.indirectEntityDamageSource(this.level(), AetherDamageTypes.FIRE_CRYSTAL, this, this.getOwner()), 15.0F)) {
+                    livingEntity.igniteForSeconds(6);
+                    if (this.getImpactExplosionSoundEvent() != null) {
+                        this.level().playSound(null, this.getX(), this.getY(), this.getZ(), this.getImpactExplosionSoundEvent(), SoundSource.HOSTILE, 2.0F, this.random.nextFloat() - this.random.nextFloat() * 0.2F + 1.2F);
+                    }
+                    if (!this.level().isClientSide()) {
+                        this.discard();
+                    }
                 }
             }
         }
@@ -101,12 +106,12 @@ public class FireCrystal extends AbstractCrystal {
     }
 
     /**
-     * [CODE COPY] - {@link net.minecraft.world.entity.projectile.AbstractHurtingProjectile#hurt(DamageSource, float)}<br><br>
+     * [CODE COPY] - {@link net.minecraft.world.entity.projectile.hurtingprojectile.AbstractHurtingProjectile#hurtServer(ServerLevel, DamageSource, float)}<br><br>
      * The Fire Crystal doesn't reset the owner when hit back. It'll be a threat until it despawns.
      */
     @Override
-    public boolean hurt(DamageSource source, float amount) {
-        if (this.isInvulnerableTo(source)) {
+    public boolean hurtServer(ServerLevel serverLevel, DamageSource source, float amount) {
+        if (this.isInvulnerableToBase(source)) {
             return false;
         } else {
             this.markHurt();
@@ -139,7 +144,7 @@ public class FireCrystal extends AbstractCrystal {
     }
 
     @Override
-    public void addAdditionalSaveData(CompoundTag tag) {
+    protected void addAdditionalSaveData(ValueOutput tag) {
         super.addAdditionalSaveData(tag);
         tag.putDouble("XSpeed", this.xPower);
         tag.putDouble("YSpeed", this.yPower);
@@ -147,10 +152,10 @@ public class FireCrystal extends AbstractCrystal {
     }
 
     @Override
-    public void readAdditionalSaveData(CompoundTag tag) {
+    protected void readAdditionalSaveData(ValueInput tag) {
         super.readAdditionalSaveData(tag);
-        this.xPower = tag.getDouble("XSpeed");
-        this.yPower = tag.getDouble("YSpeed");
-        this.zPower = tag.getDouble("ZSpeed");
+        this.xPower = tag.getDoubleOr("XSpeed", 0.0);
+        this.yPower = tag.getDoubleOr("YSpeed", 0.0);
+        this.zPower = tag.getDoubleOr("ZSpeed", 0.0);
     }
 }

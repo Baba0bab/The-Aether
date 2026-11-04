@@ -1,7 +1,7 @@
 package com.aetherteam.aether;
 
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.damagesource.DamageType;
@@ -11,6 +11,7 @@ import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.level.material.Fluid;
+import net.minecraft.world.timeline.Timeline;
 
 public class AetherTags {
     public static class Blocks {
@@ -62,7 +63,7 @@ public class AetherTags {
         public static final TagKey<Block> STORAGE_BLOCKS_ZANITE = tag("storage_blocks/zanite");
 
         private static TagKey<Block> tag(String name) {
-            return TagKey.create(Registries.BLOCK, ResourceLocation.fromNamespaceAndPath(Aether.MODID, name));
+            return TagKey.create(Registries.BLOCK, Identifier.fromNamespaceAndPath(Aether.MODID, name));
         }
     }
 
@@ -149,6 +150,13 @@ public class AetherTags {
         public static final TagKey<Item> GEMS_ZANITE = tag("gems/zanite");
         public static final TagKey<Item> PROCESSED_GRAVITITE = tag("processed/gravitite");
 
+        public static final TagKey<Item> LEATHER_ARMOR = tag("armors/leather");
+        public static final TagKey<Item> CHAINMAIL_ARMOR = tag("armors/chainmail");
+        public static final TagKey<Item> IRON_ARMOR = tag("armors/iron");
+        public static final TagKey<Item> GOLDEN_ARMOR = tag("armors/golden");
+        public static final TagKey<Item> DIAMOND_ARMOR = tag("armors/diamond");
+        public static final TagKey<Item> NETHERITE_ARMOR = tag("armors/netherite");
+
         public static final TagKey<Item> TOOLS_LANCES = tag("tools/lances");
         public static final TagKey<Item> TOOLS_HAMMERS = tag("tools/hammers");
 
@@ -164,11 +172,11 @@ public class AetherTags {
         public static final TagKey<Item> RANDOMIUM_BLACKLIST = moddedTag("randomium", "blacklist");
 
         private static TagKey<Item> tag(String name) {
-            return TagKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath(Aether.MODID, name));
+            return TagKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath(Aether.MODID, name));
         }
 
         private static TagKey<Item> moddedTag(String modid, String name) {
-            return TagKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath(modid, name));
+            return TagKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath(modid, name));
         }
     }
 
@@ -190,7 +198,7 @@ public class AetherTags {
         public static final TagKey<EntityType<?>> SLIDER_DAMAGING_PROJECTILES = tag("slider_damaging_projectiles");
 
         private static TagKey<EntityType<?>> tag(String name) {
-            return TagKey.create(Registries.ENTITY_TYPE, ResourceLocation.fromNamespaceAndPath(Aether.MODID, name));
+            return TagKey.create(Registries.ENTITY_TYPE, Identifier.fromNamespaceAndPath(Aether.MODID, name));
         }
     }
 
@@ -198,7 +206,7 @@ public class AetherTags {
         public static final TagKey<Fluid> ALLOWED_BUCKET_PICKUP = tag("allowed_bucket_pickup");
 
         private static TagKey<Fluid> tag(String name) {
-            return TagKey.create(Registries.FLUID, ResourceLocation.fromNamespaceAndPath(Aether.MODID, name));
+            return TagKey.create(Registries.FLUID, Identifier.fromNamespaceAndPath(Aether.MODID, name));
         }
     }
 
@@ -227,7 +235,7 @@ public class AetherTags {
         public static final TagKey<Biome> AETHER_MUSIC = tag("aether_music");
 
         private static TagKey<Biome> tag(String name) {
-            return TagKey.create(Registries.BIOME, ResourceLocation.fromNamespaceAndPath(Aether.MODID, name));
+            return TagKey.create(Registries.BIOME, Identifier.fromNamespaceAndPath(Aether.MODID, name));
         }
     }
 
@@ -235,7 +243,15 @@ public class AetherTags {
         public static final TagKey<Structure> DUNGEONS = tag("dungeons");
 
         private static TagKey<Structure> tag(String name) {
-            return TagKey.create(Registries.STRUCTURE, ResourceLocation.fromNamespaceAndPath(Aether.MODID, name));
+            return TagKey.create(Registries.STRUCTURE, Identifier.fromNamespaceAndPath(Aether.MODID, name));
+        }
+    }
+
+    public static class Timelines {
+        public static final TagKey<Timeline> IN_AETHER = tag("in_aether");
+
+        private static TagKey<Timeline> tag(String name) {
+            return TagKey.create(Registries.TIMELINE, Identifier.fromNamespaceAndPath(Aether.MODID, name));
         }
     }
 
@@ -243,7 +259,7 @@ public class AetherTags {
         public static final TagKey<DamageType> IS_COLD = tag("is_cold");
 
         private static TagKey<DamageType> tag(String name) {
-            return TagKey.create(Registries.DAMAGE_TYPE, ResourceLocation.fromNamespaceAndPath(Aether.MODID, name));
+            return TagKey.create(Registries.DAMAGE_TYPE, Identifier.fromNamespaceAndPath(Aether.MODID, name));
         }
     }
 
@@ -255,7 +271,7 @@ public class AetherTags {
         public static final TagKey<SoundEvent> BOSS_MUSIC = tag("boss_music");
 
         private static TagKey<SoundEvent> tag(String name) {
-            return TagKey.create(Registries.SOUND_EVENT, ResourceLocation.fromNamespaceAndPath(Aether.MODID, name));
+            return TagKey.create(Registries.SOUND_EVENT, Identifier.fromNamespaceAndPath(Aether.MODID, name));
         }
     }
 }

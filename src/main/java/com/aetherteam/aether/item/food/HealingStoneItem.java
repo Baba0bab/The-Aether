@@ -1,12 +1,14 @@
 package com.aetherteam.aether.item.food;
 
+import com.aetherteam.aether.item.AetherConsumables;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Rarity;
 
 public class HealingStoneItem extends Item {
-    public HealingStoneItem() {
-        super(new Item.Properties().rarity(Rarity.RARE).food(AetherFoods.HEALING_STONE));
+    public HealingStoneItem(Properties properties) {
+        super(properties.rarity(Rarity.RARE).food(AetherFoods.HEALING_STONE).component(DataComponents.CONSUMABLE, AetherConsumables.HEALING_STONE));
     }
 
     /**

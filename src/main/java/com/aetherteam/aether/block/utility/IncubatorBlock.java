@@ -1,9 +1,9 @@
 package com.aetherteam.aether.block.utility;
 
+import net.minecraft.core.Direction;
 import com.aetherteam.aether.blockentity.AetherBlockEntityTypes;
 import com.aetherteam.aether.blockentity.IncubatorBlockEntity;
 import com.aetherteam.aether.client.AetherSoundEvents;
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
@@ -32,17 +32,11 @@ import net.minecraft.world.phys.BlockHitResult;
  */
 public class IncubatorBlock extends BaseEntityBlock {
 
-    public static final MapCodec<IncubatorBlock> CODEC = simpleCodec(IncubatorBlock::new);
     public static final BooleanProperty LIT = BlockStateProperties.LIT;
 
     public IncubatorBlock(Properties properties) {
         super(properties);
         this.registerDefaultState(this.getStateDefinition().any().setValue(LIT, false));
-    }
-
-    @Override
-    protected MapCodec<? extends BaseEntityBlock> codec() {
-        return CODEC;
     }
 
     @Override
@@ -57,7 +51,7 @@ public class IncubatorBlock extends BaseEntityBlock {
 
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> blockEntityType) {
-        return createTickerHelper(blockEntityType, AetherBlockEntityTypes.INCUBATOR.get(), IncubatorBlockEntity::serverTick);
+        return level instanceof ServerLevel serverLevel ?  createTickerHelper(blockEntityType, AetherBlockEntityTypes.INCUBATOR.get(), (blockEntityLevel, pos, blockEntityState, blockEntity) -> IncubatorBlockEntity.serverTick(serverLevel, pos, blockEntityState, blockEntity)) : null;
     }
 
     @Override
@@ -71,17 +65,8 @@ public class IncubatorBlock extends BaseEntityBlock {
     }
 
     @Override
-    public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean isMoving) {
-        if (!state.is(newState.getBlock())) {
-            BlockEntity blockentity = level.getBlockEntity(pos);
-            if (blockentity instanceof IncubatorBlockEntity incubatorBlockEntity) {
-                if (level instanceof ServerLevel) {
-                    Containers.dropContents(level, pos, incubatorBlockEntity);
-                }
-                level.updateNeighbourForOutputSignal(pos, this);
-            }
-            super.onRemove(state, level, pos, newState, isMoving);
-        }
+    protected void affectNeighborsAfterRemoval(BlockState state, ServerLevel level, BlockPos pos, boolean movedByPiston) {
+        Containers.updateNeighboursAfterDestroy(state, level, pos);
     }
 
     protected void openContainer(Level level, BlockPos pos, Player player) {
@@ -94,7 +79,7 @@ public class IncubatorBlock extends BaseEntityBlock {
     }
 
     @Override
-    public int getAnalogOutputSignal(BlockState state, Level level, BlockPos pos) {
+    protected int getAnalogOutputSignal(BlockState state, Level level, BlockPos pos, Direction direction) {
         return AbstractContainerMenu.getRedstoneSignalFromBlockEntity(level.getBlockEntity(pos));
     }
 

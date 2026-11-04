@@ -5,7 +5,7 @@ import com.aetherteam.aether.client.renderer.blockentity.TreasureChestRenderer;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.minecraft.client.renderer.blockentity.ChestRenderer;
-import net.minecraft.client.resources.model.Material;
+import net.minecraft.client.resources.model.sprite.Material;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.properties.ChestType;
 import org.spongepowered.asm.mixin.Mixin;

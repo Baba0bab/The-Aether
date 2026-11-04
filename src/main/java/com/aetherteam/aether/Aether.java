@@ -1,5 +1,11 @@
 package com.aetherteam.aether;
 
+import com.aetherteam.aether.entity.AetherEntityDataSerializers;
+import net.minecraft.core.cauldron.CauldronInteractions;
+import java.util.stream.Stream;
+import java.util.Arrays;
+import net.minecraft.server.packs.PackResources;
+import net.minecraft.server.packs.PackMetadataResources;
 import com.aetherteam.aether.advancement.AetherAdvancementTriggers;
 import com.aetherteam.aether.api.AetherAdvancementSoundOverrides;
 import com.aetherteam.aether.api.registers.MoaType;
@@ -9,12 +15,10 @@ import com.aetherteam.aether.block.AetherCauldronInteractions;
 import com.aetherteam.aether.block.AetherWoodTypes;
 import com.aetherteam.aether.block.dispenser.AetherDispenseBehaviors;
 import com.aetherteam.aether.block.dispenser.DispenseUsableItemBehavior;
-import com.aetherteam.aether.block.dispenser.SkyrootBoatDispenseBehavior;
 import com.aetherteam.aether.blockentity.AetherBlockEntityTypes;
 import com.aetherteam.aether.blockentity.TreasureChestBlockEntity;
 import com.aetherteam.aether.client.AetherClient;
 import com.aetherteam.aether.client.AetherSoundEvents;
-import com.aetherteam.aether.client.CombinedPackResources;
 import com.aetherteam.aether.client.TriviaGenerator;
 import com.aetherteam.aether.client.particle.AetherParticleTypes;
 import com.aetherteam.aether.command.AetherCommands;
@@ -42,12 +46,13 @@ import com.aetherteam.aether.inventory.AetherRecipeBookTypes;
 import com.aetherteam.aether.inventory.menu.AetherMenuTypes;
 import com.aetherteam.aether.item.AetherCreativeTabs;
 import com.aetherteam.aether.item.AetherItems;
-import com.aetherteam.aether.item.combat.AetherArmorMaterials;
 import com.aetherteam.aether.item.combat.ZaniteSwordItem;
 import com.aetherteam.aether.item.combat.loot.FlamingSwordItem;
 import com.aetherteam.aether.item.combat.loot.HolySwordItem;
 import com.aetherteam.aether.item.combat.loot.PigSlayerItem;
 import com.aetherteam.aether.item.components.AetherDataComponents;
+import com.aetherteam.aether.item.miscellaneous.bucket.SkyrootBucketItem;
+import com.aetherteam.aether.item.miscellaneous.bucket.SkyrootBucketResourceHandler;
 import com.aetherteam.aether.loot.conditions.AetherLootConditions;
 import com.aetherteam.aether.loot.functions.AetherLootFunctions;
 import com.aetherteam.aether.loot.modifiers.AetherLootModifiers;
@@ -58,6 +63,9 @@ import com.aetherteam.aether.network.packet.clientbound.*;
 import com.aetherteam.aether.network.packet.serverbound.*;
 import com.aetherteam.aether.recipe.AetherRecipeSerializers;
 import com.aetherteam.aether.recipe.AetherRecipeTypes;
+import com.aetherteam.aether.recipe.book.AetherRecipeBookCategories;
+import com.aetherteam.aether.recipe.display.AetherRecipeDisplays;
+import com.aetherteam.aether.recipe.recipes.set.AetherRecipePropertySets;
 import com.aetherteam.aether.world.AetherPoi;
 import com.aetherteam.aether.world.feature.AetherFeatures;
 import com.aetherteam.aether.world.foliageplacer.AetherFoliagePlacerTypes;
@@ -76,23 +84,24 @@ import com.aetherteam.nitrogen.fabric.registries.DeferredRegister;
 import com.aetherteam.nitrogen.fabric.registries.datamaps.RegisterDataMapTypesEvent;
 import com.google.common.reflect.Reflection;
 import com.mojang.logging.LogUtils;
-import fuzs.forgeconfigapiport.fabric.api.neoforge.v4.NeoForgeConfigRegistry;
-import io.wispforest.accessories.api.slot.UniqueSlotHandling;
+import fuzs.forgeconfigapiport.fabric.api.v5.ConfigRegistry;
+import net.fabricmc.fabric.api.transfer.v1.item.ContainerStorage;
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
+import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
 import net.fabricmc.fabric.api.event.registry.DynamicRegistries;
-import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
-import net.fabricmc.fabric.api.registry.FlattenableBlockRegistry;
-import net.fabricmc.fabric.api.registry.StrippableBlockRegistry;
-import net.fabricmc.fabric.api.registry.TillableBlockRegistry;
+import net.fabricmc.fabric.api.creativetab.v1.CreativeModeTabEvents;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
-import net.fabricmc.fabric.api.transfer.v1.item.InventoryStorage;
+import net.fabricmc.fabric.api.transfer.v1.item.ContainerStorage;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemStorage;
 import net.fabricmc.loader.api.FabricLoader;
+import net.fabricmc.loader.api.ModContainer;
 import net.minecraft.ChatFormatting;
 import net.minecraft.SharedConstants;
 import net.minecraft.core.cauldron.CauldronInteraction;
+import net.minecraft.core.dispenser.BoatDispenseItemBehavior;
 import net.minecraft.core.dispenser.ProjectileDispenseBehavior;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.packs.PackLocationInfo;
@@ -105,6 +114,8 @@ import net.minecraft.server.packs.repository.PackCompatibility;
 import net.minecraft.server.packs.repository.PackSource;
 import net.minecraft.world.Container;
 import net.minecraft.world.flag.FeatureFlagSet;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.ChestBlock;
 import net.minecraft.world.level.block.DispenserBlock;
 import net.neoforged.fml.config.ModConfig;
@@ -125,10 +136,10 @@ public class Aether implements ModInitializer {
     @Override
     public void onInitialize() {
         DIRECTORY.toFile().mkdirs(); // Ensures the Aether's config folder is generated.
-        NeoForgeConfigRegistry.INSTANCE.register(Aether.MODID, ModConfig.Type.STARTUP, AetherConfig.STARTUP_SPEC);
-        NeoForgeConfigRegistry.INSTANCE.register(Aether.MODID, ModConfig.Type.SERVER, AetherConfig.SERVER_SPEC);
-        NeoForgeConfigRegistry.INSTANCE.register(Aether.MODID, ModConfig.Type.COMMON, AetherConfig.COMMON_SPEC);
-        NeoForgeConfigRegistry.INSTANCE.register(Aether.MODID, ModConfig.Type.CLIENT, AetherConfig.CLIENT_SPEC);
+        ConfigRegistry.INSTANCE.register(Aether.MODID, ModConfig.Type.STARTUP, AetherConfig.STARTUP_SPEC);
+        ConfigRegistry.INSTANCE.register(Aether.MODID, ModConfig.Type.SERVER, AetherConfig.SERVER_SPEC);
+        ConfigRegistry.INSTANCE.register(Aether.MODID, ModConfig.Type.COMMON, AetherConfig.COMMON_SPEC);
+        ConfigRegistry.INSTANCE.register(Aether.MODID, ModConfig.Type.CLIENT, AetherConfig.CLIENT_SPEC);
 
         DeferredRegister<?>[] registers = {
                 AetherEntityTypes.ENTITY_TYPES,
@@ -139,7 +150,6 @@ public class Aether implements ModInitializer {
                 AetherBlockEntityTypes.BLOCK_ENTITY_TYPES,
                 AetherMenuTypes.MENU_TYPES,
                 AetherEffects.EFFECTS,
-                AetherArmorMaterials.ARMOR_MATERIALS,
                 AetherParticleTypes.PARTICLES,
                 AetherFeatures.FEATURES,
                 AetherFoliagePlacerTypes.FOLIAGE_PLACERS,
@@ -151,6 +161,8 @@ public class Aether implements ModInitializer {
                 AetherStructureProcessors.STRUCTURE_PROCESSOR_TYPES,
                 AetherRecipeTypes.RECIPE_TYPES,
                 AetherRecipeSerializers.RECIPE_SERIALIZERS,
+                AetherRecipeDisplays.RECIPE_DISPLAYS,
+                AetherRecipeBookCategories.RECIPE_BOOK_CATEGORIES,
                 AetherLootFunctions.LOOT_FUNCTION_TYPES,
                 AetherLootConditions.LOOT_CONDITION_TYPES,
                 AetherLootModifiers.GLOBAL_LOOT_MODIFIERS,
@@ -158,7 +170,8 @@ public class Aether implements ModInitializer {
                 AetherGameEvents.GAME_EVENTS,
                 AetherCreativeTabs.CREATIVE_MODE_TABS,
                 AetherAdvancementSoundOverrides.ADVANCEMENT_SOUND_OVERRIDES,
-                AetherAdvancementTriggers.TRIGGERS
+                AetherAdvancementTriggers.TRIGGERS,
+                AetherEntityDataSerializers.ENTITY_DATA_SERIALIZERS
         };
 
         for (DeferredRegister<?> register : registers) {
@@ -168,8 +181,6 @@ public class Aether implements ModInitializer {
         AetherDataAttachments.init();
 
         AetherPoi.init();
-
-        AetherWoodTypes.init();
 
         this.registerCapabilities();
         this.registerPackets();
@@ -186,17 +197,15 @@ public class Aether implements ModInitializer {
         Reflection.initialize(AetherMobCategory.class);
         Reflection.initialize(AetherAdvancementTriggers.class);
 
-        AetherBlocks.registerPots();
         AetherBlocks.registerFlammability();
         AetherBlocks.registerFluidInteractions();
 
-        AetherItems.registerAccessories();
         AetherItems.setupBucketReplacements();
+
+        AetherRecipePropertySets.addToMap();
 
         this.registerDispenserBehaviors();
         this.registerCauldronInteractions();
-
-        UniqueSlotHandling.EVENT.register(AetherAccessorySlots.INSTANCE);
     }
 
     public void registerPackets() {
@@ -248,27 +257,31 @@ public class Aether implements ModInitializer {
         registrar.playToServer(SunAltarUpdatePacket.TYPE, SunAltarUpdatePacket.STREAM_CODEC, SunAltarUpdatePacket::execute);
 
         // BOTH
-        registrar.playBidirectional(AetherPlayerSyncPacket.TYPE, AetherPlayerSyncPacket.STREAM_CODEC, AetherPlayerSyncPacket::execute);
-        registrar.playBidirectional(AetherTimeSyncPacket.TYPE, AetherTimeSyncPacket.STREAM_CODEC, AetherTimeSyncPacket::execute);
-        registrar.playBidirectional(PhoenixArrowSyncPacket.TYPE, PhoenixArrowSyncPacket.STREAM_CODEC, PhoenixArrowSyncPacket::execute);
+        registrar.playBidirectional(AetherPlayerSyncPacket.TYPE, AetherPlayerSyncPacket.STREAM_CODEC, AetherPlayerSyncPacket::execute, AetherPlayerSyncPacket::execute);
+        registrar.playBidirectional(AetherTimeSyncPacket.TYPE, AetherTimeSyncPacket.STREAM_CODEC, AetherTimeSyncPacket::execute, AetherTimeSyncPacket::execute);
+        registrar.playBidirectional(PhoenixArrowSyncPacket.TYPE, PhoenixArrowSyncPacket.STREAM_CODEC, PhoenixArrowSyncPacket::execute, PhoenixArrowSyncPacket::execute);
     }
 
     public void registerCapabilities() {
+        // Treasure Chests can't be extracted from while they are locked.
         ItemStorage.SIDED.registerForBlocks((level, pos, state, blockEntity, side) -> {
-            TreasureChestBlockEntity entity = (TreasureChestBlockEntity) blockEntity;
-            if (!(state.getBlock() instanceof ChestBlock)) {
-                return new WrappedInventoryStorage(InventoryStorage.of(entity, null)){
+            if (blockEntity instanceof TreasureChestBlockEntity treasureChest) {
+                return new WrappedInventoryStorage(ContainerStorage.of(treasureChest, null)) {
                     @Override
                     public boolean supportsExtraction() {
-                        return entity.getLocked();
+                        return !treasureChest.getLocked();
+                    }
+
+                    @Override
+                    public long extract(ItemVariant resource, long maxAmount, TransactionContext transaction) {
+                        return treasureChest.getLocked() ? 0 : super.extract(resource, maxAmount, transaction);
                     }
                 };
             }
-            Container inv = ChestBlock.getContainer((ChestBlock) state.getBlock(), state, level, pos, true);
-            return InventoryStorage.of(inv == null ? entity : inv, null);
+            return null;
         }, AetherBlocks.TREASURE_CHEST.get());
 
-        ItemStorage.SIDED.registerForBlockEntity(InventoryStorage::of, AetherBlockEntityTypes.INCUBATOR.get());
+        ItemStorage.SIDED.registerForBlockEntity(ContainerStorage::of, AetherBlockEntityTypes.INCUBATOR.get());
     }
 
     public void registerDataMaps(RegisterDataMapTypesEvent event) {
@@ -298,8 +311,7 @@ public class Aether implements ModInitializer {
      */
     private void setupReleasePack(AddPackFindersEvent event) {
         if (event.getPackType() == PackType.CLIENT_RESOURCES) {
-            Path resourcePath = FabricLoader.getInstance().getModContainer(Aether.MODID).orElseThrow().findPath("packs/classic_125").orElseThrow();
-            this.createCombinedPack(event, resourcePath, "builtin/aether_125_art", "pack.aether.125.title", "pack.aether.125.description");
+            this.createCombinedPack(event, "packs/classic_125", "builtin/aether_125_art", "pack.aether.125.title", "pack.aether.125.description");
         }
     }
 
@@ -308,8 +320,7 @@ public class Aether implements ModInitializer {
      */
     private void setupBetaPack(AddPackFindersEvent event) {
         if (event.getPackType() == PackType.CLIENT_RESOURCES) {
-            Path resourcePath = FabricLoader.getInstance().getModContainer(Aether.MODID).orElseThrow().findPath("packs/classic_b173").orElseThrow();
-            this.createCombinedPack(event, resourcePath, "builtin/aether_b173_art", "pack.aether.b173.title", "pack.aether.b173.description");
+            this.createCombinedPack(event, "packs/classic_b173", "builtin/aether_b173_art", "pack.aether.b173.title", "pack.aether.b173.description");
         }
     }
 
@@ -321,25 +332,41 @@ public class Aether implements ModInitializer {
      * @param title       The {@link String} title of the resource pack.
      * @param description The {@link String} description of the resource pack.
      */
-    private void createCombinedPack(AddPackFindersEvent event, Path sourcePath, String name, String title, String description) {
+    private void createCombinedPack(AddPackFindersEvent event, String sourcePath, String name, String title, String description) {
         PackLocationInfo locationInfo = new PackLocationInfo(name, Component.translatable(title), PackSource.BUILT_IN, Optional.empty());
-        Path baseResourcePath = FabricLoader.getInstance().getModContainer(Aether.MODID).orElseThrow().findPath("packs/classic_base").orElseThrow();
-        PathPackResources basePack = new PathPackResources(locationInfo, baseResourcePath);
-        PathPackResources pack = new PathPackResources(locationInfo, sourcePath);
-        List<PathPackResources> mergedPacks = List.of(pack, basePack);
-        Pack.ResourcesSupplier resourcesSupplier = new CombinedPackResources.CombinedResourcesSupplier(new PackMetadataSection(Component.translatable(description), SharedConstants.getCurrentVersion().getPackVersion(PackType.CLIENT_RESOURCES), Optional.empty()), mergedPacks, sourcePath);
-        Pack.Metadata metadata = Pack.readPackMetadata(locationInfo, resourcesSupplier, SharedConstants.getCurrentVersion().getPackVersion(PackType.CLIENT_RESOURCES));
-        if (metadata != null) {
-            event.addRepositorySource((source) ->
-                    source.accept(new Pack(
-                            locationInfo,
-                            resourcesSupplier,
-                            metadata,
-                            new PackSelectionConfig(false, Pack.Position.TOP, false)
-                        )
-                    )
-            );
-        }
+        Pack.Metadata metadata = new Pack.Metadata(Component.translatable(description), PackCompatibility.COMPATIBLE, FeatureFlagSet.of(), List.of(), false);
+        event.addRepositorySource((source) ->
+            source.accept(new Pack(
+                    locationInfo,
+                    packSupplier("packs/classic_base", sourcePath),
+                    metadata,
+                    new PackSelectionConfig(false, Pack.Position.TOP, false)
+                )
+            )
+        );
+    }
+
+    /**
+     * Creates a {@link Pack.ResourcesSupplier} for built-in packs located in the mod's resources.
+     * When multiple paths are given, they are layered in order, with later paths taking priority.
+     *
+     * @param paths The {@link String} paths of the pack folders, relative to the mod's resources root.
+     * @return The {@link Pack.ResourcesSupplier}.
+     */
+    private static Pack.ResourcesSupplier packSupplier(String... paths) {
+        ModContainer container = FabricLoader.getInstance().getModContainer(Aether.MODID).orElseThrow();
+        List<Path> roots = Arrays.stream(paths).map((path) -> container.findPath(path).orElseThrow()).toList();
+        return new Pack.ResourcesSupplier() {
+            @Override
+            public PackMetadataResources openMetadata(PackLocationInfo location) {
+                return new PathPackResources(location, roots.getLast());
+            }
+
+            @Override
+            public Stream<PackResources> openResources(PackLocationInfo location, Pack.Metadata metadata) {
+                return roots.stream().map((root) -> new PathPackResources(location, root));
+            }
+        };
     }
 
     /**
@@ -348,13 +375,11 @@ public class Aether implements ModInitializer {
      */
     private void setupCTMFixPack(AddPackFindersEvent event) {
         if (event.getPackType() == PackType.CLIENT_RESOURCES && FabricLoader.getInstance().isModLoaded("ctm")) {
-            Path resourcePath = FabricLoader.getInstance().getModContainer(Aether.MODID).orElseThrow().findPath("packs/ctm_fix").orElseThrow();
-            PackMetadataSection metadata = new PackMetadataSection(Component.translatable("pack.aether.ctm.description"), SharedConstants.getCurrentVersion().getPackVersion(PackType.CLIENT_RESOURCES), Optional.empty());
             event.addRepositorySource((source) ->
                     source.accept(new Pack(
                             new PackLocationInfo("builtin/aether_ctm_fix", Component.translatable("pack.aether.ctm.title"), PackSource.BUILT_IN, Optional.empty()),
-                            new PathPackResources.PathResourcesSupplier(resourcePath),
-                            new Pack.Metadata(metadata.description(), PackCompatibility.COMPATIBLE, FeatureFlagSet.of(), List.of()/*, true*/),
+                            packSupplier("packs/ctm_fix"),
+                            new Pack.Metadata(Component.translatable("pack.aether.ctm.description"), PackCompatibility.COMPATIBLE, FeatureFlagSet.of(), List.of(), true),
                             new PackSelectionConfig(true, Pack.Position.TOP, false)
                         )
                     )
@@ -368,13 +393,11 @@ public class Aether implements ModInitializer {
      */
     private void setupTipsPack(AddPackFindersEvent event) {
         if (event.getPackType() == PackType.CLIENT_RESOURCES && FabricLoader.getInstance().isModLoaded("tipsmod") && AetherConfig.STARTUP.enable_trivia.get()) {
-            Path resourcePath = FabricLoader.getInstance().getModContainer(Aether.MODID).orElseThrow().findPath("packs/tips").orElseThrow();
-            PackMetadataSection metadata = new PackMetadataSection(Component.translatable("pack.aether.tips.description"), SharedConstants.getCurrentVersion().getPackVersion(PackType.CLIENT_RESOURCES), Optional.empty());
             event.addRepositorySource((source) ->
                     source.accept(new Pack(
                             new PackLocationInfo("builtin/aether_tips", Component.translatable("pack.aether.tips.title"), PackSource.BUILT_IN, Optional.empty()),
-                            new PathPackResources.PathResourcesSupplier(resourcePath),
-                            new Pack.Metadata(metadata.description(), PackCompatibility.COMPATIBLE, FeatureFlagSet.of(), List.of()/*, false*/),
+                            packSupplier("packs/tips"),
+                            new Pack.Metadata(Component.translatable("pack.aether.tips.description"), PackCompatibility.COMPATIBLE, FeatureFlagSet.of(), List.of(), false),
                             new PackSelectionConfig(false, Pack.Position.TOP, false)
                         )
                     )
@@ -387,13 +410,11 @@ public class Aether implements ModInitializer {
      */
     private void setupColorblindPack(AddPackFindersEvent event) {
         if (event.getPackType() == PackType.CLIENT_RESOURCES) {
-            Path resourcePath = FabricLoader.getInstance().getModContainer(Aether.MODID).orElseThrow().findPath("packs/colorblind").orElseThrow();
-            PackMetadataSection metadata = new PackMetadataSection(Component.translatable("pack.aether.colorblind.description"), SharedConstants.getCurrentVersion().getPackVersion(PackType.CLIENT_RESOURCES), Optional.empty());
             event.addRepositorySource((source) ->
                     source.accept(new Pack(
                             new PackLocationInfo("builtin/aether_colorblind", Component.translatable("pack.aether.colorblind.title"), PackSource.BUILT_IN, Optional.empty()),
-                            new PathPackResources.PathResourcesSupplier(resourcePath),
-                            new Pack.Metadata(metadata.description(), PackCompatibility.COMPATIBLE, FeatureFlagSet.of(), List.of()/*, false*/),
+                            packSupplier("packs/colorblind"),
+                            new Pack.Metadata(Component.translatable("pack.aether.colorblind.description"), PackCompatibility.COMPATIBLE, FeatureFlagSet.of(), List.of(), false),
                             new PackSelectionConfig(false, Pack.Position.TOP, false)
                         )
                     )
@@ -406,13 +427,11 @@ public class Aether implements ModInitializer {
      */
     private void setupTooltipsPack(AddPackFindersEvent event) {
         if (event.getPackType() == PackType.CLIENT_RESOURCES) {
-            Path resourcePath = FabricLoader.getInstance().getModContainer(Aether.MODID).orElseThrow().findPath("packs/tooltips").orElseThrow();
-            PackMetadataSection metadata = new PackMetadataSection(Component.translatable("pack.aether.tooltips.description"), SharedConstants.getCurrentVersion().getPackVersion(PackType.CLIENT_RESOURCES), Optional.empty());
             event.addRepositorySource((source) ->
                     source.accept(new Pack(
                             new PackLocationInfo("builtin/aether_tooltips", Component.translatable("pack.aether.tooltips.title"), PackSource.BUILT_IN, Optional.empty()),
-                            new PathPackResources.PathResourcesSupplier(resourcePath),
-                            new Pack.Metadata(metadata.description(), PackCompatibility.COMPATIBLE, FeatureFlagSet.of(), List.of()/*, false*/),
+                            packSupplier("packs/tooltips"),
+                            new Pack.Metadata(Component.translatable("pack.aether.tooltips.description"), PackCompatibility.COMPATIBLE, FeatureFlagSet.of(), List.of(), false),
                             new PackSelectionConfig(false, Pack.Position.TOP, false)
                         )
                     )
@@ -426,13 +445,11 @@ public class Aether implements ModInitializer {
      */
     private void setupImmersivePortalsPack(AddPackFindersEvent event) {
         if (event.getPackType() == PackType.SERVER_DATA && FabricLoader.getInstance().isModLoaded("immersive_portals_core") && AetherConfig.COMMON.enable_immersive_portals_compatibility.get()) {
-            Path resourcePath = FabricLoader.getInstance().getModContainer(Aether.MODID).orElseThrow().findPath("packs/imm_ptl_compat").orElseThrow();
-            PackMetadataSection metadata = new PackMetadataSection(Component.translatable("pack.aether.imm_ptl_compat.description"), SharedConstants.getCurrentVersion().getPackVersion(PackType.SERVER_DATA), Optional.empty());
             event.addRepositorySource((source) ->
                 source.accept(new Pack(
                         new PackLocationInfo("builtin/aether_imm_ptl_compat", Component.translatable("pack.aether.imm_ptl_compat.title"), PackSource.BUILT_IN, Optional.empty()),
-                        new PathPackResources.PathResourcesSupplier(resourcePath),
-                        new Pack.Metadata(metadata.description(), PackCompatibility.COMPATIBLE, FeatureFlagSet.of(), List.of()/*, true*/),
+                        packSupplier("packs/imm_ptl_compat"),
+                        new Pack.Metadata(Component.translatable("pack.aether.imm_ptl_compat.description"), PackCompatibility.COMPATIBLE, FeatureFlagSet.of(), List.of(), true),
                         new PackSelectionConfig(true, Pack.Position.TOP, false)
                     )
                 )
@@ -446,13 +463,11 @@ public class Aether implements ModInitializer {
      */
     private void setupAccessoriesPack(AddPackFindersEvent event) {
         if (event.getPackType() == PackType.SERVER_DATA && !AetherConfig.COMMON.use_default_accessories_menu.get()) {
-            Path resourcePath = FabricLoader.getInstance().getModContainer(Aether.MODID).orElseThrow().findPath("packs/accessories").orElseThrow();
-            PackMetadataSection metadata = new PackMetadataSection(Component.translatable("pack.aether.aether_accessories.description"), SharedConstants.getCurrentVersion().getPackVersion(PackType.SERVER_DATA), Optional.empty());
             event.addRepositorySource((source) ->
                     source.accept(new Pack(
                             new PackLocationInfo("builtin/aether_accessories", Component.translatable("pack.aether.aether_accessories.title"), PackSource.BUILT_IN, Optional.empty()),
-                            new PathPackResources.PathResourcesSupplier(resourcePath),
-                            new Pack.Metadata(metadata.description(), PackCompatibility.COMPATIBLE, FeatureFlagSet.of(), List.of()/*, true*/),
+                            packSupplier("packs/accessories"),
+                            new Pack.Metadata(Component.translatable("pack.aether.aether_accessories.description"), PackCompatibility.COMPATIBLE, FeatureFlagSet.of(), List.of(), true),
                             new PackSelectionConfig(true, Pack.Position.TOP, false)
                         )
                     )
@@ -466,13 +481,11 @@ public class Aether implements ModInitializer {
      */
     private void setupAccessoriesOverridePack(AddPackFindersEvent event) {
         if (event.getPackType() == PackType.SERVER_DATA && AetherConfig.COMMON.use_default_accessories_menu.get()) {
-            Path resourcePath = FabricLoader.getInstance().getModContainer(Aether.MODID).orElseThrow().findPath("packs/accessories_override").orElseThrow();
-            PackMetadataSection metadata = new PackMetadataSection(Component.translatable("pack.aether.default_accessories.description"), SharedConstants.getCurrentVersion().getPackVersion(PackType.SERVER_DATA), Optional.empty());
             event.addRepositorySource((source) ->
                     source.accept(new Pack(
                             new PackLocationInfo("builtin/aether_accessories_override", Component.translatable("pack.aether.default_accessories.title"), PackSource.BUILT_IN, Optional.empty()),
-                            new PathPackResources.PathResourcesSupplier(resourcePath),
-                            new Pack.Metadata(metadata.description(), PackCompatibility.COMPATIBLE, FeatureFlagSet.of(), List.of()/*, true*/),
+                            packSupplier("packs/accessories_override"),
+                            new Pack.Metadata(Component.translatable("pack.aether.default_accessories.description"), PackCompatibility.COMPATIBLE, FeatureFlagSet.of(), List.of(), true),
                             new PackSelectionConfig(true, Pack.Position.TOP, false)
                         )
                     )
@@ -485,13 +498,11 @@ public class Aether implements ModInitializer {
      */
     private void setupTemporaryFreezingPack(AddPackFindersEvent event) {
         if (event.getPackType() == PackType.SERVER_DATA) {
-            Path resourcePath = FabricLoader.getInstance().getModContainer(Aether.MODID).orElseThrow().findPath("packs/temporary_freezing").orElseThrow();
-            PackMetadataSection metadata = new PackMetadataSection(Component.translatable("pack.aether.freezing.description"), SharedConstants.getCurrentVersion().getPackVersion(PackType.SERVER_DATA), Optional.empty());
             event.addRepositorySource((source) ->
                     source.accept(new Pack(
                             new PackLocationInfo("builtin/aether_temporary_freezing", Component.translatable("pack.aether.freezing.title"), create(decorateWithSource("pack.source.builtin"), AetherConfig.COMMON.add_temporary_freezing_automatically.get()), Optional.empty()),
-                            new PathPackResources.PathResourcesSupplier(resourcePath),
-                            new Pack.Metadata(metadata.description(), PackCompatibility.COMPATIBLE, FeatureFlagSet.of(), List.of()/*, false*/),
+                            packSupplier("packs/temporary_freezing"),
+                            new Pack.Metadata(Component.translatable("pack.aether.freezing.description"), PackCompatibility.COMPATIBLE, FeatureFlagSet.of(), List.of(), false),
                             new PackSelectionConfig(false, Pack.Position.TOP, false)
                         )
                     )
@@ -504,13 +515,11 @@ public class Aether implements ModInitializer {
      */
     private void setupRuinedPortalPack(AddPackFindersEvent event) {
         if (event.getPackType() == PackType.SERVER_DATA) {
-            Path resourcePath = FabricLoader.getInstance().getModContainer(Aether.MODID).orElseThrow().findPath("packs/ruined_portal").orElseThrow();
-            PackMetadataSection metadata = new PackMetadataSection(Component.translatable("pack.aether.ruined_portal.description"), SharedConstants.getCurrentVersion().getPackVersion(PackType.SERVER_DATA), Optional.empty());
             event.addRepositorySource((source) ->
                     source.accept(new Pack(
                             new PackLocationInfo("builtin/aether_ruined_portal", Component.translatable("pack.aether.ruined_portal.title"), create(decorateWithSource("pack.source.builtin"), AetherConfig.COMMON.add_ruined_portal_automatically.get()), Optional.empty()),
-                            new PathPackResources.PathResourcesSupplier(resourcePath),
-                            new Pack.Metadata(metadata.description(), PackCompatibility.COMPATIBLE, FeatureFlagSet.of(), List.of()/*, false*/),
+                            packSupplier("packs/ruined_portal"),
+                            new Pack.Metadata(Component.translatable("pack.aether.ruined_portal.description"), PackCompatibility.COMPATIBLE, FeatureFlagSet.of(), List.of(), false),
                             new PackSelectionConfig(false, Pack.Position.TOP, false)
                         )
                     )
@@ -532,7 +541,7 @@ public class Aether implements ModInitializer {
         RecipeListener.listen();
 
         CommandRegistrationCallback.EVENT.register(AetherCommands::registerCommands);
-        ReloadListeners.reloadListenerSetup(ResourceManagerHelper.get(PackType.SERVER_DATA));
+        ReloadListeners.reloadListenerSetup();
         ItemAttributeModifierHelper.ON_MODIFICATION.register(ZaniteSwordItem::onModifyAttributes);
         ServerLivingEntityEvents.AFTER_DAMAGE.register((entity, source, baseDamageTaken, damageTaken, blocked) -> FlamingSwordItem.onLivingDamage(entity, source));
         LivingEntityEvents.ON_DAMAGE.register((entity, source, originalDamage, newDamage) -> {
@@ -540,13 +549,10 @@ public class Aether implements ModInitializer {
             PigSlayerItem.onLivingDamage(entity, source, newDamage);
         });
 
-        ItemGroupEvents.MODIFY_ENTRIES_ALL.register(AetherCreativeTabs::buildCreativeModeTabs);
+        CreativeModeTabEvents.MODIFY_OUTPUT_ALL.register(AetherCreativeTabs::buildCreativeModeTabs);
         AetherEntityTypes.registerSpawnPlacements();
         AetherEntityTypes.registerEntityAttributes();
 
-        AbilityHooks.ToolHooks.STRIPPABLES.forEach(StrippableBlockRegistry::register);
-        AbilityHooks.ToolHooks.FLATTENABLES.forEach((block, flattenedBlock) -> FlattenableBlockRegistry.register(block, flattenedBlock.defaultBlockState()));
-        AbilityHooks.ToolHooks.TILLABLES.forEach((block, tilledBlock) -> TillableBlockRegistry.register(block, ctx -> ctx.getLevel().getBlockState(ctx.getClickedPos().above()).isAir(), tilledBlock.defaultBlockState()));
     }
 
     /**
@@ -582,24 +588,24 @@ public class Aether implements ModInitializer {
         DispenserBlock.registerBehavior(AetherItems.SKYROOT_BUCKET.get(), AetherDispenseBehaviors.SKYROOT_BUCKET_PICKUP_BEHAVIOR);
         DispenserBlock.registerBehavior(AetherItems.AMBROSIUM_SHARD.get(), new DispenseUsableItemBehavior<>(AetherRecipeTypes.AMBROSIUM_ENCHANTING.get()));
         DispenserBlock.registerBehavior(AetherItems.SWET_BALL.get(), new DispenseUsableItemBehavior<>(AetherRecipeTypes.SWET_BALL_CONVERSION.get()));
-        DispenserBlock.registerBehavior(AetherItems.SKYROOT_BOAT.get(), new SkyrootBoatDispenseBehavior());
-        DispenserBlock.registerBehavior(AetherItems.SKYROOT_CHEST_BOAT.get(), new SkyrootBoatDispenseBehavior(true));
+        DispenserBlock.registerBehavior(AetherItems.SKYROOT_BOAT.get(), new BoatDispenseItemBehavior(AetherEntityTypes.SKYROOT_BOAT.get()));
+        DispenserBlock.registerBehavior(AetherItems.SKYROOT_CHEST_BOAT.get(), new BoatDispenseItemBehavior(AetherEntityTypes.SKYROOT_CHEST_BOAT.get()));
     }
 
     private void registerCauldronInteractions() {
-        CauldronInteraction.EMPTY.map().put(AetherItems.SKYROOT_WATER_BUCKET.get(), AetherCauldronInteractions.FILL_WATER);
-        CauldronInteraction.WATER.map().put(AetherItems.SKYROOT_WATER_BUCKET.get(), AetherCauldronInteractions.FILL_WATER);
-        CauldronInteraction.LAVA.map().put(AetherItems.SKYROOT_WATER_BUCKET.get(), AetherCauldronInteractions.FILL_WATER);
-        CauldronInteraction.POWDER_SNOW.map().put(AetherItems.SKYROOT_WATER_BUCKET.get(), AetherCauldronInteractions.FILL_WATER);
-        CauldronInteraction.EMPTY.map().put(AetherItems.SKYROOT_POWDER_SNOW_BUCKET.get(), AetherCauldronInteractions.FILL_POWDER_SNOW);
-        CauldronInteraction.WATER.map().put(AetherItems.SKYROOT_POWDER_SNOW_BUCKET.get(), AetherCauldronInteractions.FILL_POWDER_SNOW);
-        CauldronInteraction.LAVA.map().put(AetherItems.SKYROOT_POWDER_SNOW_BUCKET.get(), AetherCauldronInteractions.FILL_POWDER_SNOW);
-        CauldronInteraction.POWDER_SNOW.map().put(AetherItems.SKYROOT_POWDER_SNOW_BUCKET.get(), AetherCauldronInteractions.FILL_POWDER_SNOW);
-        CauldronInteraction.WATER.map().put(AetherItems.SKYROOT_BUCKET.get(), AetherCauldronInteractions.EMPTY_WATER);
-        CauldronInteraction.POWDER_SNOW.map().put(AetherItems.SKYROOT_BUCKET.get(), AetherCauldronInteractions.EMPTY_POWDER_SNOW);
-        CauldronInteraction.WATER.map().put(AetherItems.LEATHER_GLOVES.get(), CauldronInteraction.DYED_ITEM);
-        CauldronInteraction.WATER.map().put(AetherItems.RED_CAPE.get(), AetherCauldronInteractions.CAPE);
-        CauldronInteraction.WATER.map().put(AetherItems.BLUE_CAPE.get(), AetherCauldronInteractions.CAPE);
-        CauldronInteraction.WATER.map().put(AetherItems.YELLOW_CAPE.get(), AetherCauldronInteractions.CAPE);
+        CauldronInteractions.EMPTY.put(AetherItems.SKYROOT_WATER_BUCKET.get(), AetherCauldronInteractions.FILL_WATER);
+        CauldronInteractions.WATER.put(AetherItems.SKYROOT_WATER_BUCKET.get(), AetherCauldronInteractions.FILL_WATER);
+        CauldronInteractions.LAVA.put(AetherItems.SKYROOT_WATER_BUCKET.get(), AetherCauldronInteractions.FILL_WATER);
+        CauldronInteractions.POWDER_SNOW.put(AetherItems.SKYROOT_WATER_BUCKET.get(), AetherCauldronInteractions.FILL_WATER);
+        CauldronInteractions.EMPTY.put(AetherItems.SKYROOT_POWDER_SNOW_BUCKET.get(), AetherCauldronInteractions.FILL_POWDER_SNOW);
+        CauldronInteractions.WATER.put(AetherItems.SKYROOT_POWDER_SNOW_BUCKET.get(), AetherCauldronInteractions.FILL_POWDER_SNOW);
+        CauldronInteractions.LAVA.put(AetherItems.SKYROOT_POWDER_SNOW_BUCKET.get(), AetherCauldronInteractions.FILL_POWDER_SNOW);
+        CauldronInteractions.POWDER_SNOW.put(AetherItems.SKYROOT_POWDER_SNOW_BUCKET.get(), AetherCauldronInteractions.FILL_POWDER_SNOW);
+        CauldronInteractions.WATER.put(AetherItems.SKYROOT_BUCKET.get(), AetherCauldronInteractions.EMPTY_WATER);
+        CauldronInteractions.POWDER_SNOW.put(AetherItems.SKYROOT_BUCKET.get(), AetherCauldronInteractions.EMPTY_POWDER_SNOW);
+        CauldronInteractions.WATER.put(AetherItems.LEATHER_GLOVES.get(), AetherCauldronInteractions::dyedItemIteration);
+        CauldronInteractions.WATER.put(AetherItems.RED_CAPE.get(), AetherCauldronInteractions.CAPE);
+        CauldronInteractions.WATER.put(AetherItems.BLUE_CAPE.get(), AetherCauldronInteractions.CAPE);
+        CauldronInteractions.WATER.put(AetherItems.YELLOW_CAPE.get(), AetherCauldronInteractions.CAPE);
     }
 }

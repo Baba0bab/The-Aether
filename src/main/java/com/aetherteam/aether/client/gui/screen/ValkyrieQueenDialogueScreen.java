@@ -1,5 +1,6 @@
 package com.aetherteam.aether.client.gui.screen;
 
+import com.aetherteam.nitrogen.fabric.network.PacketDistributor;
 import com.aetherteam.aether.client.gui.component.dialogue.DialogueAnswerComponent;
 import com.aetherteam.aether.client.gui.component.dialogue.DialogueChoiceComponent;
 import com.aetherteam.aether.entity.monster.dungeon.boss.ValkyrieQueen;
@@ -8,7 +9,7 @@ import com.aetherteam.aether.network.packet.serverbound.NpcPlayerInteractPacket;
 import com.aetherteam.nitrogen.fabric.network.PacketDistributor;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -27,12 +28,12 @@ public class ValkyrieQueenDialogueScreen extends Screen {
 
     @Override
     protected void init() {
-        if (this.nitrogen_fabric$getMinecraft().player != null) {
+        if (Minecraft.getInstance().player != null) {
             this.setupDialogueChoices( // Set up choices.
                     new DialogueChoiceComponent(this.buildDialogueChoice("question"), button -> this.finishChat((byte) 0)),
                     new DialogueChoiceComponent(this.buildDialogueChoice("challenge"), button -> { // Opens a new dialogue tree.
                         this.setDialogueAnswer(Component.translatable("gui.aether.queen.dialog.challenge")); // The Valkyrie Queen's response to the challenge choice in the GUI (not a chat message).
-                        int medals = this.nitrogen_fabric$getMinecraft().player.getInventory().countItem(AetherItems.VICTORY_MEDAL.get());
+                        int medals = Minecraft.getInstance().player.getInventory().countItem(AetherItems.VICTORY_MEDAL.get());
                         DialogueChoiceComponent startFightChoice = medals >= 10
                                 ? new DialogueChoiceComponent(this.buildDialogueChoice("have_medals"), button1 -> this.finishChat((byte) 1))
                                 : new DialogueChoiceComponent(this.buildDialogueChoice("no_medals").append(" (" + medals + "/10)"), button1 -> this.finishChat((byte) 1));
@@ -123,22 +124,22 @@ public class ValkyrieQueenDialogueScreen extends Screen {
     }
 
     @Override
-    public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
-        this.renderBackground(guiGraphics, mouseX, mouseY, partialTicks);
+    public void extractRenderState(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTicks) {
+        this.extractBackground(guiGraphics, mouseX, mouseY, partialTicks);
         this.dialogueAnswer.render(guiGraphics);
-        super.render(guiGraphics, mouseX, mouseY, partialTicks);
+        super.extractRenderState(guiGraphics, mouseX, mouseY, partialTicks);
     }
 
     /**
-     * [CODE COPY] - {@link Screen#renderBackground(GuiGraphics, int, int, float)}.<br><br>
+     * [CODE COPY] - {@link Screen#renderBackground(GuiGraphicsExtractor, int, int, float)}.<br><br>
      * Remove code for dark gradient and dirt background.
      */
     @Override
-    public void renderBackground(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
+    public void extractBackground(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTicks) {
     }
 
     @Override
-    public void resize(Minecraft minecraft, int width, int height) {
+    public void resize(int width, int height) {
         this.width = width;
         this.height = height;
         this.positionDialogue();

@@ -5,9 +5,11 @@ import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.*;
+import net.minecraft.client.renderer.entity.state.HumanoidRenderState;
+import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.world.entity.LivingEntity;
 
-public class GlovesModel extends HumanoidModel<LivingEntity> {
+public class GlovesModel extends HumanoidModel<HumanoidRenderState> {
     public GlovesModel(ModelPart root) {
         super(root);
     }
@@ -29,12 +31,16 @@ public class GlovesModel extends HumanoidModel<LivingEntity> {
     }
 
     @Override
-    protected Iterable<ModelPart> headParts() {
-        return ImmutableList.of();
-    }
-
-    @Override
-    protected Iterable<ModelPart> bodyParts() {
-        return ImmutableList.of(this.rightArm, this.leftArm);
+    public void setupAnim(HumanoidRenderState renderState) {
+        super.setupAnim(renderState);
+        this.head.visible = false;
+        this.hat.visible = false;
+        this.body.visible = false;
+        this.rightArm.visible = false;
+        this.leftArm.visible = false;
+        this.rightLeg.visible = false;
+        this.leftLeg.visible = false;
+        this.rightArm.visible = true;
+        this.leftArm.visible = true;
     }
 }

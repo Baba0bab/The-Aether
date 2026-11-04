@@ -28,8 +28,8 @@ public class AudioHooks {
             Holder<SoundEvent> soundEvent = getSoundEvent(sound);
             if (sound.getSource() == SoundSource.MUSIC && soundEvent != null && !soundEvent.is(AetherTags.SoundEvents.ACHIEVEMENT_SOUNDS)) {
                 // Check whether there is Aether music and the sound that attempts to play does not match it.
-                return AetherMusicManager.getSituationalMusic() != null && !sound.getLocation().equals(SimpleSoundInstance.forMusic(AetherMusicManager.getSituationalMusic().getEvent().value()).getLocation())
-                        || (AetherMusicManager.getCurrentMusic() != null && !sound.getLocation().equals(AetherMusicManager.getCurrentMusic().getLocation()));
+                return AetherMusicManager.getSituationalMusic() != null && !sound.getIdentifier().equals(SimpleSoundInstance.forMusic(AetherMusicManager.getSituationalMusic().sound().value()).getIdentifier())
+                        || (AetherMusicManager.getCurrentMusic() != null && !sound.getIdentifier().equals(AetherMusicManager.getCurrentMusic().getIdentifier()));
             }
         }
         return false;
@@ -75,11 +75,11 @@ public class AudioHooks {
     }
 
     private static Holder<SoundEvent> getSoundEvent(SoundInstance sound) {
-        SoundEvent soundEvent = BuiltInRegistries.SOUND_EVENT.get(sound.getLocation());
+        SoundEvent soundEvent = BuiltInRegistries.SOUND_EVENT.getValue(sound.getIdentifier());
         if (soundEvent != null) {
             Optional<ResourceKey<SoundEvent>> optionalResourceKey = BuiltInRegistries.SOUND_EVENT.getResourceKey(soundEvent);
             if (optionalResourceKey.isPresent()) {
-                return BuiltInRegistries.SOUND_EVENT.getHolderOrThrow(optionalResourceKey.get());
+                return BuiltInRegistries.SOUND_EVENT.getOrThrow(optionalResourceKey.get());
             }
         }
         return null;

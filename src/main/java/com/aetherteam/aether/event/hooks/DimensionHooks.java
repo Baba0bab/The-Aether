@@ -1,5 +1,8 @@
 package com.aetherteam.aether.event.hooks;
 
+import net.minecraft.world.level.storage.LevelData;
+import net.minecraft.world.item.ItemStackTemplate;
+import com.aetherteam.aether.Aether;
 import com.aetherteam.aether.AetherConfig;
 import com.aetherteam.aether.AetherTags;
 import com.aetherteam.aether.attachment.AetherDataAttachments;
@@ -8,11 +11,9 @@ import com.aetherteam.aether.attachment.AetherTimeAttachment;
 import com.aetherteam.aether.block.portal.AetherPortalShape;
 import com.aetherteam.aether.data.resources.registries.AetherDimensions;
 import com.aetherteam.aether.mixin.mixins.common.accessor.ServerGamePacketListenerImplAccessor;
-import com.aetherteam.aether.mixin.mixins.common.accessor.ServerLevelAccessor;
 import com.aetherteam.aether.network.packet.clientbound.AetherTravelPacket;
 import com.aetherteam.aether.network.packet.clientbound.LeavingAetherPacket;
 import com.aetherteam.aether.network.packet.clientbound.PortalInteractPacket;
-import com.aetherteam.aether.world.AetherLevelData;
 import com.aetherteam.aether.world.LevelUtil;
 import com.aetherteam.nitrogen.fabric.network.PacketDistributor;
 import net.fabricmc.loader.api.FabricLoader;
@@ -27,16 +28,17 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Relative;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.GameRules;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
-import net.minecraft.world.level.portal.DimensionTransition;
+import net.minecraft.world.level.portal.TeleportTransition;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import org.apache.commons.lang3.mutable.MutableBoolean;
@@ -66,9 +68,9 @@ public class DimensionHooks {
                     if (server != null) {
                         ServerLevel aetherLevel = server.getLevel(AetherDimensions.AETHER_LEVEL);
                         if (aetherLevel != null && serverPlayer.level().dimension() == Level.OVERWORLD) {
-                            DimensionTransition transition = new DimensionTransition(aetherLevel, checkPositionsForInitialSpawn(aetherLevel, serverPlayer.blockPosition()).getCenter(), Vec3.ZERO, serverPlayer.getYRot(), serverPlayer.getXRot(), false, DimensionTransition.DO_NOTHING);
-                            if (serverPlayer.changeDimension(transition) != null) {
-                                serverPlayer.setRespawnPosition(AetherDimensions.AETHER_LEVEL, serverPlayer.blockPosition(), serverPlayer.getYRot(), true, false);
+                            TeleportTransition transition = new TeleportTransition(aetherLevel, Vec3.atCenterOf(checkPositionsForInitialSpawn(aetherLevel, serverPlayer.blockPosition())), Vec3.ZERO, serverPlayer.getYRot(), serverPlayer.getXRot(), Relative.union(Relative.DELTA, Relative.ROTATION), TeleportTransition.DO_NOTHING);
+                            if (serverPlayer.teleport(transition) != null) {
+                                serverPlayer.setRespawnPosition(new ServerPlayer.RespawnConfig(LevelData.RespawnData.of(AetherDimensions.AETHER_LEVEL, serverPlayer.blockPosition(), serverPlayer.getYRot(), 0.0F), true), false);
                                 aetherPlayer.setCanSpawnInAether(false); // Sets that the player has already spawned in the Aether.
                             }
                         }
@@ -84,7 +86,7 @@ public class DimensionHooks {
         if (!isSafe(level, origin)) {
             for (int i = 0; i <= 750; i += 5) {
                 for (Direction facing : Direction.Plane.HORIZONTAL) {
-                    BlockPos offsetPosition = origin.offset(facing.getNormal().multiply(i));
+                    BlockPos offsetPosition = origin.offset(facing.getUnitVec3i().multiply(i));
                     if (isSafeAround(level, offsetPosition)) {
                         return offsetPosition;
                     }
@@ -138,15 +140,17 @@ public class DimensionHooks {
                             Optional<AetherPortalShape> optional = AetherPortalShape.findEmptyAetherPortalShape(level, relativePos, Direction.Axis.X);
                             if (optional.isPresent()) {
                                 PacketDistributor.sendToAllPlayers(new PortalInteractPacket(player.getId(), hand == InteractionHand.MAIN_HAND));
-                                optional.get().createPortalBlocks();
+                                optional.get().createPortalBlocks(level);
                                 if (!player.isCreative()) {
+                                    ItemStackTemplate remainder = stack.getCraftingRemainder();
+                                    ItemStack remainderStack = remainder != null ? remainder.create() : ItemStack.EMPTY;
                                     if (stack.getCount() > 1) {
                                         stack.shrink(1);
-                                        player.addItem(stack.getRecipeRemainder());
+                                        player.addItem(remainderStack);
                                     } else if (stack.isDamageableItem()) {
-                                        stack.hurtAndBreak(1, player, LivingEntity.getSlotForHand(hand));
+                                        stack.hurtAndBreak(1, player, hand.asEquipmentSlot());
                                     } else {
-                                        player.setItemInHand(hand, stack.getRecipeRemainder());
+                                        player.setItemInHand(hand, remainderStack);
                                     }
                                 }
                                 return InteractionResult.SUCCESS;
@@ -177,7 +181,7 @@ public class DimensionHooks {
                         if ((level.dimension() == LevelUtil.returnDimension() || level.dimension() == LevelUtil.destinationDimension()) && !AetherConfig.SERVER.disable_aether_portal.get()) {
                             Optional<AetherPortalShape> optional = AetherPortalShape.findEmptyAetherPortalShape(level, pos, Direction.Axis.X);
                             if (optional.isPresent()) {
-                                optional.get().createPortalBlocks();
+                                optional.get().createPortalBlocks(levelAccessor);
                                 return true;
                             }
                         }
@@ -195,14 +199,8 @@ public class DimensionHooks {
      * @see com.aetherteam.aether.event.listeners.DimensionListener#onWorldTick(Level)
      */
     public static void tickTime(Level level) {
-        if (level.dimensionType().effectsLocation().equals(AetherDimensions.AETHER_DIMENSION_TYPE.location()) && level instanceof ServerLevel serverLevel) {
-            ServerLevelAccessor serverLevelAccessor = (ServerLevelAccessor) serverLevel;
-            com.aetherteam.aether.mixin.mixins.common.accessor.LevelAccessor levelAccessor = (com.aetherteam.aether.mixin.mixins.common.accessor.LevelAccessor) level;
-            long i = levelAccessor.aether$getLevelData().getGameTime() + 1L;
-            serverLevelAccessor.aether$getServerLevelData().setGameTime(i);
-            if (serverLevelAccessor.aether$getServerLevelData().getGameRules().getBoolean(GameRules.RULE_DAYLIGHT)) {
-                serverLevel.setDayTime(serverLevel.getAttachedOrCreate(AetherDataAttachments.AETHER_TIME).tickTime(level));
-            }
+        if (LevelUtil.isAetherDimensionType(level) && level instanceof ServerLevel serverLevel) {
+            serverLevel.getAttachedOrCreate(AetherDataAttachments.AETHER_TIME).tickTime(serverLevel);
         }
     }
 
@@ -293,45 +291,6 @@ public class DimensionHooks {
     }
 
     /**
-     * Initializes the Aether level data for time separate from the overworld.
-     * serverLevelData and levelData are access transformed.
-     *
-     * @param level The {@link LevelAccessor}.
-     * @see com.aetherteam.aether.event.listeners.DimensionListener#onPlayerTraveling(Player)
-     */
-    public static void initializeLevelData(LevelAccessor level) {
-        if (level instanceof ServerLevel serverLevel && serverLevel.dimensionType().effectsLocation().equals(AetherDimensions.AETHER_DIMENSION_TYPE.location())) {
-            AetherLevelData levelData = new AetherLevelData(serverLevel, serverLevel.getServer().getWorldData(), serverLevel.getServer().getWorldData().overworldData(), serverLevel.getAttachedOrCreate(AetherDataAttachments.AETHER_TIME).getDayTime());
-            ServerLevelAccessor serverLevelAccessor = (ServerLevelAccessor) serverLevel;
-            com.aetherteam.aether.mixin.mixins.common.accessor.LevelAccessor levelAccessor = (com.aetherteam.aether.mixin.mixins.common.accessor.LevelAccessor) level;
-            serverLevelAccessor.aether$setServerLevelData(levelData);
-            levelAccessor.aether$setLevelData(levelData);
-        }
-    }
-
-    /**
-     * Resets the weather cycle if players finish sleeping in an Aether dimension.<br>
-     * Sets the time in the Aether according to the Aether's day/night cycle.
-     *
-     * @param level The {@link LevelAccessor}.
-     * @see com.aetherteam.aether.event.listeners.DimensionListener#onSleepFinish(LevelAccessor, MutableLong, Function)
-     */
-    @Nullable
-    public static Long finishSleep(LevelAccessor level, MutableLong newTime) {
-        if (level instanceof ServerLevel && level.dimensionType().effectsLocation().equals(AetherDimensions.AETHER_DIMENSION_TYPE.location())) {
-            ServerLevelAccessor serverLevelAccessor = (ServerLevelAccessor) level;
-            serverLevelAccessor.aether$getServerLevelData().setRainTime(0);
-            serverLevelAccessor.aether$getServerLevelData().setRaining(false);
-            serverLevelAccessor.aether$getServerLevelData().setThunderTime(0);
-            serverLevelAccessor.aether$getServerLevelData().setThundering(false);
-
-            long time = newTime.toLong() + (24000L * AetherTimeAttachment.getTicksPerDayMultiplier());
-            return time - time % (long) AetherTimeAttachment.getTicksPerDay();
-        }
-        return null;
-    }
-
-    /**
      * Checks whether it is eternal day in the Aether.
      *
      * @param player The {@link Player}.
@@ -339,7 +298,7 @@ public class DimensionHooks {
      * @see com.aetherteam.aether.event.listeners.DimensionListener#onTriedToSleep(Player)
      */
     public static boolean isEternalDay(Player player) {
-        if (player.level().dimensionType().effectsLocation().equals(AetherDimensions.AETHER_DIMENSION_TYPE.location())) {
+        if (LevelUtil.isAetherDimensionType(player.level())) {
             return player.level().getAttachedOrCreate(AetherDataAttachments.AETHER_TIME).isEternalDay();
         }
         return false;

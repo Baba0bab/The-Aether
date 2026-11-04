@@ -1,5 +1,9 @@
 package com.aetherteam.aether.entity.passive;
 
+import com.aetherteam.nitrogen.fabric.network.PacketDistributor;
+import net.minecraft.world.entity.animal.Animal;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
 import com.aetherteam.aether.AetherTags;
 import com.aetherteam.aether.attachment.AetherDataAttachments;
 import com.aetherteam.aether.attachment.AetherPlayerAttachment;
@@ -33,7 +37,6 @@ import net.minecraft.world.entity.ai.control.MoveControl;
 import net.minecraft.world.entity.ai.goal.*;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
@@ -65,13 +68,13 @@ public class Aerbunny extends AetherAnimal {
         this.goalSelector.addGoal(0, new FloatGoal(this));
         this.goalSelector.addGoal(1, new RunWhenAfraid(this, 1.3));
         this.goalSelector.addGoal(2, new BreedGoal(this, 1.0));
-        this.goalSelector.addGoal(3, new TemptGoal(this, 1.2, Ingredient.of(AetherTags.Items.AERBUNNY_TEMPTATION_ITEMS), false));
+        this.goalSelector.addGoal(3, new TemptGoal(this, 1.2, itemstack -> itemstack.is(AetherTags.Items.AERBUNNY_TEMPTATION_ITEMS), false));
         this.goalSelector.addGoal(4, new LookAtPlayerGoal(this, Player.class, 6.0F));
         this.goalSelector.addGoal(5, new FallingRandomStrollGoal(this, 1.0, 80));
     }
 
     public static AttributeSupplier.Builder createMobAttributes() {
-        return Mob.createMobAttributes()
+        return Animal.createAnimalAttributes()
                 .add(Attributes.MAX_HEALTH, 6.0)
                 .add(Attributes.MOVEMENT_SPEED, 0.28);
     }
@@ -272,8 +275,8 @@ public class Aerbunny extends AetherAnimal {
      * @return Whether the entity was hurt, as a {@link Boolean}.
      */
     @Override
-    public boolean hurt(DamageSource source, float amount) {
-        boolean flag = super.hurt(source, amount);
+    public boolean hurtServer(ServerLevel serverLevel, DamageSource source, float amount) {
+        boolean flag = super.hurtServer(serverLevel, source, amount);
         if (flag && source.getEntity() instanceof Player) {
             this.setAfraidTime(100 + this.getRandom().nextInt(50));
         }
@@ -424,8 +427,8 @@ public class Aerbunny extends AetherAnimal {
      * @return Whether the Aerbunny is invulnerable to the damage, as a {@link Boolean}.
      */
     @Override
-    public boolean isInvulnerableTo(DamageSource damageSource) {
-        return (this.getVehicle() != null && this.getVehicle() == damageSource.getEntity()) || super.isInvulnerableTo(damageSource);
+    public boolean isInvulnerableTo(ServerLevel serverLevel, DamageSource damageSource) {
+        return (this.getVehicle() != null && this.getVehicle() == damageSource.getEntity()) || super.isInvulnerableTo(serverLevel, damageSource);
     }
 
     /**
@@ -446,7 +449,7 @@ public class Aerbunny extends AetherAnimal {
     @Nullable
     @Override
     public AgeableMob getBreedOffspring(ServerLevel level, AgeableMob entity) {
-        return AetherEntityTypes.AERBUNNY.get().create(level);
+        return AetherEntityTypes.AERBUNNY.get().create(level, EntitySpawnReason.BREEDING);
     }
 
     @Override
@@ -459,17 +462,15 @@ public class Aerbunny extends AetherAnimal {
     }
 
     @Override
-    public void addAdditionalSaveData(CompoundTag tag) {
+    protected void addAdditionalSaveData(ValueOutput tag) {
         super.addAdditionalSaveData(tag);
         tag.putInt("AfraidTime", this.getAfraidTime());
     }
 
     @Override
-    public void readAdditionalSaveData(CompoundTag tag) {
+    protected void readAdditionalSaveData(ValueInput tag) {
         super.readAdditionalSaveData(tag);
-        if (tag.contains("AfraidTime")) {
-            this.setAfraidTime(tag.getInt("AfraidTime"));
-        }
+        tag.getInt("AfraidTime").ifPresent(this::setAfraidTime);
     }
 
     /**

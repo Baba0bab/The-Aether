@@ -1,5 +1,7 @@
 package com.aetherteam.aether.loot.modifiers;
 
+import net.minecraft.core.Holder;
+import java.util.Optional;
 import com.aetherteam.aether.AetherTags;
 import com.aetherteam.aether.item.AetherItems;
 import com.aetherteam.aether.item.EquipmentUtil;
@@ -18,8 +20,8 @@ import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 public class PigDropsModifier extends LootModifier {
     public static final MapCodec<PigDropsModifier> CODEC = RecordCodecBuilder.mapCodec((instance) -> LootModifier.codecStart(instance).apply(instance, PigDropsModifier::new));
 
-    public PigDropsModifier(LootItemCondition[] conditions) {
-        super(conditions);
+    public PigDropsModifier(Optional<Holder<LootItemCondition>> conditions, int priority) {
+        super(conditions, priority);
     }
 
     /**
@@ -31,11 +33,11 @@ public class PigDropsModifier extends LootModifier {
      */
     @Override
     public ObjectArrayList<ItemStack> doApply(ObjectArrayList<ItemStack> lootStacks, LootContext context) {
-        Entity entity = context.getParamOrNull(LootContextParams.DIRECT_ATTACKING_ENTITY);
-        Entity target = context.getParamOrNull(LootContextParams.THIS_ENTITY);
+        Entity entity = context.getOptional(LootContextParams.DIRECT_ATTACKING_ENTITY);
+        Entity target = context.getOptional(LootContextParams.THIS_ENTITY);
         ObjectArrayList<ItemStack> newStacks = new ObjectArrayList<>(lootStacks);
         if (entity instanceof LivingEntity livingEntity && target instanceof LivingEntity livingTarget) {
-            if (EquipmentUtil.isFullStrength(livingEntity) && livingEntity.getMainHandItem().is(AetherItems.PIG_SLAYER.get()) && livingTarget.getType().is(AetherTags.Entities.PIGS) && livingTarget.getRandom().nextInt(4) == 0) {
+            if (EquipmentUtil.isFullStrength(livingEntity) && livingEntity.getMainHandItem().is(AetherItems.PIG_SLAYER.get()) && livingTarget.is(AetherTags.Entities.PIGS) && livingTarget.getRandom().nextInt(4) == 0) {
                 for (ItemStack stack : lootStacks) {
                     if (stack.is(AetherTags.Items.PIG_DROPS)) {
                         newStacks.add(stack);

@@ -9,15 +9,15 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 /**
  * Marks the player as being in the process of teleporting to the Aether. This is used for displaying "Ascending to the Aether" in the world loading screen.
  *
- * @see com.aetherteam.aether.client.event.hooks.GuiHooks#drawAetherTravelMessage(Screen, net.minecraft.client.gui.GuiGraphics)
+ * @see com.aetherteam.aether.client.event.hooks.GuiHooks#drawAetherTravelMessage(Screen, net.minecraft.client.gui.GuiGraphicsExtractor)
  */
 public record AetherTravelPacket(boolean displayAetherTravel) implements CustomPacketPayload {
-    public static final Type<AetherTravelPacket> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Aether.MODID, "travel_across_dimensions"));
+    public static final Type<AetherTravelPacket> TYPE = new Type<>(Identifier.fromNamespaceAndPath(Aether.MODID, "travel_across_dimensions"));
 
     public static final StreamCodec<RegistryFriendlyByteBuf, AetherTravelPacket> STREAM_CODEC = StreamCodec.composite(
         ByteBufCodecs.BOOL,

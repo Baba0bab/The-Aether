@@ -1,17 +1,22 @@
 package com.aetherteam.aether.perk.data;
 
+import com.aetherteam.aether.Aether;
 import com.aetherteam.aether.perk.types.DeveloperGlow;
 import com.aetherteam.aether.perk.types.Halo;
 import com.aetherteam.aether.perk.types.MoaData;
 import com.aetherteam.aether.perk.types.MoaSkins;
 import com.google.common.collect.ImmutableMap;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.core.UUIDUtil;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.saveddata.SavedData;
-import net.minecraft.world.level.storage.DimensionDataStorage;
+import net.minecraft.world.level.saveddata.SavedDataType;
+import net.minecraft.world.level.storage.SavedDataStorage;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 public class PerkSavedData extends SavedData {
@@ -20,116 +25,44 @@ public class PerkSavedData extends SavedData {
     private final Map<UUID, Halo> storedHaloData = new HashMap<>();
     private final Map<UUID, DeveloperGlow> storedDeveloperGlowData = new HashMap<>();
 
+    private static final Codec<MoaData> MOA_DATA_CODEC = RecordCodecBuilder.create((instance) -> instance.group(
+        UUIDUtil.CODEC.optionalFieldOf("MoaUUID").forGetter((moaData) -> Optional.ofNullable(moaData.moaUUID())),
+        Codec.STRING.optionalFieldOf("MoaSkin").forGetter((moaData) -> Optional.ofNullable(moaData.moaSkin()).map(MoaSkins.MoaSkin::getId))
+    ).apply(instance, (moaUUID, moaSkin) -> new MoaData(moaUUID.orElse(null), moaSkin.map((id) -> MoaSkins.getMoaSkins().get(id)).orElse(null))));
+    private static final Codec<Halo> HALO_CODEC = RecordCodecBuilder.create((instance) -> instance.group(
+        Codec.STRING.optionalFieldOf("HexColor").forGetter((halo) -> Optional.ofNullable(halo.hexColor()))
+    ).apply(instance, (hexColor) -> new Halo(hexColor.orElse(null))));
+    private static final Codec<DeveloperGlow> DEVELOPER_GLOW_CODEC = RecordCodecBuilder.create((instance) -> instance.group(
+        Codec.STRING.optionalFieldOf("HexColor").forGetter((developerGlow) -> Optional.ofNullable(developerGlow.hexColor()))
+    ).apply(instance, (hexColor) -> new DeveloperGlow(hexColor.orElse(null))));
+
     /**
      * Saves perk data to the world in a file named "perks.dat".
-     *
-     * @param tag The {@link CompoundTag} to save the data to.
-     * @return A {@link CompoundTag} with the data.
      */
-    @Override
-    public CompoundTag save(CompoundTag tag, HolderLookup.Provider lookupProvider) {
-        CompoundTag storedSkinDataTag = new CompoundTag();
-        for (Map.Entry<UUID, MoaData> moaDataEntry : this.storedSkinData.entrySet()) {
-            CompoundTag moaDataEntryTag = new CompoundTag();
-            if (moaDataEntry.getValue().moaUUID() != null) {
-                moaDataEntryTag.putUUID("MoaUUID", moaDataEntry.getValue().moaUUID());
-            }
-            if (moaDataEntry.getValue().moaSkin() != null) {
-                moaDataEntryTag.putString("MoaSkin", moaDataEntry.getValue().moaSkin().getId());
-            }
-            storedSkinDataTag.put(moaDataEntry.getKey().toString(), moaDataEntryTag);
-        }
-        tag.put("StoredSkinData", storedSkinDataTag);
+    public static final Codec<PerkSavedData> CODEC = RecordCodecBuilder.create((instance) -> instance.group(
+        Codec.unboundedMap(UUIDUtil.STRING_CODEC, MOA_DATA_CODEC).optionalFieldOf("StoredSkinData", Map.of()).forGetter((data) -> data.storedSkinData),
+        Codec.unboundedMap(UUIDUtil.STRING_CODEC, HALO_CODEC).optionalFieldOf("StoredHaloData", Map.of()).forGetter((data) -> data.storedHaloData),
+        Codec.unboundedMap(UUIDUtil.STRING_CODEC, DEVELOPER_GLOW_CODEC).optionalFieldOf("StoredDeveloperGlowData", Map.of()).forGetter((data) -> data.storedDeveloperGlowData)
+    ).apply(instance, PerkSavedData::new));
 
-        CompoundTag storedHaloDataTag = new CompoundTag();
-        for (Map.Entry<UUID, Halo> haloEntry : this.storedHaloData.entrySet()) {
-            CompoundTag haloEntryTag = new CompoundTag();
-            if (haloEntry.getValue().hexColor() != null) {
-                haloEntryTag.putString("HexColor", haloEntry.getValue().hexColor());
-            }
-            storedHaloDataTag.put(haloEntry.getKey().toString(), haloEntryTag);
-        }
-        tag.put("StoredHaloData", storedHaloDataTag);
+    public static final SavedDataType<PerkSavedData> TYPE = new SavedDataType<>(Identifier.fromNamespaceAndPath(Aether.MODID, FILE_NAME), PerkSavedData::new, CODEC);
 
-        CompoundTag storedDeveloperGlowDataTag = new CompoundTag();
-        for (Map.Entry<UUID, DeveloperGlow> developerGlowEntry : this.storedDeveloperGlowData.entrySet()) {
-            CompoundTag developerGlowTag = new CompoundTag();
-            if (developerGlowEntry.getValue().hexColor() != null) {
-                developerGlowTag.putString("HexColor", developerGlowEntry.getValue().hexColor());
-            }
-            storedDeveloperGlowDataTag.put(developerGlowEntry.getKey().toString(), developerGlowTag);
-        }
-        tag.put("StoredDeveloperGlowData", storedDeveloperGlowDataTag);
+    public PerkSavedData() { }
 
-        return tag;
-    }
-
-    /**
-     * Loads perk data from the world from a {@link CompoundTag} representing the data in "perks.dat".
-     *
-     * @param tag The {@link CompoundTag}.
-     * @return The {@link PerkSavedData} created from the world data.
-     */
-    public static PerkSavedData load(CompoundTag tag, HolderLookup.Provider lookupProvider) {
-        PerkSavedData data = PerkSavedData.create();
-        for (String key : tag.getAllKeys()) {
-            if (key.equals("StoredSkinData")) {
-                CompoundTag storedSkinDataTag = tag.getCompound(key);
-                for (String storedSkinDataKey : storedSkinDataTag.getAllKeys()) {
-                    CompoundTag moaDataEntryTag = storedSkinDataTag.getCompound(storedSkinDataKey);
-                    UUID playerUUID = UUID.fromString(storedSkinDataKey);
-                    UUID moaUUID = null;
-                    String moaSkinId = null;
-                    if (moaDataEntryTag.contains("MoaUUID")) {
-                        moaUUID = moaDataEntryTag.getUUID("MoaUUID");
-                    }
-                    if (moaDataEntryTag.contains("MoaSkin")) {
-                        moaSkinId = moaDataEntryTag.getString("MoaSkin");
-                    }
-                    MoaSkins.MoaSkin moaSkin = MoaSkins.getMoaSkins().get(moaSkinId);
-                    data.storedSkinData.put(playerUUID, new MoaData(moaUUID, moaSkin));
-                }
-            }
-            if (key.equals("StoredHaloData")) {
-                CompoundTag storedHaloDataTag = tag.getCompound(key);
-                for (String storedHaloDataKey : storedHaloDataTag.getAllKeys()) {
-                    CompoundTag haloEntryTag = storedHaloDataTag.getCompound(storedHaloDataKey);
-                    UUID playerUUID = UUID.fromString(storedHaloDataKey);
-                    String hexColor = null;
-                    if (haloEntryTag.contains("HexColor")) {
-                        hexColor = haloEntryTag.getString("HexColor");
-                    }
-                    data.storedHaloData.put(playerUUID, new Halo(hexColor));
-                }
-            }
-            if (key.equals("StoredDeveloperGlowData")) {
-                CompoundTag storedDeveloperGlowDataTag = tag.getCompound(key);
-                for (String storedDeveloperGlowDataKey : storedDeveloperGlowDataTag.getAllKeys()) {
-                    CompoundTag developerGlowEntryTag = storedDeveloperGlowDataTag.getCompound(storedDeveloperGlowDataKey);
-                    UUID playerUUID = UUID.fromString(storedDeveloperGlowDataKey);
-                    String hexColor = null;
-                    if (developerGlowEntryTag.contains("HexColor")) {
-                        hexColor = developerGlowEntryTag.getString("HexColor");
-                    }
-                    data.storedDeveloperGlowData.put(playerUUID, new DeveloperGlow(hexColor));
-                }
-            }
-        }
-        return data;
-    }
-
-    public static PerkSavedData create() {
-        return new PerkSavedData();
+    private PerkSavedData(Map<UUID, MoaData> storedSkinData, Map<UUID, Halo> storedHaloData, Map<UUID, DeveloperGlow> storedDeveloperGlowData) {
+        this.storedSkinData.putAll(storedSkinData);
+        this.storedHaloData.putAll(storedHaloData);
+        this.storedDeveloperGlowData.putAll(storedDeveloperGlowData);
     }
 
     /**
      * Loads or creates the "perks.dat" file.
      *
-     * @param dataStorage The {@link DimensionDataStorage} of the world.
+     * @param dataStorage The {@link SavedDataStorage} of the server.
      * @return The {@link PerkSavedData} corresponding to the data file.
      */
-    public static PerkSavedData compute(DimensionDataStorage dataStorage) {
-        return dataStorage.computeIfAbsent(new SavedData.Factory<>(PerkSavedData::create, PerkSavedData::load, null), FILE_NAME);
+    public static PerkSavedData compute(SavedDataStorage dataStorage) {
+        return dataStorage.computeIfAbsent(TYPE);
     }
 
     /**

@@ -1,8 +1,8 @@
 package com.aetherteam.aether.attachment;
 
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import io.wispforest.accessories.api.slot.SlotTypeReference;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -10,7 +10,7 @@ import java.util.Map;
 public class MobAccessoryAttachment {
     private final Map<String, Float> accessoryDropChances;
 
-    public static final Codec<MobAccessoryAttachment> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+    public static final MapCodec<MobAccessoryAttachment> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
             Codec.unboundedMap(Codec.STRING, Codec.FLOAT).fieldOf("drop_chances").forGetter(MobAccessoryAttachment::getAccessoryDropChances)
     ).apply(instance, MobAccessoryAttachment::new));
 
@@ -27,22 +27,22 @@ public class MobAccessoryAttachment {
         this.accessoryDropChances = new HashMap<>(dropChances);
     }
 
-    public void setGuaranteedDrop(SlotTypeReference identifier) {
-        if (this.accessoryDropChances.containsKey(identifier.slotName())) {
-            this.getAccessoryDropChances().put(identifier.slotName(), 2.0F);
+    public void setGuaranteedDrop(String identifier) {
+        if (this.accessoryDropChances.containsKey(identifier)) {
+            this.getAccessoryDropChances().put(identifier, 2.0F);
         }
     }
 
-    public float getEquipmentDropChance(SlotTypeReference identifier) {
-        if (this.accessoryDropChances.containsKey(identifier.slotName())) {
-            return this.getAccessoryDropChances().get(identifier.slotName());
+    public float getEquipmentDropChance(String identifier) {
+        if (this.accessoryDropChances.containsKey(identifier)) {
+            return this.getAccessoryDropChances().get(identifier);
         }
         return 0.0F;
     }
 
-    public void setDropChance(SlotTypeReference identifier, float chance) {
-        if (this.accessoryDropChances.containsKey(identifier.slotName())) {
-            this.getAccessoryDropChances().put(identifier.slotName(), chance);
+    public void setDropChance(String identifier, float chance) {
+        if (this.accessoryDropChances.containsKey(identifier)) {
+            this.getAccessoryDropChances().put(identifier, chance);
         }
     }
 

@@ -7,16 +7,16 @@ import com.aetherteam.aether.item.combat.AetherItemTiers;
 import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.SwordItem;
 import net.minecraft.world.item.enchantment.Enchantments;
 import org.apache.commons.lang3.mutable.MutableFloat;
 
-public class HolySwordItem extends SwordItem {
-    public HolySwordItem() {
-        super(AetherItemTiers.HOLY, new Item.Properties().rarity(AetherItems.AETHER_LOOT).attributes(SwordItem.createAttributes(AetherItemTiers.HOLY, 3, -2.4F)));
+public class HolySwordItem extends Item {
+    public HolySwordItem(Properties properties) {
+        super(properties.sword(AetherItemTiers.HOLY, 3, -2.4F));
     }
 
     /**
@@ -28,17 +28,17 @@ public class HolySwordItem extends SwordItem {
      * @return Whether the enemy was hurt or not, as a {@link Boolean}.
      */
     @Override
-    public boolean hurtEnemy(ItemStack stack, LivingEntity target, LivingEntity attacker) {
+    public void hurtEnemy(ItemStack stack, LivingEntity target, LivingEntity attacker) {
         if (EquipmentUtil.isFullStrength(attacker)) {
-            if (target.getType().is(EntityTypeTags.UNDEAD) || target.isInvertedHealAndHarm()) {
-                stack.hurtAndBreak(10, attacker, LivingEntity.getSlotForHand(InteractionHand.MAIN_HAND));
+            if (target.is(EntityTypeTags.UNDEAD) || target.isInvertedHealAndHarm()) {
+                stack.hurtAndBreak(10, attacker, EquipmentSlot.MAINHAND);
             }
         }
-        return super.hurtEnemy(stack, target, attacker);
+        super.hurtEnemy(stack, target, attacker);
     }
 
     /**
-     * @see Aether#eventSetup()
+     * @see Aether#eventSetup(IEventBus)
      * Deals a base 15 damage to undead mobs or mobs that treat healing and harming effects as inverted, with an extra 2.5 damage for every level of Smite the item has, in addition to the weapon's default damage. This occurs if the attacker attacked with full strength as determined by {@link EquipmentUtil#isFullStrength(LivingEntity)}.
      */
     public static void onLivingDamage(LivingEntity target, DamageSource damageSource, MutableFloat newDamage) {
@@ -63,7 +63,7 @@ public class HolySwordItem extends SwordItem {
     private static boolean canPerformAbility(LivingEntity target, DamageSource source) {
         if (source.getDirectEntity() instanceof LivingEntity attacker) {
             if (EquipmentUtil.isFullStrength(attacker)) {
-                if (target.getType().is(EntityTypeTags.UNDEAD) || target.isInvertedHealAndHarm()) {
+                if (target.is(EntityTypeTags.UNDEAD) || target.isInvertedHealAndHarm()) {
                     return attacker.getMainHandItem().is(AetherItems.HOLY_SWORD.get());
                 }
             }

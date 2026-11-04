@@ -6,14 +6,12 @@
 //import net.minecraft.core.HolderLookup;
 //import net.minecraft.data.PackOutput;
 //import net.minecraft.data.tags.StructureTagsProvider;
-//import net.neoforged.neoforge.common.data.ExistingFileHelper;
 //
-//import org.jetbrains.annotations.Nullable;
 //import java.util.concurrent.CompletableFuture;
 //
 //public class AetherStructureTagData extends StructureTagsProvider {
-//    public AetherStructureTagData(PackOutput output, CompletableFuture<HolderLookup.Provider> registries, @Nullable ExistingFileHelper helper) {
-//        super(output, registries, Aether.MODID, helper);
+//    public AetherStructureTagData(PackOutput output, CompletableFuture<HolderLookup.Provider> registries) {
+//        super(output, registries, Aether.MODID);
 //    }
 //
 //    @Override

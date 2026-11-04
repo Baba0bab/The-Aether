@@ -30,12 +30,6 @@
     "fabric-datagen": [
       "com.aetherteam.aether.data.AetherData"
     ],
-    "rei_client": [
-      "com.aetherteam.aether.integration.rei.AetherREIClientPlugin"
-    ],
-    "rei_server": [
-      "com.aetherteam.aether.integration.rei.AetherREIServerPlugin"
-    ],
     "jei_mod_plugin": [
       "com.aetherteam.aether.integration.jei.AetherJEIPlugin"
     ],
@@ -53,23 +47,21 @@
   "depends": {
     "fabricloader": "${fabric_loader_version_range}",
     "minecraft": "${minecraft_version_range}",
-    "java": ">=21",
+    "java": ">=25",
     "fabric-api": "${fabric_version_range}",
-    "accessories": "*"
+    "trinkets_updated": "*",
+    "nitrogen_internals": "*"
   },
   "custom": {
     "loom:injected_interfaces": {
-      "net/minecraft/class_1297": [
+      "net/minecraft/world/entity/Entity": [
         "net/fabricmc/fabric/api/attachment/v1/AttachmentTarget"
       ],
-      "net/minecraft/class_1937": [
+      "net/minecraft/world/level/Level": [
         "net/fabricmc/fabric/api/attachment/v1/AttachmentTarget"
       ],
-      "net/minecraft/class_1799": [
+      "net/minecraft/world/item/ItemStack": [
         "net/fabricmc/fabric/api/item/v1/FabricItemStack"
-      ],
-      "net/minecraft/class_8610": [
-        "net/fabricmc/fabric/api/networking/v1/FabricServerConfigurationNetworkHandler"
       ]
     }
   }

@@ -1,5 +1,8 @@
 package com.aetherteam.aether.loot.functions;
 
+import net.minecraft.world.item.ItemInstance;
+import net.minecraft.core.Holder;
+import java.util.Optional;
 import com.aetherteam.aether.item.tools.abilities.SkyrootTool;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -8,7 +11,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.functions.LootItemConditionalFunction;
-import net.minecraft.world.level.storage.loot.functions.LootItemFunctionType;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
@@ -17,7 +19,7 @@ import java.util.List;
 public class DoubleDrops extends LootItemConditionalFunction {
     public static final MapCodec<DoubleDrops> CODEC = RecordCodecBuilder.mapCodec(instance -> commonFields(instance).apply(instance, DoubleDrops::new));
 
-    protected DoubleDrops(List<LootItemCondition> conditions) {
+    protected DoubleDrops(Optional<Holder<LootItemCondition>> conditions) {
         super(conditions);
     }
 
@@ -31,9 +33,9 @@ public class DoubleDrops extends LootItemConditionalFunction {
     @Override
     protected ItemStack run(ItemStack stack, LootContext context) {
         Level level = context.getLevel();
-        ItemStack toolStack = context.getParamOrNull(LootContextParams.TOOL);
-        BlockState blockState = context.getParamOrNull(LootContextParams.BLOCK_STATE);
-        if (toolStack != null && toolStack.getItem() instanceof SkyrootTool skyrootTool) {
+        ItemInstance tool = context.getOptional(LootContextParams.TOOL);
+        BlockState blockState = context.getOptional(LootContextParams.BLOCK_STATE);
+        if (tool instanceof ItemStack toolStack && toolStack.getItem() instanceof SkyrootTool skyrootTool) {
             return skyrootTool.doubleDrops(level, stack, toolStack, blockState);
         }
         return stack;
@@ -44,7 +46,7 @@ public class DoubleDrops extends LootItemConditionalFunction {
     }
 
     @Override
-    public LootItemFunctionType<DoubleDrops> getType() {
-        return AetherLootFunctions.DOUBLE_DROPS.get();
+    public MapCodec<DoubleDrops> codec() {
+        return CODEC;
     }
 }

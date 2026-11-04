@@ -5,7 +5,7 @@ import com.aetherteam.aether.attachment.AetherPlayerAttachment;
 import com.aetherteam.aether.client.AetherKeys;
 import com.aetherteam.nitrogen.attachment.INBTSynchable;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.player.Input;
+import net.minecraft.client.player.ClientInput;
 import net.minecraft.world.entity.player.Player;
 
 public class CapabilityClientHooks {
@@ -14,16 +14,16 @@ public class CapabilityClientHooks {
          * Tracks whether the player is jumping or moving on the client to the {@link AetherPlayerAttachment}.
          *
          * @param player The {@link Player}.
-         * @param input  The {@link Input}.
+         * @param input  The {@link ClientInput}.
          * @see com.aetherteam.aether.client.event.listeners.capability.AetherPlayerClientListener#onMove(MovementInputUpdateEvent)
          */
-        public static void movementInput(Player player, Input input) {
+        public static void movementInput(Player player, ClientInput input) {
             var aetherPlayer = player.getAttachedOrCreate(AetherDataAttachments.AETHER_PLAYER);
-            boolean isJumping = input.jumping;
+            boolean isJumping = input.keyPresses.jump();
             if (isJumping != aetherPlayer.isJumping()) {
                 aetherPlayer.setSynched(player.getId(), INBTSynchable.Direction.SERVER, "setJumping", isJumping);
             }
-            boolean isMoving = isJumping || input.up || input.down || input.left || input.right || player.isFallFlying();
+            boolean isMoving = isJumping || input.keyPresses.forward() || input.keyPresses.backward() || input.keyPresses.left() || input.keyPresses.right() || player.isFallFlying();
             if (isMoving != aetherPlayer.isMoving()) {
                 aetherPlayer.setSynched(player.getId(), INBTSynchable.Direction.SERVER, "setMoving", isMoving);
             }

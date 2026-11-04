@@ -1,0 +1,8 @@
+{
+  "replace": false,
+  "id": "ring",
+  "size": 2,
+  "entities": [
+    "minecraft:player"
+  ]
+}

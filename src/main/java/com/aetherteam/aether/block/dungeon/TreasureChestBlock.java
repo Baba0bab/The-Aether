@@ -1,14 +1,14 @@
 package com.aetherteam.aether.block.dungeon;
 
+import net.minecraft.world.level.BlockGetter;
 import com.aetherteam.aether.blockentity.AetherBlockEntityTypes;
 import com.aetherteam.aether.blockentity.TreasureChestBlockEntity;
 import com.aetherteam.aether.item.components.AetherDataComponents;
 import com.aetherteam.aether.item.components.DungeonKind;
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.stats.Stats;
@@ -29,7 +29,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
-import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.level.pathfinder.PathComputationType;
@@ -43,8 +43,7 @@ import java.util.function.Supplier;
  * Mostly copied from {@link ChestBlock}.
  */
 public class TreasureChestBlock extends AbstractChestBlock<TreasureChestBlockEntity> implements SimpleWaterloggedBlock {
-    public static final MapCodec<TreasureChestBlock> CODEC = simpleCodec(TreasureChestBlock::new);
-    public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
+    public static final EnumProperty<Direction> FACING = HorizontalDirectionalBlock.FACING;
     public static final BooleanProperty WATERLOGGED = BlockStateProperties.WATERLOGGED;
     protected static final VoxelShape SHAPE = Block.box(1.0, 0.0, 1.0, 15.0, 14.0, 15.0);
 
@@ -55,11 +54,6 @@ public class TreasureChestBlock extends AbstractChestBlock<TreasureChestBlockEnt
     public TreasureChestBlock(Properties properties, Supplier<BlockEntityType<? extends TreasureChestBlockEntity>> blockEntityTypeSupplier) {
         super(properties, blockEntityTypeSupplier);
         this.registerDefaultState(this.getStateDefinition().any().setValue(FACING, Direction.NORTH).setValue(WATERLOGGED, false));
-    }
-
-    @Override
-    protected MapCodec<? extends AbstractChestBlock<TreasureChestBlockEntity>> codec() {
-        return CODEC;
     }
 
     @Override
@@ -112,26 +106,26 @@ public class TreasureChestBlock extends AbstractChestBlock<TreasureChestBlockEnt
             if (!treasureChestBlockEntity.getLocked()) {
                 if (level.isClientSide()) {
                     return InteractionResult.SUCCESS;
-                } else {
+                } else if (level instanceof ServerLevel serverLevel) {
                     MenuProvider menuprovider = this.getMenuProvider(state, level, pos);
                     if (menuprovider != null) {
                         player.openMenu(menuprovider);
                         player.awardStat(Stats.CUSTOM.get(Stats.OPEN_CHEST));
-                        PiglinAi.angerNearbyPiglins(player, true);
+                        PiglinAi.angerNearbyPiglins(serverLevel, player, true);
                     }
 
                     return InteractionResult.CONSUME;
                 }
             }
         }
-        return InteractionResult.sidedSuccess(level.isClientSide());
+        return InteractionResult.SUCCESS;
     }
 
     @Override
-    protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
+    protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
         BlockEntity blockEntity = level.getBlockEntity(pos);
         if (blockEntity instanceof TreasureChestBlockEntity treasureChestBlockEntity) {
-            ResourceLocation kind = treasureChestBlockEntity.getKind();
+            Identifier kind = treasureChestBlockEntity.getKind();
             if (treasureChestBlockEntity.getLocked()) {
                 DungeonKind type = stack.get(AetherDataComponents.DUNGEON_KIND.get());
                 if (type != null && type.id().equals(treasureChestBlockEntity.getKind())) {
@@ -142,13 +136,13 @@ public class TreasureChestBlock extends AbstractChestBlock<TreasureChestBlockEnt
                         if (!player.getAbilities().instabuild) {
                             stack.shrink(1);
                         }
-                        return ItemInteractionResult.sidedSuccess(level.isClientSide());
+                        return InteractionResult.SUCCESS;
                     }
                 }
-                player.displayClientMessage(Component.translatable(kind.getNamespace() + "." + kind.getPath() + "_treasure_chest_locked"), true);
+                player.sendOverlayMessage(Component.translatable(kind.getNamespace() + "." + kind.getPath() + "_treasure_chest_locked"));
             }
         }
-        return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+        return InteractionResult.PASS;
     }
 
     @Override
@@ -173,15 +167,8 @@ public class TreasureChestBlock extends AbstractChestBlock<TreasureChestBlockEnt
     }
 
     @Override
-    public void onRemove(BlockState state, Level level, BlockPos pos, BlockState stateOther, boolean flag) {
-        if (!state.is(stateOther.getBlock())) {
-            BlockEntity blockEntity = level.getBlockEntity(pos);
-            if (blockEntity instanceof Container container) {
-                Containers.dropContents(level, pos, container);
-                level.updateNeighbourForOutputSignal(pos, this);
-            }
-            super.onRemove(state, level, pos, stateOther, flag);
-        }
+    protected void affectNeighborsAfterRemoval(BlockState state, ServerLevel level, BlockPos pos, boolean movedByPiston) {
+        Containers.updateNeighboursAfterDestroy(state, level, pos);
     }
 
     /**
@@ -202,7 +189,7 @@ public class TreasureChestBlock extends AbstractChestBlock<TreasureChestBlockEnt
                 return 0.0F;
             } else {
                 int i = player.hasCorrectToolForDrops(state) ? 30 : 100;
-                return player.getDestroySpeed(state) / f / (float) i;
+                return player.getDestroySpeed(state, pos) / f / (float) i;
             }
         }
         return super.getDestroyProgress(state, player, level, pos);
@@ -227,7 +214,7 @@ public class TreasureChestBlock extends AbstractChestBlock<TreasureChestBlockEnt
     }
 
     @Override
-    public int getAnalogOutputSignal(BlockState state, Level level, BlockPos pos) {
+    protected int getAnalogOutputSignal(BlockState state, Level level, BlockPos pos, Direction direction) {
         return AbstractContainerMenu.getRedstoneSignalFromBlockEntity(level.getBlockEntity(pos));
     }
 
@@ -257,8 +244,8 @@ public class TreasureChestBlock extends AbstractChestBlock<TreasureChestBlockEnt
      */
     @SuppressWarnings("deprecation")
     @Override
-    public ItemStack getCloneItemStack(LevelReader level, BlockPos pos, BlockState state) {
-        ItemStack stack = super.getCloneItemStack(level, pos, state);
+    protected ItemStack getCloneItemStack(LevelReader level, BlockPos pos, BlockState state, boolean includeData) {
+        ItemStack stack = super.getCloneItemStack(level, pos, state, includeData);
         TreasureChestBlockEntity treasureChestBlockEntity = (TreasureChestBlockEntity) level.getBlockEntity(pos);
         if (treasureChestBlockEntity != null) {
             stack.applyComponents(treasureChestBlockEntity.collectComponents());
@@ -273,14 +260,14 @@ public class TreasureChestBlock extends AbstractChestBlock<TreasureChestBlockEnt
 
     @Override
     public RenderShape getRenderShape(BlockState state) {
-        return RenderShape.ENTITYBLOCK_ANIMATED;
+        return RenderShape.INVISIBLE;
     }
 
     @Override
-    public BlockState updateShape(BlockState state, Direction direction, BlockState facingState, LevelAccessor level, BlockPos currentPos, BlockPos facingPos) {
+    protected BlockState updateShape(BlockState state, LevelReader level, ScheduledTickAccess scheduledTickAccess, BlockPos pos, Direction direction, BlockPos neighborPos, BlockState neighborState, RandomSource random) {
         if (state.getValue(WATERLOGGED)) {
-            level.scheduleTick(currentPos, Fluids.WATER, Fluids.WATER.getTickDelay(level));
+            scheduledTickAccess.scheduleTick(pos, Fluids.WATER, Fluids.WATER.getTickDelay(level));
         }
-        return super.updateShape(state, direction, facingState, level, currentPos, facingPos);
+        return super.updateShape(state, level, scheduledTickAccess, pos, direction, neighborPos, neighborState, random);
     }
 }

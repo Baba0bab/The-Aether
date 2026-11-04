@@ -1,24 +1,32 @@
 //package com.aetherteam.aether.data.generators.tags;
 //
+//import net.minecraft.world.item.Item;
+//import net.minecraft.tags.BlockItemTags;
+//import net.minecraft.tags.TagKey;
+//import net.minecraft.core.registries.BuiltInRegistries;
+//import com.aetherteam.nitrogen.data.providers.IntrinsicTagAppender;
 //import com.aetherteam.aether.Aether;
 //import com.aetherteam.aether.AetherTags;
 //import com.aetherteam.aether.block.AetherBlocks;
 //import com.aetherteam.aether.item.AetherItems;
 //import net.minecraft.core.HolderLookup;
 //import net.minecraft.data.PackOutput;
-//import net.minecraft.data.tags.ItemTagsProvider;
+//import net.neoforged.neoforge.common.data.BlockTagCopyingItemTagProvider;
 //import net.minecraft.tags.ItemTags;
 //import net.minecraft.world.item.Items;
 //import net.minecraft.world.level.block.Block;
 //import net.neoforged.neoforge.common.Tags;
-//import net.neoforged.neoforge.common.data.ExistingFileHelper;
 //
-//import org.jetbrains.annotations.Nullable;
 //import java.util.concurrent.CompletableFuture;
 //
-//public class AetherItemTagData extends ItemTagsProvider {
-//    public AetherItemTagData(PackOutput output, CompletableFuture<HolderLookup.Provider> registries, CompletableFuture<TagLookup<Block>> blockTags, @Nullable ExistingFileHelper helper) {
-//        super(output, registries, blockTags, Aether.MODID, helper);
+//public class AetherItemTagData extends BlockTagCopyingItemTagProvider {
+//    public AetherItemTagData(PackOutput output, CompletableFuture<HolderLookup.Provider> registries, CompletableFuture<TagLookup<Block>> blockTags) {
+//        super(output, registries, blockTags, Aether.MODID);
+//    }
+//
+//    @Override
+//    protected IntrinsicTagAppender<Item> tag(TagKey<Item> tag) {
+//        return new IntrinsicTagAppender<>(super.tag(tag), (element) -> BuiltInRegistries.ITEM.getResourceKey(element).orElseThrow());
 //    }
 //
 //    @SuppressWarnings("unchecked")
@@ -40,6 +48,11 @@
 //        this.copy(AetherTags.Blocks.ANGELIC_BLOCKS, AetherTags.Items.ANGELIC_BLOCKS);
 //        this.copy(AetherTags.Blocks.HELLFIRE_BLOCKS, AetherTags.Items.HELLFIRE_BLOCKS);
 //        this.copy(AetherTags.Blocks.AECHOR_PLANT_SPAWNABLE_DETERRENT, AetherTags.Items.AECHOR_PLANT_SPAWNABLE_DETERRENT);
+//        this.copy(AetherTags.Blocks.ORE_BEARING_GROUND_HOLYSTONE, AetherTags.Items.ORE_BEARING_GROUND_HOLYSTONE);
+//        this.copy(AetherTags.Blocks.ORES_AMBROSIUM, AetherTags.Items.ORES_AMBROSIUM);
+//        this.copy(AetherTags.Blocks.ORES_ZANITE, AetherTags.Items.ORES_ZANITE);
+//        this.copy(AetherTags.Blocks.ORES_GRAVITITE, AetherTags.Items.ORES_GRAVITITE);
+//        this.copy(AetherTags.Blocks.ORES_IN_GROUND_HOLYSTONE, AetherTags.Items.ORES_IN_GROUND_HOLYSTONE);
 //
 //        this.tag(AetherTags.Items.CRAFTS_SKYROOT_PLANKS).addTags(
 //                AetherTags.Items.SKYROOT_LOGS,
@@ -123,6 +136,7 @@
 //        this.tag(AetherTags.Items.FREEZABLE_PENDANTS)
 //                .add(AetherItems.IRON_PENDANT.get())
 //                .add(AetherItems.GOLDEN_PENDANT.get());
+//        this.tag(AetherTags.Items.PACIFIES_SWETS).add(AetherItems.SWET_CAPE.get());
 //        this.tag(AetherTags.Items.SLIDER_DAMAGING_ITEMS).addTag(ItemTags.PICKAXES);
 //        this.tag(AetherTags.Items.BRONZE_DUNGEON_LOOT).add(
 //                AetherItems.VALKYRIE_LANCE.get(),
@@ -200,8 +214,40 @@
 //        this.tag(AetherTags.Items.SENTRY_REPAIRING);
 //        this.tag(AetherTags.Items.ICE_REPAIRING);
 //
+//        this.tag(AetherTags.Items.GEMS_AMBROSIUM).add(AetherItems.AMBROSIUM_SHARD.get());
 //        this.tag(AetherTags.Items.GEMS_ZANITE).add(AetherItems.ZANITE_GEMSTONE.get());
 //        this.tag(AetherTags.Items.PROCESSED_GRAVITITE).add(AetherBlocks.ENCHANTED_GRAVITITE.get().asItem());
+//
+//        this.tag(AetherTags.Items.LEATHER_ARMOR).add(
+//            Items.LEATHER_HELMET,
+//            Items.LEATHER_CHESTPLATE,
+//            Items.LEATHER_LEGGINGS,
+//            Items.LEATHER_BOOTS);
+//        this.tag(AetherTags.Items.CHAINMAIL_ARMOR).add(
+//            Items.CHAINMAIL_HELMET,
+//            Items.CHAINMAIL_CHESTPLATE,
+//            Items.CHAINMAIL_LEGGINGS,
+//            Items.CHAINMAIL_BOOTS);
+//        this.tag(AetherTags.Items.IRON_ARMOR).add(
+//            Items.IRON_HELMET,
+//            Items.IRON_CHESTPLATE,
+//            Items.IRON_LEGGINGS,
+//            Items.IRON_BOOTS);
+//        this.tag(AetherTags.Items.GOLDEN_ARMOR).add(
+//            Items.GOLDEN_HELMET,
+//            Items.GOLDEN_CHESTPLATE,
+//            Items.GOLDEN_LEGGINGS,
+//            Items.GOLDEN_BOOTS);
+//        this.tag(AetherTags.Items.DIAMOND_ARMOR).add(
+//            Items.DIAMOND_HELMET,
+//            Items.DIAMOND_CHESTPLATE,
+//            Items.DIAMOND_LEGGINGS,
+//            Items.DIAMOND_BOOTS);
+//        this.tag(AetherTags.Items.NETHERITE_ARMOR).add(
+//            Items.NETHERITE_HELMET,
+//            Items.NETHERITE_CHESTPLATE,
+//            Items.NETHERITE_LEGGINGS,
+//            Items.NETHERITE_BOOTS);
 //
 //        this.tag(AetherTags.Items.TOOLS_LANCES).add(AetherItems.VALKYRIE_LANCE.get());
 //        this.tag(AetherTags.Items.TOOLS_HAMMERS).add(AetherItems.HAMMER_OF_KINGBDOGZ.get());
@@ -254,6 +300,8 @@
 //
 //        // Forge
 //        this.tag(Tags.Items.BOOKSHELVES).add(AetherBlocks.SKYROOT_BOOKSHELF.get().asItem());
+//        this.tag(Tags.Items.BUCKETS).add(AetherItems.SKYROOT_POISON_BUCKET.get(), AetherItems.SKYROOT_REMEDY_BUCKET.get());
+//        this.tag(Tags.Items.BUCKETS_EMPTY).add(AetherItems.SKYROOT_BUCKET.get());
 //        this.tag(Tags.Items.BUCKETS_WATER).add(AetherItems.SKYROOT_WATER_BUCKET.get());
 //        this.tag(Tags.Items.BUCKETS_MILK).add(AetherItems.SKYROOT_MILK_BUCKET.get());
 //        this.tag(Tags.Items.BUCKETS_POWDER_SNOW).add(AetherItems.SKYROOT_POWDER_SNOW_BUCKET.get());
@@ -285,7 +333,19 @@
 //            AetherItems.GOLDEN_GUMMY_SWET.get(),
 //            AetherItems.CANDY_CANE.get()
 //        );
-//        this.tag(Tags.Items.GEMS).add(AetherItems.ZANITE_GEMSTONE.get());
+//        this.tag(Tags.Items.FOODS).add(AetherItems.HEALING_STONE.get());
+//        this.tag(Tags.Items.ANIMAL_FOODS).addTags(
+//            AetherTags.Items.PHYG_TEMPTATION_ITEMS,
+//            AetherTags.Items.FLYING_COW_TEMPTATION_ITEMS,
+//            AetherTags.Items.SHEEPUFF_TEMPTATION_ITEMS,
+//            AetherTags.Items.AERBUNNY_TEMPTATION_ITEMS,
+//            AetherTags.Items.MOA_FOOD_ITEMS
+//        );
+//        this.tag(Tags.Items.GEMS).add(
+//            AetherItems.AMBROSIUM_SHARD.get(),
+//            AetherItems.ZANITE_GEMSTONE.get()
+//        );
+//        this.tag(Tags.Items.HIDDEN_FROM_RECIPE_VIEWERS).add(AetherItems.AETHER_PORTAL_FRAME.get().asItem());
 //        this.tag(Tags.Items.GLASS_BLOCKS_COLORLESS).add(AetherBlocks.QUICKSOIL_GLASS.get().asItem());
 //        this.tag(Tags.Items.GLASS_BLOCKS_CHEAP).add(AetherBlocks.QUICKSOIL_GLASS.get().asItem());
 //        this.tag(Tags.Items.GLASS_PANES_COLORLESS).add(AetherBlocks.QUICKSOIL_GLASS_PANE.get().asItem());
@@ -365,7 +425,7 @@
 //        this.tag(ItemTags.WOODEN_DOORS).add(AetherBlocks.SKYROOT_DOOR.get().asItem());
 //        this.tag(ItemTags.WOODEN_TRAPDOORS).add(AetherBlocks.SKYROOT_TRAPDOOR.get().asItem());
 //        this.tag(ItemTags.WOODEN_BUTTONS).add(AetherBlocks.SKYROOT_BUTTON.get().asItem());
-//        this.tag(ItemTags.STONE_BUTTONS).add(AetherBlocks.HOLYSTONE_BUTTON.get().asItem());
+//        this.tag(BlockItemTags.STONE_BUTTONS.item()).add(AetherBlocks.HOLYSTONE_BUTTON.get().asItem());
 //        this.tag(ItemTags.WOODEN_PRESSURE_PLATES).add(AetherBlocks.SKYROOT_PRESSURE_PLATE.get().asItem());
 //        this.tag(ItemTags.SAPLINGS).add(
 //                AetherBlocks.SKYROOT_SAPLING.get().asItem(),
@@ -373,7 +433,7 @@
 //        this.tag(ItemTags.LOGS_THAT_BURN).addTags( // Charcoal Recipes
 //                AetherTags.Items.SKYROOT_LOGS,
 //                AetherTags.Items.GOLDEN_OAK_LOGS);
-//        this.tag(ItemTags.STAIRS).add(
+//        this.tag(BlockItemTags.STAIRS.item()).add(
 //                AetherBlocks.SKYROOT_STAIRS.get().asItem(),
 //                AetherBlocks.CARVED_STAIRS.get().asItem(),
 //                AetherBlocks.ANGELIC_STAIRS.get().asItem(),
@@ -383,7 +443,7 @@
 //                AetherBlocks.ICESTONE_STAIRS.get().asItem(),
 //                AetherBlocks.HOLYSTONE_BRICK_STAIRS.get().asItem(),
 //                AetherBlocks.AEROGEL_STAIRS.get().asItem());
-//        this.tag(ItemTags.SLABS).add(
+//        this.tag(BlockItemTags.SLABS.item()).add(
 //                AetherBlocks.SKYROOT_SLAB.get().asItem(),
 //                AetherBlocks.CARVED_SLAB.get().asItem(),
 //                AetherBlocks.ANGELIC_SLAB.get().asItem(),
@@ -409,7 +469,7 @@
 //                AetherBlocks.CRYSTAL_FRUIT_LEAVES.get().asItem(),
 //                AetherBlocks.HOLIDAY_LEAVES.get().asItem(),
 //                AetherBlocks.DECORATED_HOLIDAY_LEAVES.get().asItem());
-//        this.tag(ItemTags.SMALL_FLOWERS).add(
+//        this.tag(BlockItemTags.SMALL_FLOWERS.item()).add(
 //                AetherBlocks.PURPLE_FLOWER.get().asItem(),
 //                AetherBlocks.WHITE_FLOWER.get().asItem());
 //        this.tag(ItemTags.BEDS).add(AetherBlocks.SKYROOT_BED.get().asItem());
@@ -535,11 +595,10 @@
 //                AetherItems.ZANITE_GEMSTONE.get(),
 //                AetherBlocks.ENCHANTED_GRAVITITE.get().asItem(),
 //                AetherItems.GOLDEN_AMBER.get());
-//        this.tag(ItemTags.DYEABLE).add(
-//                AetherItems.LEATHER_GLOVES.get()
-//        );
-//        this.tag(ItemTags.DURABILITY_ENCHANTABLE).addTag(AetherTags.Items.ACCESSORIES_GLOVES).add(
-//                AetherItems.HAMMER_OF_KINGBDOGZ.get(),
+//        this.tag(ItemTags.MELEE_WEAPON_ENCHANTABLE).addTag(AetherTags.Items.TOOLS_HAMMERS);
+//        this.tag(ItemTags.SWEEPING_ENCHANTABLE).addTag(AetherTags.Items.TOOLS_HAMMERS);
+//        this.tag(ItemTags.WEAPON_ENCHANTABLE).addTag(AetherTags.Items.TOOLS_HAMMERS);
+//        this.tag(ItemTags.DURABILITY_ENCHANTABLE).addTags(AetherTags.Items.DART_SHOOTERS, AetherTags.Items.ACCESSORIES_GLOVES, AetherTags.Items.TOOLS_HAMMERS).add(
 //                AetherItems.LIGHTNING_KNIFE.get(),
 //                AetherItems.ZANITE_RING.get(),
 //                AetherItems.ICE_RING.get(),
@@ -548,9 +607,11 @@
 //                AetherItems.SHIELD_OF_REPULSION.get(),
 //                AetherItems.COLD_PARACHUTE.get(),
 //                AetherItems.GOLDEN_PARACHUTE.get(),
-//                AetherItems.NATURE_STAFF.get()
+//                AetherItems.NATURE_STAFF.get(),
+//                AetherItems.CLOUD_STAFF.get()
 //        );
 //        this.tag(ItemTags.BOW_ENCHANTABLE).addTag(AetherTags.Items.DART_SHOOTERS).add(AetherItems.PHOENIX_BOW.get());
 //        this.tag(ItemTags.VANISHING_ENCHANTABLE).addTag(AetherTags.Items.ACCESSORIES);
 //    }
 //}
+//

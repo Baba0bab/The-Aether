@@ -11,8 +11,8 @@ import net.minecraft.world.entity.Entity;
  * BossFightEvent is fired when an event for a boss fight occurs.<br>
  * If a method utilizes this EntityEvent as its parameter, the method will receive every child event of this class.<br>
  */
-public abstract class BossFightEvent {
-    private final BossRoomTracker<?> dungeon;
+public abstract class BossFightEvent extends EntityEvent {
+    private final BossRoomTracker dungeon;
 
     private final Entity entity;
 
@@ -20,8 +20,8 @@ public abstract class BossFightEvent {
      * @param entity  The {@link Entity} triggering the boss fight.
      * @param dungeon The {@link BossRoomTracker} representing the boss's dungeon.
      */
-    public BossFightEvent(Entity entity, BossRoomTracker<?> dungeon) {
-        this.entity = entity;
+    public BossFightEvent(Entity entity, BossRoomTracker dungeon) {
+        super(entity);
         this.dungeon = dungeon;
     }
 
@@ -32,7 +32,7 @@ public abstract class BossFightEvent {
     /**
      * @return The {@link BossRoomTracker} representing the boss's dungeon.
      */
-    public BossRoomTracker<?> getDungeon() {
+    public BossRoomTracker getDungeon() {
         return this.dungeon;
     }
 
@@ -42,7 +42,7 @@ public abstract class BossFightEvent {
      * This event is fired on both {@link EnvType sides}.
      */
     public static class Start extends BossFightEvent {
-        public Start(Entity entity, BossRoomTracker<?> dungeon) {
+        public Start(Entity entity, BossRoomTracker dungeon) {
             super(entity, dungeon);
         }
     }
@@ -53,7 +53,7 @@ public abstract class BossFightEvent {
      * This event is fired on both {@link EnvType sides}.
      */
     public static class Stop extends BossFightEvent {
-        public Stop(Entity entity, BossRoomTracker<?> dungeon) {
+        public Stop(Entity entity, BossRoomTracker dungeon) {
             super(entity, dungeon);
         }
     }
@@ -66,7 +66,7 @@ public abstract class BossFightEvent {
     public static class AddPlayer extends BossFightEvent {
         private final ServerPlayer player;
 
-        public AddPlayer(Entity entity, BossRoomTracker<?> dungeon, ServerPlayer player) {
+        public AddPlayer(Entity entity, BossRoomTracker dungeon, ServerPlayer player) {
             super(entity, dungeon);
             this.player = player;
         }
@@ -87,7 +87,7 @@ public abstract class BossFightEvent {
     public static class RemovePlayer extends BossFightEvent {
         private final ServerPlayer player;
 
-        public RemovePlayer(Entity entity, BossRoomTracker<?> dungeon, ServerPlayer player) {
+        public RemovePlayer(Entity entity, BossRoomTracker dungeon, ServerPlayer player) {
             super(entity, dungeon);
             this.player = player;
         }

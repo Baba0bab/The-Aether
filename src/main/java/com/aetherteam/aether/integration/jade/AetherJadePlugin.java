@@ -8,20 +8,24 @@ import com.aetherteam.aether.block.dungeon.TreasureDoorwayBlock;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.HitResult;
 import noobanidus.mods.lootr.fabric.init.ModBlocks;
 import org.jetbrains.annotations.Nullable;
-import snownee.jade.addon.vanilla.VanillaPlugin;
 import snownee.jade.api.*;
 
 @WailaPlugin
 public class AetherJadePlugin implements IWailaPlugin {
+    private static final Identifier LOOTR_CHEST = Identifier.fromNamespaceAndPath("lootr", "chest");
+    @Nullable
+    private IWailaClientRegistration client;
+
     @Override
     public void registerClient(IWailaClientRegistration registration) {
+        this.client = registration;
         registration.addRayTraceCallback(this::registerAetherOverrides);
     }
 
@@ -29,30 +33,27 @@ public class AetherJadePlugin implements IWailaPlugin {
     public Accessor<?> registerAetherOverrides(HitResult hitResult, @Nullable Accessor<?> accessor, @Nullable Accessor<?> originalAccessor) {
         if (accessor instanceof BlockAccessor target) {
             Player player = accessor.getPlayer();
-            if (player.isCreative() || player.isSpectator()) {
+            IWailaClientRegistration client = this.client;
+            if (client == null || player.isCreative() || player.isSpectator()) {
                 return accessor;
             }
-            IWailaClientRegistration client = VanillaPlugin.CLIENT_REGISTRATION;
             if (target.getBlock() instanceof TrappedBlock trapped) { // Trapped dungeon blocks show up as their normal dungeon blocks
                 return client.blockAccessor().from(target).blockState(trapped.getFacadeBlock()).build();
             } else if (target.getBlock() instanceof DoorwayBlock door) { // Both doorways show up as locked dungeon blocks, since you won't see them if a dungeon is completed anyway
-                ResourceLocation doorLocation = BuiltInRegistries.BLOCK.getKey(door);
+                Identifier doorLocation = BuiltInRegistries.BLOCK.getKey(door);
                 Block doorBlock = this.getLockedDungeonBlock(doorLocation.getPath());
                 if (doorBlock != null) {
                     return client.blockAccessor().from(target).blockState(doorBlock.defaultBlockState()).build();
                 }
             } else if (target.getBlock() instanceof TreasureDoorwayBlock door) {
-                ResourceLocation doorLocation = BuiltInRegistries.BLOCK.getKey(door);
+                Identifier doorLocation = BuiltInRegistries.BLOCK.getKey(door);
                 Block doorBlock = this.getLockedDungeonBlock(doorLocation.getPath());
                 if (doorBlock != null) {
                     return client.blockAccessor().from(target).blockState(doorBlock.defaultBlockState()).build();
                 }
             } else if (target.getBlock() == AetherBlocks.CHEST_MIMIC.get()) { // Mimics show up as normal chests. There's not a single way to tell the difference between these and normal chests from the tooltip.
-				if (FabricLoader.getInstance().isModLoaded("lootr")) { // Disguise as Lootr Loot Chest
-					return client.blockAccessor().from(target).serverData(this.createFakeChestData(target)).blockState(ModBlocks.CHEST.defaultBlockState()).build();
-				} else {
-                    return client.blockAccessor().from(target).serverData(this.createFakeChestData(target)).blockState(Blocks.CHEST.defaultBlockState()).build();
-				}
+                Block chest = FabricLoader.getInstance().isModLoaded("lootr") ? BuiltInRegistries.BLOCK.getOptional(LOOTR_CHEST).orElse(Blocks.CHEST) : Blocks.CHEST; // Disguise as Lootr Loot Chest if Lootr is installed.
+                return client.blockAccessor().from(target).serverData(this.createFakeChestData(target)).blockState(chest.defaultBlockState()).build();
             }
         }
         return accessor;
@@ -75,9 +76,9 @@ public class AetherJadePlugin implements IWailaPlugin {
     @Nullable
     private Block getLockedDungeonBlock(String name) {
         if (name.startsWith("boss_doorway_")) {
-            return BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(Aether.MODID, "locked_" + name.substring(13)));
+            return BuiltInRegistries.BLOCK.getValue(Identifier.fromNamespaceAndPath(Aether.MODID, "locked_" + name.substring(13)));
         } else if (name.startsWith("treasure_doorway_")) {
-            return BuiltInRegistries.BLOCK.get(ResourceLocation.fromNamespaceAndPath(Aether.MODID, "locked_" + name.substring(17)));
+            return BuiltInRegistries.BLOCK.getValue(Identifier.fromNamespaceAndPath(Aether.MODID, "locked_" + name.substring(17)));
         }
         return null;
     }

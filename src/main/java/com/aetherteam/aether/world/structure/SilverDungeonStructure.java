@@ -1,5 +1,6 @@
 package com.aetherteam.aether.world.structure;
 
+import java.util.Optional;
 import com.aetherteam.aether.block.AetherBlockStateProperties;
 import com.aetherteam.aether.block.AetherBlocks;
 import com.aetherteam.aether.entity.monster.dungeon.boss.ValkyrieQueen;
@@ -195,7 +196,7 @@ public class SilverDungeonStructure extends Structure {
                             if (Math.abs(x1 - x) + Math.abs(y1 - y) + Math.abs(z1 - z) < 4 + random.nextInt(2)) {
                                 BlockPos newPosition = new BlockPos(x1, y1, z1);
                                 positions.add(newPosition);
-                                chunks.computeIfAbsent(new ChunkPos(newPosition), (pos) -> new HashSet<>());
+                                chunks.computeIfAbsent(ChunkPos.containing(newPosition), (pos) -> new HashSet<>());
                             }
                         }
                     }
@@ -204,9 +205,9 @@ public class SilverDungeonStructure extends Structure {
         }
 
         chunks.forEach(((chunkPos, blockPosSet) -> {
-            blockPosSet.addAll(positions.stream().filter(pos -> (new ChunkPos(pos).equals(chunkPos))).toList());
+            blockPosSet.addAll(positions.stream().filter(pos -> (ChunkPos.containing(pos).equals(chunkPos))).toList());
             builder.addPiece(new LargeAercloudChunk(blockPosSet,
-                    BlockStateProvider.simple(AetherBlocks.COLD_AERCLOUD.get().defaultBlockState().setValue(AetherBlockStateProperties.DOUBLE_DROPS, true)),
+                    BlockStateProvider.holderOf(AetherBlocks.COLD_AERCLOUD.get().defaultBlockState().setValue(AetherBlockStateProperties.DOUBLE_DROPS, true)),
                     new BoundingBox(chunkPos.getMinBlockX(), origin.getY(), chunkPos.getMinBlockZ(), chunkPos.getMaxBlockX(), origin.getY(), chunkPos.getMaxBlockZ()),
                     direction));
         }));

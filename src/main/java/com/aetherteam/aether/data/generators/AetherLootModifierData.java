@@ -1,15 +1,25 @@
 //package com.aetherteam.aether.data.generators;
 //
+//import com.aetherteam.nitrogen.fabric.loot.IGlobalLootModifier;
+//import java.util.Optional;
+//import net.minecraft.world.level.storage.loot.predicates.MatchBlock;
+//import net.minecraft.world.level.storage.loot.predicates.AllOfCondition;
+//import net.minecraft.world.level.block.Block;
+//import net.minecraft.world.item.Item;
+//import net.minecraft.core.HolderGetter;
+//import net.minecraft.core.Holder;
+//import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 //import com.aetherteam.aether.Aether;
+//import com.aetherteam.aether.AetherTags;
 //import com.aetherteam.aether.block.AetherBlocks;
 //import com.aetherteam.aether.item.AetherItems;
 //import com.aetherteam.aether.loot.AetherLoot;
 //import com.aetherteam.aether.loot.modifiers.*;
-//import net.minecraft.advancements.critereon.ItemPredicate;
+//import net.minecraft.advancements.predicates.ItemPredicate;
 //import net.minecraft.core.HolderLookup;
+//import net.minecraft.core.registries.Registries;
 //import net.minecraft.data.PackOutput;
-//import net.minecraft.world.item.ArmorMaterials;
-//import net.minecraft.world.item.ItemStack;
+//import net.minecraft.world.item.ItemStackTemplate;
 //import net.minecraft.world.item.Items;
 //import net.minecraft.world.level.block.Blocks;
 //import net.minecraft.world.level.storage.loot.predicates.*;
@@ -25,27 +35,23 @@
 //
 //    @Override
 //    protected void start() {
-//        this.add("remove_seeds", new RemoveSeedsModifier(
-//                new LootItemCondition[]{
-//                        AnyOfCondition.anyOf(LootItemBlockStatePropertyCondition.hasBlockStateProperties(Blocks.SHORT_GRASS), LootItemBlockStatePropertyCondition.hasBlockStateProperties(Blocks.TALL_GRASS)).build(),
-//                        MatchTool.toolMatches(ItemPredicate.Builder.item().of(Items.SHEARS)).invert().build()
-//                })
-//        );
-//        this.add("enchanted_grass_berry_bush", new EnchantedGrassModifier(
-//                new LootItemCondition[]{
-//                        LootItemBlockStatePropertyCondition.hasBlockStateProperties(AetherBlocks.BERRY_BUSH.get()).build()
-//                }, new ItemStack(AetherItems.BLUE_BERRY.get())));
-//        this.add("double_drops", new DoubleDropsModifier(new LootItemCondition[]{}));
-//        this.add("pig_drops", new PigDropsModifier(new LootItemCondition[]{}));
-//        this.add("gloves_loot_leather", new GlovesLootModifier(new LootItemCondition[]{}, new ItemStack(AetherItems.LEATHER_GLOVES.get()), ArmorMaterials.LEATHER));
-//        this.add("gloves_loot_chain", new GlovesLootModifier(new LootItemCondition[]{
-//                InvertedLootItemCondition.invert(LootTableIdCondition.builder(AetherLoot.GOLD_DUNGEON_REWARD.location())).build()
-//        }, new ItemStack(AetherItems.CHAINMAIL_GLOVES.get()), ArmorMaterials.CHAIN));
-//        this.add("gloves_loot_iron", new GlovesLootModifier(new LootItemCondition[]{
-//                InvertedLootItemCondition.invert(LootTableIdCondition.builder(AetherLoot.RUINED_PORTAL.location())).build()
-//        }, new ItemStack(AetherItems.IRON_GLOVES.get()), ArmorMaterials.IRON));
-//        this.add("gloves_loot_gold", new GlovesLootModifier(new LootItemCondition[]{}, new ItemStack(AetherItems.GOLDEN_GLOVES.get()), ArmorMaterials.GOLD));
-//        this.add("gloves_loot_diamond", new GlovesLootModifier(new LootItemCondition[]{}, new ItemStack(AetherItems.DIAMOND_GLOVES.get()), ArmorMaterials.DIAMOND));
-//        this.add("gloves_loot_netherite", new GlovesLootModifier(new LootItemCondition[]{}, new ItemStack(AetherItems.NETHERITE_GLOVES.get()), ArmorMaterials.NETHERITE));
+//        HolderGetter<Block> blocks = this.registries.lookupOrThrow(Registries.BLOCK);
+//        HolderGetter<Item> items = this.registries.lookupOrThrow(Registries.ITEM);
+//        this.add("remove_seeds", new RemoveSeedsModifier(condition(AllOfCondition.allOf(
+//                AnyOfCondition.anyOf(MatchBlock.blockMatches(blocks, Blocks.SHORT_GRASS), MatchBlock.blockMatches(blocks, Blocks.TALL_GRASS)),
+//                MatchTool.toolMatches(ItemPredicate.Builder.item().of(items, Items.SHEARS)).invert())), IGlobalLootModifier.DEFAULT_PRIORITY));
+//        this.add("enchanted_grass_berry_bush", new EnchantedGrassModifier(condition(MatchBlock.blockMatches(blocks, AetherBlocks.BERRY_BUSH.get())), IGlobalLootModifier.DEFAULT_PRIORITY, new ItemStackTemplate(AetherItems.BLUE_BERRY.get())));
+//        this.add("double_drops", new DoubleDropsModifier(Optional.empty(), IGlobalLootModifier.DEFAULT_PRIORITY));
+//        this.add("pig_drops", new PigDropsModifier(Optional.empty(), IGlobalLootModifier.DEFAULT_PRIORITY));
+//        this.add("gloves_loot_leather", new GlovesLootModifier(Optional.empty(), IGlobalLootModifier.DEFAULT_PRIORITY, new ItemStackTemplate(AetherItems.LEATHER_GLOVES.get()), AetherTags.Items.LEATHER_ARMOR));
+//        this.add("gloves_loot_chain", new GlovesLootModifier(condition(InvertedLootItemCondition.invert(LootTableIdCondition.builder(AetherLoot.GOLD_DUNGEON_REWARD.identifier()))), IGlobalLootModifier.DEFAULT_PRIORITY, new ItemStackTemplate(AetherItems.CHAINMAIL_GLOVES.get()), AetherTags.Items.CHAINMAIL_ARMOR));
+//        this.add("gloves_loot_iron", new GlovesLootModifier(condition(InvertedLootItemCondition.invert(LootTableIdCondition.builder(AetherLoot.RUINED_PORTAL.identifier()))), IGlobalLootModifier.DEFAULT_PRIORITY, new ItemStackTemplate(AetherItems.IRON_GLOVES.get()), AetherTags.Items.IRON_ARMOR));
+//        this.add("gloves_loot_gold", new GlovesLootModifier(Optional.empty(), IGlobalLootModifier.DEFAULT_PRIORITY, new ItemStackTemplate(AetherItems.GOLDEN_GLOVES.get()), AetherTags.Items.GOLDEN_ARMOR));
+//        this.add("gloves_loot_diamond", new GlovesLootModifier(Optional.empty(), IGlobalLootModifier.DEFAULT_PRIORITY, new ItemStackTemplate(AetherItems.DIAMOND_GLOVES.get()), AetherTags.Items.DIAMOND_ARMOR));
+//        this.add("gloves_loot_netherite", new GlovesLootModifier(Optional.empty(), IGlobalLootModifier.DEFAULT_PRIORITY, new ItemStackTemplate(AetherItems.NETHERITE_GLOVES.get()), AetherTags.Items.NETHERITE_ARMOR));
+//    }
+//
+//    private static Optional<Holder<LootItemCondition>> condition(LootItemCondition.Builder condition) {
+//        return Optional.of(Holder.direct(condition.build()));
 //    }
 //}

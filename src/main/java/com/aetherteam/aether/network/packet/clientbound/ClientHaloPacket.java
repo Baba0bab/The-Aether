@@ -11,7 +11,7 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 import java.util.Map;
 import java.util.UUID;
@@ -21,7 +21,7 @@ public class ClientHaloPacket {
      * Applies the Halo perk to a player on the client.
      */
     public record Apply(UUID playerUUID, Halo halo) implements CustomPacketPayload {
-        public static final Type<ClientHaloPacket.Apply> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Aether.MODID, "apply_halo"));
+        public static final Type<ClientHaloPacket.Apply> TYPE = new Type<>(Identifier.fromNamespaceAndPath(Aether.MODID, "apply_halo"));
 
         public static final StreamCodec<RegistryFriendlyByteBuf, ClientHaloPacket.Apply> STREAM_CODEC = StreamCodec.composite(
             UUIDUtil.STREAM_CODEC,
@@ -46,7 +46,7 @@ public class ClientHaloPacket {
      * Removes the Halo perk from a player on the client.
      */
     public record Remove(UUID playerUUID) implements CustomPacketPayload {
-        public static final Type<ClientHaloPacket.Remove> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Aether.MODID, "remove_halo"));
+        public static final Type<ClientHaloPacket.Remove> TYPE = new Type<>(Identifier.fromNamespaceAndPath(Aether.MODID, "remove_halo"));
 
         public static final StreamCodec<RegistryFriendlyByteBuf, ClientHaloPacket.Remove> STREAM_CODEC = StreamCodec.composite(
             UUIDUtil.STREAM_CODEC,
@@ -69,7 +69,7 @@ public class ClientHaloPacket {
      * Syncs Halo perk data for all players to the client.
      */
     public record Sync(Map<UUID, Halo> halos) implements CustomPacketPayload {
-        public static final Type<ClientHaloPacket.Sync> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Aether.MODID, "sync_halo"));
+        public static final Type<ClientHaloPacket.Sync> TYPE = new Type<>(Identifier.fromNamespaceAndPath(Aether.MODID, "sync_halo"));
 
         public static final StreamCodec<RegistryFriendlyByteBuf, ClientHaloPacket.Sync> STREAM_CODEC = StreamCodec.composite(
             ByteBufCodecs.map(Maps::newHashMapWithExpectedSize, UUIDUtil.STREAM_CODEC, Halo.STREAM_CODEC),

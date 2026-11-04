@@ -1,0 +1,8 @@
+{
+  "replace": false,
+  "id": "back",
+  "entities": [
+    "minecraft:player",
+    "minecraft:armor_stand"
+  ]
+}

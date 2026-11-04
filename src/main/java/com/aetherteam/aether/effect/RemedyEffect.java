@@ -3,6 +3,7 @@ package com.aetherteam.aether.effect;
 import com.aetherteam.aether.attachment.AetherDataAttachments;
 import com.aetherteam.aether.attachment.AetherPlayerAttachment;
 import com.aetherteam.nitrogen.attachment.INBTSynchable;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.entity.LivingEntity;
@@ -18,11 +19,12 @@ public class RemedyEffect extends MobEffect {
     /**
      * Tracks the starting effect duration through {@link AetherPlayerAttachment} and removes Inebriation if the entity has it.
      *
+     * @param serverLevel The entity's {@link ServerLevel}.
      * @param livingEntity The affected {@link LivingEntity}.
      * @param amplifier    The {@link Integer} amplifier for the effect.
      */
     @Override
-    public boolean applyEffectTick(LivingEntity livingEntity, int amplifier) {
+    public boolean applyEffectTick(ServerLevel serverLevel, LivingEntity livingEntity, int amplifier) {
         if (livingEntity instanceof Player player) {
             if (player.level().isClientSide()) {
                 var data = player.getAttachedOrCreate(AetherDataAttachments.AETHER_PLAYER);

@@ -11,13 +11,13 @@ import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 /**
  * Opens {@link SunAltarScreen} from {@link com.aetherteam.aether.block.utility.SunAltarBlock}.
  */
 public record OpenSunAltarPacket(Component name, int timeScale) implements CustomPacketPayload {
-    public static final Type<OpenSunAltarPacket> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Aether.MODID, "open_sun_altar"));
+    public static final Type<OpenSunAltarPacket> TYPE = new Type<>(Identifier.fromNamespaceAndPath(Aether.MODID, "open_sun_altar"));
 
     public static final StreamCodec<RegistryFriendlyByteBuf, OpenSunAltarPacket> STREAM_CODEC = StreamCodec.composite(
         ComponentSerialization.STREAM_CODEC,

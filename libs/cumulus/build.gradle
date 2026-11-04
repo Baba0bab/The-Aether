@@ -1,0 +1,66 @@
+plugins {
+    id 'java-library'
+    id 'net.fabricmc.fabric-loom'
+}
+
+// Cumulus (https://github.com/The-Aether-Team/Cumulus), Fabric edition, ported to this Minecraft version.
+var libProperties = [
+    mod_id                     : 'cumulus_menus',
+    mod_name                   : 'Cumulus',
+    mod_version                : project.cumulus_version,
+    mod_license                : 'LGPL-3.0',
+    mod_url                    : 'https://github.com/The-Aether-Team/Cumulus',
+    mod_tracker                : 'https://github.com/The-Aether-Team/Cumulus/issues',
+    mod_credits                : 'The Aether Team; kingbdogz, for the original Main Menu API that this is inspired by',
+    mod_authors                : 'AlphaMode, bconlon, Blodhgarm',
+    mod_description            : 'A library for custom menu registration.',
+    minecraft_version          : project.minecraft_version,
+    minecraft_version_range    : project.minecraft_version_range,
+    fabric_minecraft_version_range: project.minecraft_version_range,
+    fabric_version_range       : project.fabric_version_range,
+    fabric_loader_version_range: project.fabric_loader_version_range,
+    java_version               : '25'
+]
+
+version = "${project.minecraft_version}-${project.cumulus_version}-fabric"
+group = 'com.aetherteam.cumulus'
+
+base {
+    archivesName = 'cumulus_menus'
+}
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(25)
+
+loom {
+    def aw = file('src/main/resources/cumulus_menus.accesswidener')
+    if (aw.exists()) {
+        accessWidenerPath = aw
+    }
+}
+
+sourceSets.main.resources {
+    srcDir 'src/generated/resources'
+    srcDir 'src/main/generated'
+    exclude '.cache/'
+}
+
+dependencies {
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    implementation "net.fabricmc:fabric-loader:${project.fabric_loader_version}"
+    implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+    implementation "fuzs.forgeconfigapiport:forgeconfigapiport-fabric:${project.forge_config_version}"
+    compileOnly "mezz.jei:jei-${project.minecraft_version}-common-api:${project.jei_version}"
+    compileOnly "mezz.jei:jei-${project.minecraft_version}-fabric:${project.jei_version}"
+}
+
+processResources {
+    inputs.properties libProperties
+    filesMatching(['fabric.mod.json']) {
+        expand libProperties
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.compilerArgs << "-Xmaxerrs" << "9000"
+}

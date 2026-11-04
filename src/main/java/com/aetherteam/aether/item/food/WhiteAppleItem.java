@@ -1,7 +1,8 @@
 package com.aetherteam.aether.item.food;
 
 import com.aetherteam.aether.effect.AetherEffects;
-import net.minecraft.advancements.CriteriaTriggers;
+import com.aetherteam.aether.item.AetherConsumables;
+import net.minecraft.advancements.triggers.CriteriaTriggers;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -12,8 +13,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 
 public class WhiteAppleItem extends Item {
-    public WhiteAppleItem() {
-        super(new Item.Properties().food(AetherFoods.WHITE_APPLE));
+    public WhiteAppleItem(Properties properties) {
+        super(properties.food(AetherFoods.WHITE_APPLE, AetherConsumables.FAST_FOOD));
     }
 
     /**

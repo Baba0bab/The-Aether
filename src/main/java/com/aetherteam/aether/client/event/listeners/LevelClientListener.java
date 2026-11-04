@@ -8,23 +8,21 @@ import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.culling.Frustum;
+import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
 
 public class LevelClientListener {
     /**
      * @see AetherClient#eventSetup()
      */
-    public static void listen() {
-        WorldRenderEvents.AFTER_TRANSLUCENT.register(LevelClientListener::onRenderLevelLast);
+    public static void listen(IEventBus bus) {
+        bus.addListener(LevelClientListener::onSubmitCustomGeometry);
     }
 
     /**
-     * @see LevelClientHooks#renderDungeonBlockOverlays(PoseStack, Camera, Frustum, Minecraft)
+     * @see LevelClientHooks#renderDungeonBlockOverlays(SubmitNodeCollector, PoseStack, CameraRenderState, Minecraft)
      */
-    public static void onRenderLevelLast(WorldRenderContext context) {
-        PoseStack poseStack = context.matrixStack();
-        Camera camera = context.camera();
-        Frustum frustum = context.frustum();
-        Minecraft minecraft = Minecraft.getInstance();
-        LevelClientHooks.renderDungeonBlockOverlays(poseStack, camera, frustum, minecraft);
+    public static void onSubmitCustomGeometry(SubmitCustomGeometryEvent event) {
+        LevelClientHooks.renderDungeonBlockOverlays(event.getSubmitNodeCollector(), event.getPoseStack(), event.getLevelRenderState().cameraRenderState, Minecraft.getInstance());
     }
 }

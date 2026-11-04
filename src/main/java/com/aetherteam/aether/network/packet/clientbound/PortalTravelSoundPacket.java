@@ -7,13 +7,13 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 /**
  * Plays the Aether Portal sound on the client from {@link com.aetherteam.aether.block.portal.AetherPortalForcer}.
  */
 public record PortalTravelSoundPacket() implements CustomPacketPayload {
-    public static final Type<PortalTravelSoundPacket> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Aether.MODID, "play_portal_travel_sound"));
+    public static final Type<PortalTravelSoundPacket> TYPE = new Type<>(Identifier.fromNamespaceAndPath(Aether.MODID, "play_portal_travel_sound"));
 
     public static final StreamCodec<RegistryFriendlyByteBuf, PortalTravelSoundPacket> STREAM_CODEC = StreamCodec.unit(new PortalTravelSoundPacket());
 

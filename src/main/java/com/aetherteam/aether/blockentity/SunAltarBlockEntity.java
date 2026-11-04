@@ -1,5 +1,10 @@
 package com.aetherteam.aether.blockentity;
 
+import net.minecraft.network.chat.ComponentSerialization;
+import net.minecraft.core.component.DataComponentGetter;
+import com.mojang.serialization.Codec;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
 import com.aetherteam.aether.Aether;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
@@ -41,7 +46,7 @@ public class SunAltarBlockEntity extends BlockEntity implements Nameable {
     }
 
     @Override
-    protected void applyImplicitComponents(BlockEntity.DataComponentInput componentInput) {
+    protected void applyImplicitComponents(DataComponentGetter componentInput) {
         super.applyImplicitComponents(componentInput);
         this.name = componentInput.get(DataComponents.CUSTOM_NAME);
     }
@@ -57,8 +62,8 @@ public class SunAltarBlockEntity extends BlockEntity implements Nameable {
      */
     @SuppressWarnings("deprecation")
     @Override
-    public void removeComponentsFromTag(CompoundTag tag) {
-        tag.remove("CustomName");
+    public void removeComponentsFromTag(ValueOutput tag) {
+        tag.discard("CustomName");
     }
 
     @Override
@@ -67,26 +72,20 @@ public class SunAltarBlockEntity extends BlockEntity implements Nameable {
     }
 
     @Override
-    public boolean nitrogen_fabric$handleUpdateTag(CompoundTag tag, HolderLookup.Provider lookupProvider) {
-        this.loadAdditional(tag, lookupProvider);
-
-        return true;
+    public void handleUpdateTag(ValueInput tag) {
+        this.loadAdditional(tag);
     }
 
     @Override
-    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider lookupProvider) {
-        super.saveAdditional(tag, lookupProvider);
-        if (this.hasCustomName()) {
-            tag.putString("CustomName", Component.Serializer.toJson(this.name, lookupProvider));
-        }
+    protected void saveAdditional(ValueOutput tag) {
+        super.saveAdditional(tag);
+        tag.storeNullable("CustomName", ComponentSerialization.CODEC, this.name);
     }
 
     @Override
-    public void loadAdditional(CompoundTag tag, HolderLookup.Provider lookupProvider) {
-        super.loadAdditional(tag, lookupProvider);
-        if (tag.contains("CustomName", 8)) {
-            this.name = Component.Serializer.fromJson(tag.getString("CustomName"), lookupProvider);
-        }
+    public void loadAdditional(ValueInput tag) {
+        super.loadAdditional(tag);
+        this.name = parseCustomNameSafe(tag, "CustomName");
     }
 
     @Override
@@ -95,10 +94,7 @@ public class SunAltarBlockEntity extends BlockEntity implements Nameable {
     }
 
     @Override
-    public boolean nitrogen_fabric$onDataPacket(Connection connection, ClientboundBlockEntityDataPacket packet, HolderLookup.Provider lookupProvider) {
-        CompoundTag compound = packet.getTag();
-        this.nitrogen_fabric$handleUpdateTag(compound, lookupProvider);
-
-        return true;
+    public void onDataPacket(Connection connection, ValueInput valueInput) {
+        this.handleUpdateTag(valueInput);
     }
 }

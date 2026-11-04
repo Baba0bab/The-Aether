@@ -1,5 +1,7 @@
 package com.aetherteam.aether.loot.modifiers;
 
+import net.minecraft.core.Holder;
+import java.util.Optional;
 import com.aetherteam.aether.AetherTags;
 import com.aetherteam.aether.item.EquipmentUtil;
 import com.aetherteam.aether.item.combat.abilities.weapon.SkyrootWeapon;
@@ -18,8 +20,8 @@ import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 public class DoubleDropsModifier extends LootModifier {
     public static final MapCodec<DoubleDropsModifier> CODEC = RecordCodecBuilder.mapCodec((instance) -> LootModifier.codecStart(instance).apply(instance, DoubleDropsModifier::new));
 
-    public DoubleDropsModifier(LootItemCondition[] conditions) {
-        super(conditions);
+    public DoubleDropsModifier(Optional<Holder<LootItemCondition>> conditions, int priority) {
+        super(conditions, priority);
     }
 
     /**
@@ -31,11 +33,11 @@ public class DoubleDropsModifier extends LootModifier {
      */
     @Override
     public ObjectArrayList<ItemStack> doApply(ObjectArrayList<ItemStack> lootStacks, LootContext context) {
-        Entity entity = context.getParamOrNull(LootContextParams.DIRECT_ATTACKING_ENTITY);
-        Entity target = context.getParamOrNull(LootContextParams.THIS_ENTITY);
+        Entity entity = context.getOptional(LootContextParams.DIRECT_ATTACKING_ENTITY);
+        Entity target = context.getOptional(LootContextParams.THIS_ENTITY);
         ObjectArrayList<ItemStack> newStacks = new ObjectArrayList<>(lootStacks);
         if (entity instanceof LivingEntity livingEntity && target != null) {
-            if (EquipmentUtil.isFullStrength(livingEntity) && livingEntity.getMainHandItem().getItem() instanceof SkyrootWeapon && !target.getType().is(AetherTags.Entities.NO_SKYROOT_DOUBLE_DROPS)) {
+            if (EquipmentUtil.isFullStrength(livingEntity) && livingEntity.getMainHandItem().getItem() instanceof SkyrootWeapon && !target.is(AetherTags.Entities.NO_SKYROOT_DOUBLE_DROPS)) {
                 for (ItemStack stack : lootStacks) {
                     if (!stack.is(AetherTags.Items.NO_SKYROOT_DOUBLE_DROPS)) {
                         newStacks.add(stack);

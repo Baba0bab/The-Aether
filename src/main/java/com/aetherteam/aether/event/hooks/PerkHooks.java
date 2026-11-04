@@ -14,10 +14,10 @@ public class PerkHooks {
      */
     public static void refreshPerks(Player player) {
         if (player instanceof ServerPlayer serverPlayer) {
-            if (!UserData.Server.getStoredUsers().containsKey(serverPlayer.getGameProfile().getId())) {
-                ServerPerkData.MOA_SKIN_INSTANCE.removePerk(serverPlayer.getServer(), serverPlayer.getGameProfile().getId());
-                ServerPerkData.HALO_INSTANCE.removePerk(serverPlayer.getServer(), serverPlayer.getGameProfile().getId());
-                ServerPerkData.DEVELOPER_GLOW_INSTANCE.removePerk(serverPlayer.getServer(), serverPlayer.getGameProfile().getId());
+            if (!UserData.Server.getStoredUsers().containsKey(serverPlayer.getGameProfile().id())) {
+                ServerPerkData.MOA_SKIN_INSTANCE.removePerk(serverPlayer.level().getServer(), serverPlayer.getGameProfile().id());
+                ServerPerkData.HALO_INSTANCE.removePerk(serverPlayer.level().getServer(), serverPlayer.getGameProfile().id());
+                ServerPerkData.DEVELOPER_GLOW_INSTANCE.removePerk(serverPlayer.level().getServer(), serverPlayer.getGameProfile().id());
             }
         }
     }

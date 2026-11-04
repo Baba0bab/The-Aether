@@ -1,5 +1,12 @@
 package com.aetherteam.aether.entity;
 
+import net.minecraft.world.item.component.BlocksAttacks;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.tags.FluidTags;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.EntityTypes;
 import com.aetherteam.aether.attachment.AetherDataAttachments;
 import com.aetherteam.aether.mixin.mixins.common.accessor.EntityAccessor;
 import net.minecraft.core.BlockPos;
@@ -8,6 +15,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.entity.projectile.Projectile;
@@ -85,7 +93,7 @@ public final class EntityUtil {
      * @param projectile The {@link Projectile} that is summoning lightning.
      */
     public static void summonLightningFromProjectile(Projectile projectile) {
-        LightningBolt lightningBolt = EntityType.LIGHTNING_BOLT.create(projectile.level());
+        LightningBolt lightningBolt = EntityTypes.LIGHTNING_BOLT.create(projectile.level(), EntitySpawnReason.MOB_SUMMONED);
         if (lightningBolt != null) {
             lightningBolt.getAttachedOrCreate(AetherDataAttachments.LIGHTNING_TRACKER).setOwner(projectile.getOwner());
             lightningBolt.setPos(projectile.getX(), projectile.getY(), projectile.getZ());
@@ -109,5 +117,32 @@ public final class EntityUtil {
             }
         }
         return flag;
+    }
+
+    /**
+     * Checks whether a mob should be swimming upwards in a fluid.
+     *
+     * @param mob The {@link Mob}.
+     * @return Whether the mob should swim, as a {@link Boolean}.
+     * @see net.minecraft.world.entity.ai.goal.FloatGoal#canUse()
+     */
+    public static boolean shouldSwim(Mob mob) {
+        return mob.isInWater() && mob.getFluidHeight(FluidTags.WATER) > mob.getFluidJumpThreshold() || mob.isInLava() || mob.getFluidInteraction().isInFluidMatching(mob, (entity, fluidType, height) -> entity.canSwimInFluidType(fluidType) && height > entity.getFluidJumpThreshold());
+    }
+
+    /**
+     * Damages the item that a {@link LivingEntity} is blocking with, such as a shield.
+     *
+     * @param entity The blocking {@link LivingEntity}.
+     * @param damage The {@link Float} amount of damage to deal to the item.
+     */
+    public static void hurtBlockingItem(LivingEntity entity, float damage) {
+        ItemStack blockingItem = entity.getItemBlockingWith();
+        if (blockingItem != null) {
+            BlocksAttacks blocksAttacks = blockingItem.get(DataComponents.BLOCKS_ATTACKS);
+            if (blocksAttacks != null) {
+                blocksAttacks.hurtBlockingItem(entity.level(), blockingItem, entity, entity.getUsedItemHand(), damage);
+            }
+        }
     }
 }

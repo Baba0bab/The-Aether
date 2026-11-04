@@ -1,5 +1,8 @@
 package com.aetherteam.aether.block.natural;
 
+import net.minecraft.world.level.block.BonemealSource;
+import net.minecraft.world.entity.InsideBlockEffectApplier;
+import net.minecraft.world.entity.EntityTypes;
 import com.aetherteam.aether.AetherConfig;
 import com.aetherteam.aether.block.AetherBlockStateProperties;
 import com.aetherteam.aether.block.AetherBlocks;
@@ -37,9 +40,9 @@ public class BerryBushStemBlock extends AetherBushBlock implements BonemealableB
      * [CODE COPY] - {@link net.minecraft.world.level.block.SweetBerryBushBlock#entityInside(BlockState, Level, BlockPos, Entity)}.<br><br>
      * Modified to remove damage behavior.
      */
-    public void entityInside(BlockState state, Level level, BlockPos pos, Entity entity) {
+    protected void entityInside(BlockState state, Level level, BlockPos pos, Entity entity, InsideBlockEffectApplier effectApplier, boolean isPrecise) {
         if (AetherConfig.SERVER.berry_bush_consistency.get()) {
-            if (entity instanceof LivingEntity && entity.getType() != EntityType.FOX && entity.getType() != EntityType.BEE) {
+            if (entity instanceof LivingEntity && entity.getType() != EntityTypes.FOX && entity.getType() != EntityTypes.BEE) {
                 entity.makeStuckInBlock(state, new Vec3(0.8F, 0.75D, 0.8F));
             }
         }
@@ -74,7 +77,7 @@ public class BerryBushStemBlock extends AetherBushBlock implements BonemealableB
      * @param state  The {@link BlockState} of the block.
      */
     @Override
-    public void performBonemeal(ServerLevel level, RandomSource random, BlockPos pos, BlockState state) {
+    public void performBonemeal(ServerLevel level, RandomSource random, BlockPos pos, BlockState state, BonemealSource source) {
         level.setBlockAndUpdate(pos, AetherBlocks.BERRY_BUSH.get().defaultBlockState().setValue(AetherBlockStateProperties.DOUBLE_DROPS, state.getValue(AetherBlockStateProperties.DOUBLE_DROPS)));
     }
 
@@ -88,12 +91,12 @@ public class BerryBushStemBlock extends AetherBushBlock implements BonemealableB
      * @return A {@link Boolean} of whether using Bone Meal was successful.
      */
     @Override
-    public boolean isBonemealSuccess(Level level, RandomSource random, BlockPos pos, BlockState state) {
+    public boolean isBonemealSuccess(Level level, RandomSource random, BlockPos pos, BlockState state, BonemealSource source) {
         return random.nextFloat() <= 0.45;
     }
 
     @Override
-    public boolean isValidBonemealTarget(LevelReader level, BlockPos pos, BlockState state) {
+    public boolean isValidBonemealTarget(LevelReader level, BlockPos pos, BlockState state, BonemealSource source) {
         return true;
     }
 

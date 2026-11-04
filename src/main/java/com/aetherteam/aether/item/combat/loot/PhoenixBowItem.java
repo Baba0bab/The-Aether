@@ -4,7 +4,7 @@ import com.aetherteam.aether.attachment.AetherDataAttachments;
 import com.aetherteam.aether.attachment.PhoenixArrowAttachment;
 import com.aetherteam.aether.item.AetherItems;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.projectile.AbstractArrow;
+import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.BowItem;
 import net.minecraft.world.item.Item;
@@ -14,8 +14,8 @@ import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
 
 public class PhoenixBowItem extends BowItem {
-    public PhoenixBowItem() {
-        super(new Item.Properties().durability(384).rarity(AetherItems.AETHER_LOOT));
+    public PhoenixBowItem(Item.Properties properties) {
+        super(properties.durability(384).rarity(AetherItems.AETHER_LOOT));
     }
 
     /**

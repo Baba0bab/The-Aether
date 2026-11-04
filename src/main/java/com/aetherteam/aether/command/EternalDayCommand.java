@@ -14,7 +14,7 @@ import net.minecraft.server.level.ServerLevel;
 public class EternalDayCommand {
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(Commands.literal("aether")
-                .then(Commands.literal("eternal_day").requires((commandSourceStack) -> commandSourceStack.hasPermission(2))
+                .then(Commands.literal("eternal_day").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
                         .then(Commands.literal("set")
                                 .then(Commands.argument("option", BoolArgumentType.bool())
                                         .suggests((context, builder) -> SharedSuggestionProvider.suggest(BoolArgumentType.bool().getExamples(), builder))

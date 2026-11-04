@@ -2,8 +2,10 @@ package com.aetherteam.aether.item.accessories.gloves;
 
 import com.aetherteam.aether.client.AetherSoundEvents;
 import com.aetherteam.aether.item.combat.AetherArmorMaterials;
-import io.wispforest.accessories.api.attributes.AccessoryAttributeBuilder;
-import io.wispforest.accessories.api.slot.SlotReference;
+import java.util.function.BiConsumer;
+import net.minecraft.core.Holder;
+import net.minecraft.world.entity.ai.attributes.Attribute;
+import com.aetherteam.aetherfabric.accessories.SlotContext;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.ItemStack;
@@ -14,8 +16,8 @@ public class ZaniteGlovesItem extends GlovesItem {
     }
 
     @Override
-    public void getDynamicModifiers(ItemStack stack, SlotReference reference, AccessoryAttributeBuilder builder) {
-        builder.addStackable(Attributes.ATTACK_DAMAGE, new AttributeModifier(BASE_PUNCH_DAMAGE_ID, this.calculateIncrease(stack), AttributeModifier.Operation.ADD_VALUE));
+    public void addAttributeModifiers(ItemStack stack, BiConsumer<Holder<Attribute>, AttributeModifier> consumer) {
+        consumer.accept(Attributes.ATTACK_DAMAGE, new AttributeModifier(BASE_PUNCH_DAMAGE_ID, this.calculateIncrease(stack), AttributeModifier.Operation.ADD_VALUE));
     }
 
     /**

@@ -8,8 +8,11 @@ import com.aetherteam.aether.client.event.listeners.abilities.AccessoryAbilityCl
 import com.aetherteam.aether.client.gui.screen.inventory.SunAltarScreen;
 import com.aetherteam.aether.client.particle.AetherParticleTypes;
 import com.aetherteam.aether.client.renderer.AetherOverlays;
+import com.aetherteam.aether.client.renderer.AetherRenderStateModifiers;
 import com.aetherteam.aether.client.renderer.AetherRenderers;
 import com.aetherteam.aether.client.renderer.level.AetherRenderEffects;
+import com.aetherteam.aether.data.resources.registries.AetherDimensions;
+import com.aetherteam.aether.entity.AetherEntityTypes;
 import com.aetherteam.aether.event.hooks.AbilityHooks;
 import com.aetherteam.aether.event.listeners.ItemListener;
 import com.aetherteam.aether.event.listeners.capability.AetherPlayerListener;
@@ -19,36 +22,37 @@ import com.aetherteam.aether.item.AetherItems;
 import com.aetherteam.aether.mixin.mixins.client.accessor.RecipeBookCategoriesAccessor;
 import com.aetherteam.aether.perk.CustomizationsOptions;
 import com.aetherteam.nitrogen.fabric.events.RecipeBookCategoriesHelper;
+import com.aetherteam.aether.recipe.book.AetherRecipeBookCategories;
 import com.aetherteam.nitrogen.event.listeners.TooltipListeners;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.reflect.Reflection;
-import fuzs.forgeconfigapiport.fabric.api.neoforge.v4.client.ConfigScreenFactoryRegistry;
+import fuzs.forgeconfigapiport.fabric.api.v5.client.ConfigScreenFactoryRegistry;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.RecipeBookCategories;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.world.item.crafting.RecipeBookCategories;
+import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.item.ItemProperties;
+import com.aetherteam.aether.client.renderer.item.NamedItemProperty;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.contents.TranslatableContents;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.client.gui.ConfigurationScreen;
 
 import java.util.HashMap;
 
-public class AetherClient implements ClientModInitializer {
-    @Override
-    public void onInitializeClient() {
-        AetherClient.clientSetup();
-        //bus.addListener(AetherClient::registerSpectatorShaders);
-        //bus.addListener(AetherClient::registerDimensionTransitionScreens);
+public class AetherClient {
+    public static Map<Predicate<ItemStack>, Identifier> CAPE_SECRETS = new HashMap<>();
 
-        AetherClient.eventSetup();
+    public static void clientInit(IEventBus bus) {
+        bus.addListener(AetherClient::clientSetup);
+        bus.addListener(AetherClient::registerSpectatorShaders);
+        bus.addListener(AetherClient::registerTeleportTransitionScreens);
 
         setupRenderTypes();
 
@@ -58,10 +62,10 @@ public class AetherClient implements ClientModInitializer {
     public static void clientSetup() {
         Reflection.initialize(CustomizationsOptions.class);
         AetherRenderers.registerAccessoryRenderers();
-        AetherAtlases.registerTreasureChestAtlases();
-        AetherAtlases.registerWoodTypeAtlases();
-        registerItemModelProperties();
-        registerTooltipOverrides();
+        event.enqueueWork(() -> {
+            registerCapeSecrets();
+            registerTooltipOverrides();
+        });
         registerLoreOverrides();
 
         //--
@@ -70,17 +74,15 @@ public class AetherClient implements ClientModInitializer {
         ItemListener.listen();
     }
 
-    public static void registerItemModelProperties() {
-        ItemProperties.register(AetherItems.PHOENIX_BOW.get(), ResourceLocation.withDefaultNamespace("pulling"),
-                (stack, world, living, i) -> living != null && living.isUsingItem() && living.getUseItem() == stack ? 1.0F : 0.0F);
-        ItemProperties.register(AetherItems.PHOENIX_BOW.get(), ResourceLocation.withDefaultNamespace("pull"),
-                (stack, world, living, i) -> living != null ? living.getUseItem() != stack ? 0.0F : (float) (stack.getUseDuration(living) - living.getUseItemRemainingTicks()) / 20.0F : 0.0F);
+    /**
+     * Registers custom item model properties used in item model definitions.
+     */
+    public static void registerItemModelProperties(RegisterConditionalItemModelPropertyEvent event) {
+        event.register(Identifier.fromNamespaceAndPath(Aether.MODID, "named"), NamedItemProperty.MAP_CODEC);
+    }
 
-        ItemProperties.register(AetherItems.CANDY_CANE_SWORD.get(), ResourceLocation.fromNamespaceAndPath(Aether.MODID, "named"), // Easter Egg texture.
-                (stack, world, living, i) -> stack.getHoverName().getString().equalsIgnoreCase("green candy cane sword") ? 1.0F : 0.0F);
-
-        ItemProperties.register(AetherItems.HAMMER_OF_KINGBDOGZ.get(), ResourceLocation.fromNamespaceAndPath(Aether.MODID, "named"), // Easter Egg texture.
-                (stack, world, living, i) -> stack.getHoverName().getString().equalsIgnoreCase("hammer of jeb") ? 1.0F : 0.0F);
+    public static void registerCapeSecrets() {
+        CAPE_SECRETS.put((stack) -> stack.getHoverName().getString().equalsIgnoreCase("swuff_'s cape"), Identifier.fromNamespaceAndPath(Aether.MODID, "textures/models/accessory/capes/swuff_accessory.png"));
     }
 
     public static void registerTooltipOverrides() {
@@ -112,48 +114,41 @@ public class AetherClient implements ClientModInitializer {
      */
     public static void registerLoreOverrides() {
         LoreBookMenu.addLoreEntryOverride(registryAccess -> stack -> stack.is(AetherItems.HAMMER_OF_KINGBDOGZ.get()) && stack.getHoverName().getString().equalsIgnoreCase("hammer of jeb"), "lore.item.aether.hammer_of_jeb");
-        LoreBookMenu.addLoreEntryOverride(registryAccess -> stack -> ItemStack.isSameItemSameComponents(stack, AetherItems.createSwetBannerItemStack(registryAccess.registryOrThrow(Registries.BANNER_PATTERN).asLookup())), "lore.item.aether.swet_banner");
+        LoreBookMenu.addLoreEntryOverride(registryAccess -> stack -> ItemStack.isSameItemSameComponents(stack, AetherItems.createSwetBannerItemStack(registryAccess.lookupOrThrow(Registries.BANNER_PATTERN))), "lore.item.aether.swet_banner");
     }
 
-    public static void eventSetup() {
-        AccessoryAbilityClientListener.listen();
-        //AetherPlayerClientListener.listen();
-        AudioListener.listen();
-        DimensionClientListener.listen();
-        GuiListener.listen();
-        LevelClientListener.listen();
-        MenuListener.listen();
+    public static void eventSetup(IEventBus neoBus) {
+        IEventBus bus = NeoForge.EVENT_BUS;
 
-        AetherMenuTypes.registerMenuScreens();
+        AccessoryAbilityClientListener.listen(bus);
+        AetherClientRecipes.listen(bus);
+        AetherPlayerClientListener.listen(bus);
+        AudioListener.listen(bus);
+        DimensionClientListener.listen(bus);
+        GuiListener.listen(bus);
+        LevelClientListener.listen(bus);
+        MenuListener.listen(bus);
 
-        ClientLifecycleEvents.CLIENT_STARTED.register(client -> AetherColorResolvers.registerBlockColor());
-        AetherColorResolvers.registerItemColor();
-        AetherKeys.registerKeyMappings();
-        AetherRecipeCategories.registerRecipeCategories();
-        AetherParticleTypes.registerParticleFactories();
-        AetherOverlays.registerOverlays();
-        AetherRenderers.registerEntityRenderers();
-        AetherRenderers.registerLayerDefinitions();
-        AetherRenderers.addEntityLayers();
-        //neoBus.addListener(AetherRenderers::bakeModels);
-        AetherRenderEffects.registerRenderEffects();
+        bus.addListener((ClientPlayerNetworkEvent.LoggingOut event) -> AbilityHooks.ToolHooks.resetDebuffToolsState());
 
-        ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> AbilityHooks.ToolHooks.resetDebuffToolsState());
-
-        ClientLifecycleEvents.CLIENT_STARTED.register(client -> {
-            var aggregatedCategories = new HashMap<>(RecipeBookCategories.AGGREGATE_CATEGORIES);
-
-            aggregatedCategories.putAll(RecipeBookCategoriesHelper.INSTANCE.aggregateCategories);
-
-            RecipeBookCategoriesAccessor.nitrogen_fabric$setAGGREGATE_CATEGORIES(ImmutableMap.copyOf(aggregatedCategories));
-        });
+        neoBus.addListener(AetherMenuTypes::registerMenuScreens);
+        neoBus.addListener(AetherColorResolvers::registerBlockColor);
+        neoBus.addListener(AetherClient::registerItemModelProperties);
+        neoBus.addListener(AetherKeys::registerKeyMappings);
+        neoBus.addListener(AetherRecipeBookCategories::registerRecipeCategories);
+        neoBus.addListener(AetherParticleTypes::registerParticleFactories);
+        neoBus.addListener(AetherOverlays::registerOverlays);
+        neoBus.addListener(AetherRenderers::registerEntityRenderers);
+        neoBus.addListener(AetherRenderers::registerLayerDefinitions);
+        neoBus.addListener(AetherRenderers::addEntityLayers);
+        neoBus.addListener(AetherRenderStateModifiers::registerRenderStateModifier);
     }
 
     /**
      * Registers a unique shader for spectating the Sun Spirit, which tints the screen red.
      */
 //    public static void registerSpectatorShaders(RegisterEntitySpectatorShadersEvent event) {
-//        event.register(AetherEntityTypes.SUN_SPIRIT.get(), ResourceLocation.fromNamespaceAndPath(Aether.MODID, "shaders/post/sun_spirit.json"));
+//        event.register(AetherEntityTypes.SUN_SPIRIT.get(), Identifier.fromNamespaceAndPath(Aether.MODID, "shaders/post/sun_spirit.json"));
 //    }
 
 //    public static void registerDimensionTransitionScreens(RegisterDimensionTransitionScreenEvent event) {
@@ -165,7 +160,7 @@ public class AetherClient implements ClientModInitializer {
      * Used to work around a classloading crash on the server.
      */
     public static void setToSunAltarScreen(Component name, int timeScale) {
-        Minecraft.getInstance().setScreen(new SunAltarScreen(name, timeScale));
+        Minecraft.getInstance().gui.setScreen(new SunAltarScreen(name, timeScale));
     }
 
     public static void setupRenderTypes() {

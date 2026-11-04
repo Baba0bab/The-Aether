@@ -12,6 +12,7 @@ import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessorType;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessor;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 import org.jetbrains.annotations.Nullable;
 
@@ -19,7 +20,7 @@ import org.jetbrains.annotations.Nullable;
  * This processor is used to randomly place extra dirt near the top of the gold dungeon. It runs on any holystone block
  * that is right below aether dirt.
  */
-public class VerticalGradientProcessor extends ExtendedStructureProcessor {
+public class VerticalGradientProcessor implements StructureProcessor {
     public static final VerticalGradientProcessor INSTANCE = new VerticalGradientProcessor();
 
     public static final MapCodec<VerticalGradientProcessor> CODEC = MapCodec.unit(VerticalGradientProcessor.INSTANCE);
@@ -46,7 +47,7 @@ public class VerticalGradientProcessor extends ExtendedStructureProcessor {
     }
 
     @Override
-    protected StructureProcessorType<?> getType() {
-        return AetherStructureProcessors.VERTICAL_GRADIENT.get();
+    public MapCodec<VerticalGradientProcessor> codec() {
+        return CODEC;
     }
 }

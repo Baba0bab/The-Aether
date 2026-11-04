@@ -1,4 +1,4 @@
-accessWidener v2 named
+accessWidener v2 official
 
 accessible class net/minecraft/world/inventory/ArmorSlot
 
@@ -19,8 +19,11 @@ accessible field net/minecraft/world/entity/Mob goalSelector Lnet/minecraft/worl
 #extendable method net/minecraft/client/gui/components/AbstractButton getTextureY ()I # Blame porting lib
 accessible field net/minecraft/client/gui/screens/inventory/AbstractContainerScreen imageWidth I
 accessible field net/minecraft/client/gui/screens/inventory/AbstractContainerScreen imageHeight I
-accessible field net/minecraft/stats/RecipeBookSettings TAG_FIELDS Ljava/util/Map;
-mutable field net/minecraft/stats/RecipeBookSettings TAG_FIELDS Ljava/util/Map;
 
 accessible field net/minecraft/client/gui/screens/Screen renderables Ljava/util/List;
-accessible class net/minecraft/client/renderer/FogRenderer$FogData
+
+# 26.3
+accessible method net/minecraft/core/cauldron/CauldronInteraction$Dispatcher put (Lnet/minecraft/world/item/Item;Lnet/minecraft/core/cauldron/CauldronInteraction;)V
+accessible method net/minecraft/core/cauldron/CauldronInteraction$Dispatcher put (Lnet/minecraft/tags/TagKey;Lnet/minecraft/core/cauldron/CauldronInteraction;)V
+accessible field net/minecraft/client/gui/screens/inventory/AbstractContainerScreen leftPos I
+accessible field net/minecraft/client/gui/screens/inventory/AbstractContainerScreen topPos I

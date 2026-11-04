@@ -15,7 +15,7 @@ import net.minecraft.world.level.biome.Biome;
 import java.util.Optional;
 import java.util.function.Predicate;
 
-public abstract class PlacementBanRecipeSerializer<T, S extends Predicate<T>, R extends RecipeInput, F extends AbstractPlacementBanRecipe<T, S, R>> implements RecipeSerializer<F> {
+public abstract class PlacementBanRecipeSerializer<T, S extends Predicate<T>, R extends RecipeInput, F extends AbstractPlacementBanRecipe<T, S, R>> implements AetherRecipeSerializer<F> {
     private final PlacementBanRecipeSerializer.CookieBaker<T, S, R, F> factory;
 
     public PlacementBanRecipeSerializer(PlacementBanRecipeSerializer.CookieBaker<T, S, R, F> factory) {

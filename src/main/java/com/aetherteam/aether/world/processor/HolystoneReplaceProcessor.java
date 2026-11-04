@@ -4,7 +4,7 @@ import com.aetherteam.aether.block.AetherBlocks;
 import com.aetherteam.nitrogen.fabric.level.ExtendedStructureProcessor;
 import com.google.common.collect.Maps;
 import com.mojang.serialization.MapCodec;
-import net.minecraft.Util;
+import net.minecraft.util.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
@@ -14,6 +14,7 @@ import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessorType;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessor;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 import org.jetbrains.annotations.Nullable;
 
@@ -22,7 +23,7 @@ import java.util.Map;
 /**
  * This processor replaces Cobblestone blocks Holystone Brick blocks.
  */
-public class HolystoneReplaceProcessor extends ExtendedStructureProcessor {
+public class HolystoneReplaceProcessor implements StructureProcessor {
     public static final MapCodec<HolystoneReplaceProcessor> CODEC = MapCodec.unit(() -> HolystoneReplaceProcessor.INSTANCE);
     public static final HolystoneReplaceProcessor INSTANCE = new HolystoneReplaceProcessor();
     private final Map<Block, Block> replacements = Util.make(Maps.newHashMap(), (map) -> {
@@ -60,7 +61,8 @@ public class HolystoneReplaceProcessor extends ExtendedStructureProcessor {
         }
     }
 
-    protected StructureProcessorType<?> getType() {
-        return AetherStructureProcessors.HOLYSTONE_REPLACE.get();
+    @Override
+    public MapCodec<HolystoneReplaceProcessor> codec() {
+        return CODEC;
     }
 }

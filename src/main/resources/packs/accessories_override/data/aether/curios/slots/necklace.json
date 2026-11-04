@@ -1,0 +1,15 @@
+{
+  "replace": false,
+  "id": "necklace",
+  "entities": [
+    "minecraft:player",
+    "minecraft:armor_stand",
+    "minecraft:zombie",
+    "minecraft:zombie_villager",
+    "minecraft:husk",
+    "minecraft:skeleton",
+    "minecraft:stray",
+    "minecraft:piglin",
+    "minecraft:zombified_piglin"
+  ]
+}

@@ -6,7 +6,6 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
-import net.minecraft.world.level.storage.loot.predicates.LootItemConditionType;
 import net.neoforged.neoforge.common.ModConfigSpec;
 
 /**
@@ -21,8 +20,8 @@ public class ConfigEnabled implements LootItemCondition {
     }
 
     @Override
-    public LootItemConditionType getType() {
-        return AetherLootConditions.CONFIG_ENABLED.get();
+    public MapCodec<? extends LootItemCondition> codec() {
+        return CODEC;
     }
 
     @Override

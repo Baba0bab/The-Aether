@@ -1,5 +1,6 @@
 package com.aetherteam.aether.item.accessories.abilities;
 
+import com.aetherteam.aetherfabric.accessories.AccessoryApi;
 import com.aetherteam.aether.AetherTags;
 import com.aetherteam.aether.attachment.AetherDataAttachments;
 import com.aetherteam.aether.attachment.AetherPlayerAttachment;
@@ -7,9 +8,8 @@ import com.aetherteam.aether.item.AetherItems;
 import com.aetherteam.aether.item.EquipmentUtil;
 import com.aetherteam.nitrogen.fabric.events.ProjectileEvents;
 import com.aetherteam.nitrogen.ConstantsUtil;
-import io.wispforest.accessories.api.AccessoriesAPI;
-import io.wispforest.accessories.api.slot.SlotEntryReference;
-import net.minecraft.client.player.Input;
+import com.aetherteam.aetherfabric.accessories.SlotResult;
+import net.minecraft.world.entity.EntityReference;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
@@ -34,8 +34,8 @@ public interface ShieldOfRepulsionAccessory {
     static boolean deflectProjectile(HitResult hitResult, Projectile projectile) {
         if (hitResult.getType() == HitResult.Type.ENTITY && hitResult instanceof EntityHitResult entityHitResult) {
             if (entityHitResult.getEntity() instanceof LivingEntity impactedLiving) {
-                if (projectile.getType().is(AetherTags.Entities.DEFLECTABLE_PROJECTILES)) {
-                    SlotEntryReference slotResult = EquipmentUtil.getAccessory(impactedLiving, AetherItems.SHIELD_OF_REPULSION.get());
+                if (projectile.is(AetherTags.Entities.DEFLECTABLE_PROJECTILES)) {
+                    SlotResult slotResult = EquipmentUtil.getAccessory(impactedLiving, AetherItems.SHIELD_OF_REPULSION.get());
                     if (slotResult != null) {
                         Vec3 motion = impactedLiving.getDeltaMovement();
                         if (impactedLiving instanceof Player player) {
@@ -66,14 +66,15 @@ public interface ShieldOfRepulsionAccessory {
      *
      * @param projectile     The impacting {@link Projectile}.
      * @param impactedLiving The impacted {@link LivingEntity}.
-     * @param slotResult     The {@link SlotEntryReference} of the Shield of Repulsion.
+     * @param slotResult     The {@link SlotResult} of the Shield of Repulsion.
      */
-    private static boolean handleDeflection(Projectile projectile, LivingEntity impactedLiving, SlotEntryReference slotResult) {
+    private static void handleDeflection(ProjectileImpactEvent event, Projectile projectile, LivingEntity impactedLiving, SlotResult slotResult) {
+        event.setCanceled(true);
         if (!impactedLiving.equals(projectile.getOwner())) {
-            projectile.deflect(ProjectileDeflection.REVERSE, impactedLiving, projectile.getOwner(), false);
+            projectile.deflect(ProjectileDeflection.REVERSE, impactedLiving, EntityReference.of(projectile.getOwner()), false, 1.0);
             projectile.setDeltaMovement(projectile.getDeltaMovement().scale(0.25));
             if (impactedLiving.level() instanceof ServerLevel serverLevel) {
-                slotResult.stack().hurtAndBreak(1, serverLevel, impactedLiving instanceof ServerPlayer player ? player : null, (item) -> AccessoriesAPI.breakStack(slotResult.reference()));
+                slotResult.stack().hurtAndBreak(1, serverLevel, impactedLiving, (item) -> AccessoryApi.onBroken(slotResult.slotContext(), slotResult.stack()));
             }
         }
 

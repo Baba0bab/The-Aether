@@ -1,5 +1,11 @@
 package com.aetherteam.aether.blockentity;
 
+import net.minecraft.world.item.ItemStackTemplate;
+import net.minecraft.world.item.crafting.Recipe;
+import java.util.Map;
+import com.mojang.serialization.Codec;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
 import com.aetherteam.aether.Aether;
 import com.aetherteam.aether.advancement.AetherAdvancementTriggers;
 import com.aetherteam.aether.data.resources.registries.AetherDataMaps;
@@ -12,9 +18,11 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
@@ -23,23 +31,20 @@ import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.player.StackedContents;
+import net.minecraft.world.entity.player.StackedItemContents;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.inventory.RecipeCraftingHolder;
 import net.minecraft.world.inventory.StackedContentsCompatible;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.RecipeHolder;
-import net.minecraft.world.item.crafting.RecipeManager;
-import net.minecraft.world.item.crafting.RecipeType;
-import net.minecraft.world.item.crafting.SingleRecipeInput;
-import net.minecraft.world.level.Level;
+import net.minecraft.world.item.crafting.*;
 import net.minecraft.world.level.block.AbstractFurnaceBlock;
 import net.minecraft.world.level.block.entity.AbstractFurnaceBlockEntity;
 import net.minecraft.world.level.block.entity.BaseContainerBlockEntity;
+import net.minecraft.world.item.component.TypedEntityData;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 
@@ -50,6 +55,7 @@ import java.util.List;
  * Has heavy modifications for Incubator-specific behavior.
  */
 public class IncubatorBlockEntity extends BaseContainerBlockEntity implements WorldlyContainer, RecipeCraftingHolder, StackedContentsCompatible {
+    private static final Codec<Map<ResourceKey<Recipe<?>>, Integer>> RECIPES_USED_CODEC = Codec.unboundedMap(Recipe.KEY_CODEC, Codec.INT);
     private static final int[] SLOTS_NS = {0};
     private static final int[] SLOTS_EW = {1};
     protected NonNullList<ItemStack> items = NonNullList.withSize(2, ItemStack.EMPTY);
@@ -94,7 +100,7 @@ public class IncubatorBlockEntity extends BaseContainerBlockEntity implements Wo
             return 7;
         }
     };
-    private final Object2IntOpenHashMap<ResourceLocation> recipesUsed = new Object2IntOpenHashMap<>();
+    private final Object2IntOpenHashMap<ResourceKey<Recipe<?>>> recipesUsed = new Object2IntOpenHashMap<>();
     private final RecipeManager.CachedCheck<SingleRecipeInput, IncubationRecipe> quickCheck;
 
     public IncubatorBlockEntity(BlockPos pos, BlockState state) {
@@ -114,7 +120,7 @@ public class IncubatorBlockEntity extends BaseContainerBlockEntity implements Wo
         return new IncubatorMenu(id, playerInventory, this, this.dataAccess);
     }
 
-    public static void serverTick(Level level, BlockPos pos, BlockState state, IncubatorBlockEntity blockEntity) {
+    public static void serverTick(ServerLevel level, BlockPos pos, BlockState state, IncubatorBlockEntity blockEntity) {
         boolean flag = blockEntity.isLit();
         boolean flag1 = false;
 
@@ -139,12 +145,13 @@ public class IncubatorBlockEntity extends BaseContainerBlockEntity implements Wo
                 blockEntity.litDuration = blockEntity.litTime;
                 if (blockEntity.isLit()) {
                     flag1 = true;
-                    if (!itemstack.getRecipeRemainder().isEmpty()) {
-                        blockEntity.items.set(1, itemstack.getRecipeRemainder());
+                    ItemStackTemplate remainder = itemstack.getCraftingRemainder();
+                    if (remainder != null) {
+                        blockEntity.items.set(1, remainder.create());
                     } else if (flag3) {
                         itemstack.shrink(1);
                         if (itemstack.isEmpty()) {
-                            blockEntity.items.set(1, itemstack.getRecipeRemainder());
+                            blockEntity.items.set(1, ItemStack.EMPTY);
                         }
                     }
                 }
@@ -198,21 +205,21 @@ public class IncubatorBlockEntity extends BaseContainerBlockEntity implements Wo
     private boolean incubate(@Nullable RecipeHolder<IncubationRecipe> recipe, NonNullList<ItemStack> stacks) {
         if (recipe != null && this.canIncubate(recipe, stacks)) {
             ItemStack itemStack = stacks.getFirst();
-            EntityType<?> entityType = recipe.value().getEntity();
+            EntityType<?> entityType = recipe.value().entity();
             BlockPos spawnPos = this.getBlockPos().above();
             if (this.level != null && !this.level.isClientSide() && this.level instanceof ServerLevel serverLevel) {
                 CompoundTag tag;
-                if (recipe.value().getTag().isPresent()) {
-                    tag = recipe.value().getTag().get();
+                if (recipe.value().tag().isPresent()) {
+                    tag = recipe.value().tag().get();
                 } else {
                     tag = null;
                 }
                 Component customName = itemStack.has(DataComponents.CUSTOM_NAME) ? itemStack.getHoverName() : null;
                 Entity entity = entityType.spawn(serverLevel, EntityType.appendDefaultStackConfig(consumerEntity -> {
                     if (tag != null && consumerEntity instanceof LivingEntity livingEntity) {
-                        livingEntity.readAdditionalSaveData(tag);
+                        TypedEntityData.of(livingEntity.getType(), tag).loadInto(livingEntity);
                     }
-                }, serverLevel, itemStack, player), spawnPos, MobSpawnType.TRIGGERED, true, false);
+                }, serverLevel, itemStack, player), spawnPos, EntitySpawnReason.TRIGGERED, true, false);
                 if (entity != null) {
                     entity.setCustomName(customName);
                     if (this.player != null) {
@@ -233,7 +240,7 @@ public class IncubatorBlockEntity extends BaseContainerBlockEntity implements Wo
 
     protected int getBurnDuration(ItemStack fuelStack) {
         if (!fuelStack.isEmpty()) {
-            var datamap = fuelStack.getItemHolder().nitrogen_fabric$getData(AetherDataMaps.INCUBATOR_FUEL);
+            var datamap = fuelStack.typeHolder().nitrogen_fabric$getData(AetherDataMaps.INCUBATOR_FUEL);
             if (datamap != null) {
                 return datamap.burnTime();
             }
@@ -241,8 +248,8 @@ public class IncubatorBlockEntity extends BaseContainerBlockEntity implements Wo
         return 0;
     }
 
-    private static int getTotalIncubationTime(Level level, IncubatorBlockEntity blockEntity) {
-        return blockEntity.quickCheck.getRecipeFor(new SingleRecipeInput(blockEntity.items.getFirst()), level).map((recipe) -> recipe.value().getIncubationTime()).orElse(5700);
+    private static int getTotalIncubationTime(ServerLevel level, IncubatorBlockEntity blockEntity) {
+        return blockEntity.quickCheck.getRecipeFor(new SingleRecipeInput(blockEntity.items.getFirst()), level).map((recipe) -> recipe.value().incubationTime()).orElse(5700);
     }
 
     private boolean isLit() {
@@ -292,9 +299,11 @@ public class IncubatorBlockEntity extends BaseContainerBlockEntity implements Wo
             stack.setCount(this.getMaxStackSize());
         }
         if (index == 0 && !flag) {
-            this.incubationTotalTime = getTotalIncubationTime(this.level, this);
-            this.incubationProgress = 0;
-            this.setChanged();
+            if (this.level instanceof ServerLevel serverLevel) {
+                this.incubationTotalTime = getTotalIncubationTime(serverLevel, this);
+                this.incubationProgress = 0;
+                this.setChanged();
+            }
         }
     }
 
@@ -314,7 +323,7 @@ public class IncubatorBlockEntity extends BaseContainerBlockEntity implements Wo
     }
 
     @Override
-    public void fillStackedContents(StackedContents helper) {
+    public void fillStackedContents(StackedItemContents helper) {
         for (ItemStack itemstack : this.items) {
             helper.accountStack(itemstack);
         }
@@ -351,8 +360,8 @@ public class IncubatorBlockEntity extends BaseContainerBlockEntity implements Wo
     @Override
     public void setRecipeUsed(@Nullable RecipeHolder<?> recipe) {
         if (recipe != null) {
-            ResourceLocation resourcelocation = recipe.id();
-            this.recipesUsed.addTo(resourcelocation, 1);
+            ResourceKey<Recipe<?>> resourcekey = recipe.id();
+            this.recipesUsed.addTo(resourcekey, 1);
         }
     }
 
@@ -381,29 +390,25 @@ public class IncubatorBlockEntity extends BaseContainerBlockEntity implements Wo
     }
 
     @Override
-    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-        super.loadAdditional(tag, registries);
+    protected void loadAdditional(ValueInput tag) {
+        super.loadAdditional(tag);
         this.items = NonNullList.withSize(this.getContainerSize(), ItemStack.EMPTY);
-        ContainerHelper.loadAllItems(tag, this.items, registries);
-        this.litTime = tag.getInt("LitTime");
+        ContainerHelper.loadAllItems(tag, this.items);
+        this.litTime = tag.getIntOr("LitTime", 0);
         this.litDuration = this.getBurnDuration(this.items.get(1));
-        this.incubationProgress = tag.getInt("IncubationProgress");
-        this.incubationTotalTime = tag.getInt("IncubationTotalTime");
-        CompoundTag compoundtag = tag.getCompound("RecipesUsed");
-        for (String string : compoundtag.getAllKeys()) {
-            this.recipesUsed.put(ResourceLocation.parse(string), compoundtag.getInt(string));
-        }
+        this.incubationProgress = tag.getIntOr("IncubationProgress", 0);
+        this.incubationTotalTime = tag.getIntOr("IncubationTotalTime", 0);
+        this.recipesUsed.clear();
+        this.recipesUsed.putAll(tag.read("RecipesUsed", RECIPES_USED_CODEC).orElse(Map.of()));
     }
 
     @Override
-    public void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-        super.saveAdditional(tag, registries);
+    public void saveAdditional(ValueOutput tag) {
+        super.saveAdditional(tag);
         tag.putInt("LitTime", this.litTime);
         tag.putInt("IncubationProgress", this.incubationProgress);
         tag.putInt("IncubationTotalTime", this.incubationTotalTime);
-        ContainerHelper.saveAllItems(tag, this.items, registries);
-        CompoundTag compoundTag = new CompoundTag();
-        this.recipesUsed.forEach((location, integer) -> compoundTag.putInt(location.toString(), integer));
-        tag.put("RecipesUsed", compoundTag);
+        ContainerHelper.saveAllItems(tag, this.items);
+        tag.store("RecipesUsed", RECIPES_USED_CODEC, this.recipesUsed);
     }
 }

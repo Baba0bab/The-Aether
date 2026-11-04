@@ -1,13 +1,14 @@
 package com.aetherteam.aether.inventory.menu;
 
+import net.minecraft.util.Prediction;
+import eu.pb4.trinkets.api.TrinketInventory;
+import eu.pb4.trinkets.api.TrinketSlotUtils;
+import com.aetherteam.aetherfabric.accessories.AccessoryApi;
 import com.aetherteam.aether.inventory.AetherAccessorySlots;
 import com.aetherteam.aether.mixin.mixins.common.accessor.AbstractContainerMenuAccessor;
 import com.aetherteam.aether.mixin.mixins.common.accessor.CraftingMenuAccessor;
-import com.mojang.datafixers.util.Pair;
-import io.wispforest.accessories.api.AccessoriesAPI;
-import io.wispforest.accessories.api.menu.AccessoriesSlotGenerator;
-import io.wispforest.accessories.api.slot.SlotType;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Inventory;
@@ -15,13 +16,12 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.*;
 import net.minecraft.world.item.ItemStack;
 
-import java.util.Collection;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
 public class AetherAccessoriesMenu extends InventoryMenu {
-    private static final Map<EquipmentSlot, ResourceLocation> TEXTURE_EMPTY_SLOTS = Map.of(
+    private static final Map<EquipmentSlot, Identifier> TEXTURE_EMPTY_SLOTS = Map.of(
         EquipmentSlot.FEET,
         InventoryMenu.EMPTY_ARMOR_SLOT_BOOTS,
         EquipmentSlot.LEGS,
@@ -35,6 +35,7 @@ public class AetherAccessoriesMenu extends InventoryMenu {
     private final CraftingContainer craftSlots = new TransientCraftingContainer(this, 2, 2);
     private final ResultContainer resultSlots = new ResultContainer();
     private final Player owner;
+    private final Set<Slot> accessorySlots = new java.util.HashSet<>();
 
     public final boolean hasButton;
 
@@ -64,15 +65,15 @@ public class AetherAccessoriesMenu extends InventoryMenu {
 
         int x = 77, y = 8; // Adjust these values
 
-        AccessoriesSlotGenerator.of(this::addSlot, x, y, this.owner, AetherAccessorySlots.getPendantSlotType(), AetherAccessorySlots.getCapeSlotType(), AetherAccessorySlots.getShieldSlotType()).column();
-        AccessoriesSlotGenerator.of(this::addSlot, x + 18, y, this.owner, AetherAccessorySlots.getRingSlotType(), AetherAccessorySlots.getGlovesSlotType()).column();
-        AccessoriesSlotGenerator.of(this::addSlot, x, y + (3 * 18), this.owner, AetherAccessorySlots.getAccessorySlotType()).row();
+        this.addAccessorySlots(x, y, true, AetherAccessorySlots.getPendantSlotType(), AetherAccessorySlots.getCapeSlotType(), AetherAccessorySlots.getShieldSlotType());
+        this.addAccessorySlots(x + 18, y, true, AetherAccessorySlots.getRingSlotType(), AetherAccessorySlots.getGlovesSlotType());
+        this.addAccessorySlots(x, y + (3 * 18), false, AetherAccessorySlots.getAccessorySlotType());
 
         this.hasButton = hasButton;
 
         for (int k = 0; k < 4; k++) {
             EquipmentSlot equipmentslot = SLOT_IDS[k];
-            ResourceLocation resourcelocation = TEXTURE_EMPTY_SLOTS.get(equipmentslot);
+            Identifier resourcelocation = TEXTURE_EMPTY_SLOTS.get(equipmentslot);
             this.addSlot(new ArmorSlot(playerInventory, this.owner, equipmentslot, 36 + (3 - k), 59, 8 + k * 18, resourcelocation));
         }
 
@@ -94,8 +95,8 @@ public class AetherAccessoriesMenu extends InventoryMenu {
             }
 
             @Override
-            public Pair<ResourceLocation, ResourceLocation> getNoItemIcon() {
-                return Pair.of(InventoryMenu.BLOCK_ATLAS, InventoryMenu.EMPTY_ARMOR_SLOT_SHIELD);
+            public Identifier getNoItemIcon() {
+                return InventoryMenu.EMPTY_ARMOR_SLOT_SHIELD;
             }
         });
     }
@@ -105,7 +106,9 @@ public class AetherAccessoriesMenu extends InventoryMenu {
      */
     @Override
     public void slotsChanged(Container inventory) {
-        CraftingMenuAccessor.callSlotChangedCraftingGrid(this, this.owner.level(), this.owner, this.craftSlots, this.resultSlots, null);
+        if (this.owner.level() instanceof ServerLevel serverLevel) {
+            CraftingMenuAccessor.callSlotChangedCraftingGrid(this, serverLevel, this.owner, this.craftSlots, this.resultSlots, null);
+        }
     }
 
     /**
@@ -115,7 +118,7 @@ public class AetherAccessoriesMenu extends InventoryMenu {
     public void removed(Player player) {
         super.removed(player);
         this.resultSlots.clearContent();
-        if (!player.level().isClientSide) {
+        if (!player.level().isClientSide()) {
             this.clearContainer(player, this.craftSlots);
         }
     }
@@ -139,7 +142,7 @@ public class AetherAccessoriesMenu extends InventoryMenu {
             ItemStack itemStack1 = slot.getItem();
             itemStack = itemStack1.copy();
             EquipmentSlot equipmentSlot = player.getEquipmentSlotForItem(itemStack);
-            Collection<SlotType> accessorySlots = AccessoriesAPI.getValidSlotTypes(player, itemStack);
+            Set<Integer> emptyAccessorySlots = this.getEmptyAccessorySlots(itemStack1);
             if (index == 0) {
                 if (!this.moveItemStackTo(itemStack1, 17, 53, true)) {
                     return ItemStack.EMPTY;
@@ -158,8 +161,8 @@ public class AetherAccessoriesMenu extends InventoryMenu {
                 if (!this.moveItemStackTo(itemStack1, i, i + 1, false)) {
                     return ItemStack.EMPTY;
                 }
-            } else if (index < 53 && !accessorySlots.isEmpty() && !this.getEmptyAccessorySlots(accessorySlots).isEmpty()) {
-                for (int i : this.getEmptyAccessorySlots(accessorySlots)) {
+            } else if (index < 53 && !emptyAccessorySlots.isEmpty()) {
+                for (int i : emptyAccessorySlots) {
                     if (!this.moveItemStackTo(itemStack1, i, i + 1, false)) {
                         return ItemStack.EMPTY;
                     }
@@ -189,25 +192,52 @@ public class AetherAccessoriesMenu extends InventoryMenu {
             }
             slot.onTake(player, itemStack1);
             if (index == 0) {
-                player.drop(itemStack1, false);
+                player.drop(itemStack1, false, Prediction.SERVER_ONLY);
             }
         }
         return itemStack;
     }
 
-    private Set<Integer> getEmptyAccessorySlots(Collection<SlotType> slotData) {
-        Set<Integer> slots = new HashSet<>();
-        for (SlotType identifier : slotData) {
-            switch (identifier.name()) {
-                case "aether:pendant_slot" -> slots.add(5);
-                case "aether:cape_slot" -> slots.add(6);
-                case "aether:shield_slot" -> slots.add(7);
-                case "aether:ring_slot" -> slots.addAll(Set.of(8, 9));
-                case "aether:gloves_slot" -> slots.add(10);
-                case "aether:accessory_slot" -> slots.addAll(Set.of(11, 12));
+    /**
+     * Adds the slots of Curios slot types to the menu.
+     *
+     * @param x           The {@link Integer} x-position of the first slot.
+     * @param y           The {@link Integer} y-position of the first slot.
+     * @param column      Whether the slots are laid out in a column, as a {@link Boolean}. Otherwise, they are laid out in a row.
+     * @param identifiers The {@link String} identifiers of the slot types to add.
+     */
+    private void addAccessorySlots(int x, int y, boolean column, String... identifiers) {
+        int offset = 0;
+        for (String identifier : identifiers) {
+            TrinketInventory inventory = AccessoryApi.getInventory(this.owner, identifier).orElse(null);
+            if (inventory != null) {
+                for (int i = 0; i < inventory.getContainerSize(); i++) {
+                    int slotX = column ? x : x + (offset * 18);
+                    int slotY = column ? y + (offset * 18) : y;
+                    Slot slot = TrinketSlotUtils.createSlot(inventory.getOrCreateSlotAccess(i), slotX, slotY);
+                    this.accessorySlots.add(slot);
+                    this.addSlot(slot);
+                    offset++;
+                }
             }
         }
-        slots.removeIf(index -> this.slots.get(index).hasItem());
+    }
+
+    /**
+     * @return Whether the given {@link Slot} is one of the Trinkets accessory slots of this menu.
+     */
+    public boolean isAccessorySlot(Slot slot) {
+        return this.accessorySlots.contains(slot);
+    }
+
+    private Set<Integer> getEmptyAccessorySlots(ItemStack stack) {
+        Set<Integer> slots = new LinkedHashSet<>();
+        for (int i = 0; i < this.slots.size(); i++) {
+            Slot slot = this.slots.get(i);
+            if (this.isAccessorySlot(slot) && !slot.hasItem() && slot.mayPlace(stack)) {
+                slots.add(i);
+            }
+        }
         return slots;
     }
 

@@ -1,5 +1,6 @@
 package com.aetherteam.aether.client.gui.component.inventory;
 
+import com.aetherteam.nitrogen.fabric.network.PacketDistributor;
 import com.aetherteam.aether.network.packet.serverbound.SunAltarUpdatePacket;
 import com.aetherteam.nitrogen.fabric.network.PacketDistributor;
 import net.minecraft.client.gui.components.AbstractSliderButton;

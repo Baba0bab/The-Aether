@@ -3,10 +3,9 @@ package com.aetherteam.aether.item.combat.abilities.armor;
 import com.aetherteam.aether.attachment.AetherDataAttachments;
 import com.aetherteam.aether.item.AetherItems;
 import com.aetherteam.aether.item.EquipmentUtil;
-import io.wispforest.accessories.api.AccessoriesCapability;
-import io.wispforest.accessories.api.AccessoriesContainer;
-import io.wispforest.accessories.api.slot.SlotEntryReference;
-import net.minecraft.advancements.CriteriaTriggers;
+import com.aetherteam.aetherfabric.accessories.AccessoryApi;
+import com.aetherteam.aetherfabric.accessories.SlotResult;
+import net.minecraft.advancements.triggers.CriteriaTriggers;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -110,7 +109,7 @@ public interface PhoenixArmor {
     /**
      * Slowly increments a timer to convert a player's Phoenix Armor if they're in water, rain, or a bubble column.<br><br>
      * This is done by looping through the armor {@link EquipmentSlot}s and also checking with {@link EquipmentUtil#getAccessory(LivingEntity, Item)} for the gloves.<br><br>
-     * The methods used for this are {@link PhoenixArmor#breakPhoenixArmor(LivingEntity, ItemStack, ItemStack, EquipmentSlot)} and {@link PhoenixArmor#breakPhoenixGloves(LivingEntity, SlotEntryReference, ItemStack)}.
+     * The methods used for this are {@link PhoenixArmor#breakPhoenixArmor(LivingEntity, ItemStack, ItemStack, EquipmentSlot)} and {@link PhoenixArmor#breakPhoenixGloves(LivingEntity, SlotResult, ItemStack)}.
      *
      * @param entity The {@link LivingEntity} wearing the armor.
      * @see com.aetherteam.aether.event.listeners.abilities.ArmorAbilityListener#onEntityUpdate(Entity)
@@ -118,7 +117,7 @@ public interface PhoenixArmor {
     static void damageArmor(LivingEntity entity) {
         if (entity instanceof Player player) {
             var data = player.getAttachedOrCreate(AetherDataAttachments.AETHER_PLAYER);
-            if (EquipmentUtil.hasAnyPhoenixArmor(entity) && entity.isInWaterRainOrBubble()) {
+            if (EquipmentUtil.hasAnyPhoenixArmor(entity) && entity.isInWaterOrRain()) {
                 if (entity.level().getGameTime() % 15 == 0) {
                     data.setObsidianConversionTime(data.getObsidianConversionTime() + 1);
                     entity.level().levelEvent(1501, entity.blockPosition(), 0);
@@ -141,7 +140,7 @@ public interface PhoenixArmor {
                         }
                     }
                 }
-                SlotEntryReference slotResult = EquipmentUtil.getAccessory(entity, AetherItems.PHOENIX_GLOVES.get());
+                SlotResult slotResult = EquipmentUtil.getAccessory(entity, AetherItems.PHOENIX_GLOVES.get());
                 if (slotResult != null) {
                     breakPhoenixGloves(entity, slotResult, new ItemStack(AetherItems.OBSIDIAN_GLOVES.get()));
                 }
@@ -158,7 +157,7 @@ public interface PhoenixArmor {
      * @param slot          The {@link EquipmentSlot} of the armor item.
      */
     private static void breakPhoenixArmor(LivingEntity entity, ItemStack equippedStack, ItemStack outcomeStack, EquipmentSlot slot) {
-        outcomeStack = new ItemStack(outcomeStack.getItemHolder(), 1, equippedStack.getComponentsPatch());
+        outcomeStack = new ItemStack(outcomeStack.typeHolder(), 1, equippedStack.getComponentsPatch());
         entity.setItemSlot(slot, outcomeStack);
         if (entity instanceof ServerPlayer serverPlayer) {
             CriteriaTriggers.INVENTORY_CHANGED.trigger(serverPlayer, serverPlayer.getInventory(), outcomeStack);
@@ -169,20 +168,14 @@ public interface PhoenixArmor {
      * Replaces the gloves stack and copies over its tags and enchantments.
      *
      * @param entity       The {@link LivingEntity} wearing the armor.
-     * @param slotResult   The {@link SlotEntryReference} of the accessory item.
+     * @param slotResult   The {@link SlotResult} of the accessory item.
      * @param outcomeStack The replacement {@link ItemStack}.
      */
-    private static void breakPhoenixGloves(LivingEntity entity, SlotEntryReference slotResult, ItemStack outcomeStack) {
-        outcomeStack = new ItemStack(outcomeStack.getItemHolder(), 1, slotResult.stack().getComponentsPatch());
-        AccessoriesCapability accessories = AccessoriesCapability.get(entity);
-        if (accessories != null) {
-            AccessoriesContainer accessoriesContainer = accessories.getContainer(slotResult.reference().type());
-            if (accessoriesContainer != null) {
-                accessoriesContainer.getAccessories().setItem(slotResult.reference().slot(), outcomeStack);
-            }
-        }
+    private static void breakPhoenixGloves(LivingEntity entity, SlotResult slotResult, ItemStack outcomeStack) {
+        ItemStack replacementStack = new ItemStack(outcomeStack.typeHolder(), 1, slotResult.stack().getComponentsPatch());
+        AccessoryApi.setEquipped(entity, slotResult.slotContext().identifier(), slotResult.slotContext().index(), replacementStack);
         if (entity instanceof ServerPlayer serverPlayer) {
-            CriteriaTriggers.INVENTORY_CHANGED.trigger(serverPlayer, serverPlayer.getInventory(), outcomeStack);
+            CriteriaTriggers.INVENTORY_CHANGED.trigger(serverPlayer, serverPlayer.getInventory(), replacementStack);
         }
     }
 

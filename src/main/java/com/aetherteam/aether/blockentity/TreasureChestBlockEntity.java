@@ -1,5 +1,11 @@
 package com.aetherteam.aether.blockentity;
 
+import java.util.List;
+import net.minecraft.world.entity.ContainerUser;
+import net.minecraft.core.component.DataComponentGetter;
+import com.mojang.serialization.Codec;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
 import com.aetherteam.aether.Aether;
 import com.aetherteam.aether.block.AetherBlocks;
 import com.aetherteam.aether.item.components.AetherDataComponents;
@@ -14,7 +20,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.Connection;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -53,7 +59,7 @@ public class TreasureChestBlockEntity extends RandomizableContainerBlockEntity i
             TreasureChestBlockEntity.this.signalOpenCount(level, pos, state, count, openCount);
         }
 
-        protected boolean isOwnContainer(Player player) {
+        public boolean isOwnContainer(Player player) {
             if (player.containerMenu instanceof ChestMenu chestMenu) {
                 Container container = chestMenu.getContainer();
                 return container == TreasureChestBlockEntity.this || container instanceof CompoundContainer compoundContainer && compoundContainer.contains(TreasureChestBlockEntity.this);
@@ -64,7 +70,7 @@ public class TreasureChestBlockEntity extends RandomizableContainerBlockEntity i
     };
     private final ChestLidController chestLidController = new ChestLidController();
     private boolean locked;
-    private ResourceLocation kind;
+    private Identifier kind;
 
     public TreasureChestBlockEntity() {
         this(AetherBlockEntityTypes.TREASURE_CHEST.get(), BlockPos.ZERO, AetherBlocks.TREASURE_CHEST.get().defaultBlockState());
@@ -76,7 +82,7 @@ public class TreasureChestBlockEntity extends RandomizableContainerBlockEntity i
 
     protected TreasureChestBlockEntity(BlockEntityType<?> tileEntityType, BlockPos pos, BlockState state) {
         super(tileEntityType, pos, state);
-        this.kind = ResourceLocation.fromNamespaceAndPath(Aether.MODID, "bronze");
+        this.kind = Identifier.fromNamespaceAndPath(Aether.MODID, "bronze");
         this.locked = true;
     }
 
@@ -159,18 +165,18 @@ public class TreasureChestBlockEntity extends RandomizableContainerBlockEntity i
         return Component.translatable("menu." + this.getKind().getNamespace() + "." + this.getKind().getPath() + "_treasure_chest");
     }
 
-    public static void setDungeonType(BlockGetter level, BlockPos pos, ResourceLocation dungeonType) {
+    public static void setDungeonType(BlockGetter level, BlockPos pos, Identifier dungeonType) {
         BlockEntity blockEntity = level.getBlockEntity(pos);
         if (blockEntity instanceof TreasureChestBlockEntity treasure) {
             treasure.setKind(dungeonType);
         }
     }
 
-    public void setKind(ResourceLocation kind) {
+    public void setKind(Identifier kind) {
         this.kind = kind;
     }
 
-    public ResourceLocation getKind() {
+    public Identifier getKind() {
         return this.kind;
     }
 
@@ -183,17 +189,22 @@ public class TreasureChestBlockEntity extends RandomizableContainerBlockEntity i
     }
 
     @Override
-    public void startOpen(Player player) {
-        if (!this.remove && !player.isSpectator()) {
-            this.openersCounter.incrementOpeners(player, this.level, this.getBlockPos(), this.getBlockState());
+    public void startOpen(ContainerUser containerUser) {
+        if (!this.remove && !containerUser.getLivingEntity().isSpectator()) {
+            this.openersCounter.incrementOpeners(containerUser.getLivingEntity(), this.getLevel(), this.getBlockPos(), this.getBlockState(), containerUser.getContainerInteractionRange());
         }
     }
 
     @Override
-    public void stopOpen(Player player) {
-        if (!this.remove && !player.isSpectator()) {
-            this.openersCounter.decrementOpeners(player, this.level, this.getBlockPos(), this.getBlockState());
+    public void stopOpen(ContainerUser containerUser) {
+        if (!this.remove && !containerUser.getLivingEntity().isSpectator()) {
+            this.openersCounter.decrementOpeners(containerUser.getLivingEntity(), this.getLevel(), this.getBlockPos(), this.getBlockState());
         }
+    }
+
+    @Override
+    public List<ContainerUser> getEntitiesWithContainerOpen() {
+        return this.openersCounter.getEntitiesWithContainerOpen(this.getLevel(), this.getBlockPos());
     }
 
     public void recheckOpen() {
@@ -229,33 +240,33 @@ public class TreasureChestBlockEntity extends RandomizableContainerBlockEntity i
         double d0 = pos.getX() + 0.5;
         double d1 = pos.getY() + 0.5;
         double d2 = pos.getZ() + 0.5;
-        level.playSound(null, d0, d1, d2, sound, SoundSource.BLOCKS, 0.5F, level.random.nextFloat() * 0.1F + 0.9F);
+        level.playSound(null, d0, d1, d2, sound, SoundSource.BLOCKS, 0.5F, level.getRandom().nextFloat() * 0.1F + 0.9F);
     }
 
     @Override
-    protected void applyImplicitComponents(BlockEntity.DataComponentInput componentInput) {
+    protected void applyImplicitComponents(DataComponentGetter componentInput) {
         super.applyImplicitComponents(componentInput);
         this.setLocked(componentInput.getOrDefault(AetherDataComponents.LOCKED.get(), true));
         DungeonKind kind = componentInput.get(AetherDataComponents.DUNGEON_KIND.get());
         if (kind != null) {
             this.setKind(kind.id());
         } else {
-            this.setKind(ResourceLocation.fromNamespaceAndPath(Aether.MODID, "bronze"));
+            this.setKind(Identifier.fromNamespaceAndPath(Aether.MODID, "bronze"));
         }
     }
 
     @Override
     protected void collectImplicitComponents(DataComponentMap.Builder components) {
         super.collectImplicitComponents(components);
-        components.set(AetherDataComponents.LOCKED.get(), this.getLocked());
-        components.set(AetherDataComponents.DUNGEON_KIND.get(), new DungeonKind(ResourceLocation.fromNamespaceAndPath(Aether.MODID, "bronze")));
+        components.set(AetherDataComponents.LOCKED, this.getLocked());
+        components.set(AetherDataComponents.DUNGEON_KIND, new DungeonKind(Identifier.fromNamespaceAndPath(Aether.MODID, "bronze")));
     }
 
     @Override
-    public void removeComponentsFromTag(CompoundTag tag) {
+    public void removeComponentsFromTag(ValueOutput tag) {
         super.removeComponentsFromTag(tag);
-        tag.remove("Locked");
-        tag.remove("Kind");
+        tag.discard("Locked");
+        tag.discard("Kind");
     }
 
     @Override
@@ -264,30 +275,28 @@ public class TreasureChestBlockEntity extends RandomizableContainerBlockEntity i
     }
 
     @Override
-    public boolean nitrogen_fabric$handleUpdateTag(CompoundTag tag, HolderLookup.Provider registries) {
-        this.loadAdditional(tag, registries);
-
-        return true;
+    public void handleUpdateTag(ValueInput tag) {
+        this.loadAdditional(tag);
     }
 
     @Override
-    public void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-        super.saveAdditional(tag, registries);
+    public void saveAdditional(ValueOutput tag) {
+        super.saveAdditional(tag);
         tag.putBoolean("Locked", this.getLocked());
         tag.putString("Kind", this.getKind().toString());
         if (!this.trySaveLootTable(tag)) {
-            ContainerHelper.saveAllItems(tag, this.items, registries);
+            ContainerHelper.saveAllItems(tag, this.items);
         }
     }
 
     @Override
-    public void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-        super.loadAdditional(tag, registries);
-        this.locked = !tag.contains("Locked") || tag.getBoolean("Locked");
-        this.kind = tag.contains("Kind") ? ResourceLocation.parse(tag.getString("Kind")) : ResourceLocation.fromNamespaceAndPath(Aether.MODID, "bronze");
+    public void loadAdditional(ValueInput tag) {
+        super.loadAdditional(tag);
+        this.locked = !tag.read("Locked", Codec.PASSTHROUGH).isPresent() || tag.getBooleanOr("Locked", false);
+        this.kind = tag.read("Kind", Codec.PASSTHROUGH).isPresent() ? Identifier.parse(tag.getStringOr("Kind", "")) : Identifier.fromNamespaceAndPath(Aether.MODID, "bronze");
         this.items = NonNullList.withSize(this.getContainerSize(), ItemStack.EMPTY);
         if (!this.tryLoadLootTable(tag)) {
-            ContainerHelper.loadAllItems(tag, this.items, registries);
+            ContainerHelper.loadAllItems(tag, this.items);
         }
     }
 
@@ -297,10 +306,7 @@ public class TreasureChestBlockEntity extends RandomizableContainerBlockEntity i
     }
 
     @Override
-    public boolean nitrogen_fabric$onDataPacket(Connection connection, ClientboundBlockEntityDataPacket packet, HolderLookup.Provider lookupProvider) {
-        CompoundTag compound = packet.getTag();
-        this.nitrogen_fabric$handleUpdateTag(compound, lookupProvider);
-
-        return true;
+    public void onDataPacket(Connection connection, ValueInput valueInput) {
+        this.handleUpdateTag(valueInput);
     }
 }

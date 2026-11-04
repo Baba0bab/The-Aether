@@ -1,5 +1,6 @@
 package com.aetherteam.aether.loot.modifiers;
 
+import net.minecraft.core.Holder;
 import com.aetherteam.aether.AetherTags;
 import com.aetherteam.nitrogen.fabric.loot.IGlobalLootModifier;
 import com.aetherteam.nitrogen.fabric.loot.LootModifier;
@@ -8,6 +9,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
@@ -17,13 +19,13 @@ import java.util.Optional;
 
 public class EnchantedGrassModifier extends LootModifier {
     public static final MapCodec<EnchantedGrassModifier> CODEC = RecordCodecBuilder.mapCodec((instance) -> LootModifier.codecStart(instance)
-            .and(ItemStack.CODEC.fieldOf("item").forGetter((modifier) -> modifier.item))
+            .and(ItemStackTemplate.CODEC.fieldOf("item").forGetter((modifier) -> modifier.item))
             .apply(instance, EnchantedGrassModifier::new));
 
-    public final ItemStack item;
+    public final ItemStackTemplate item;
 
-    public EnchantedGrassModifier(LootItemCondition[] conditions, ItemStack item) {
-        super(conditions);
+    public EnchantedGrassModifier(Optional<Holder<LootItemCondition>> conditions, int priority, ItemStackTemplate item) {
+        super(conditions, priority);
         this.item = item;
     }
 
@@ -37,10 +39,10 @@ public class EnchantedGrassModifier extends LootModifier {
      */
     @Override
     public ObjectArrayList<ItemStack> doApply(ObjectArrayList<ItemStack> lootStacks, LootContext context) {
-        Vec3 originVec = context.getParamOrNull(LootContextParams.ORIGIN);
+        Vec3 originVec = context.getOptional(LootContextParams.ORIGIN);
         if (originVec != null && context.getLevel().getBlockState(BlockPos.containing(originVec).below()).is(AetherTags.Blocks.ENCHANTED_GRASS)) {
             if (context.getRandom().nextBoolean()) {
-                Optional<ItemStack> itemStack = lootStacks.stream().filter((stack) -> stack.is(this.item.getItem())).findFirst();
+                Optional<ItemStack> itemStack = lootStacks.stream().filter((stack) -> stack.is(this.item.item().value())).findFirst();
                 itemStack.ifPresent(stack -> lootStacks.add(new ItemStack(stack.getItem(), 1)));
             }
         }

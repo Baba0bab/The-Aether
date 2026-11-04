@@ -1,19 +1,18 @@
 //package com.aetherteam.aether.data.generators;
 //
-//import com.aetherteam.aether.Aether;
 //import com.aetherteam.aether.block.AetherBlocks;
-//import com.aetherteam.aether.data.providers.AetherBlockStateProvider;
-//import net.minecraft.data.PackOutput;
+//import com.aetherteam.aether.data.providers.AetherBlockModelProvider;
+//import net.minecraft.client.data.models.BlockModelGenerators;
+//import net.minecraft.client.data.models.ItemModelGenerators;
 //import net.minecraft.world.level.block.Blocks;
-//import net.neoforged.neoforge.common.data.ExistingFileHelper;
 //
-//public class AetherBlockStateData extends AetherBlockStateProvider {
-//    public AetherBlockStateData(PackOutput output, ExistingFileHelper helper) {
-//        super(output, Aether.MODID, helper);
+//public class AetherBlockStateData extends AetherBlockModelProvider {
+//    public AetherBlockStateData(BlockModelGenerators blockModels, ItemModelGenerators itemModels) {
+//        super(blockModels, itemModels);
 //    }
 //
 //    @Override
-//    public void registerStatesAndModels() {
+//    public void run() {
 //        this.portal(AetherBlocks.AETHER_PORTAL.get());
 //
 //        this.grass(AetherBlocks.AETHER_GRASS_BLOCK.get(), AetherBlocks.AETHER_DIRT.get());
@@ -69,8 +68,8 @@
 //
 //        this.crossBlock(AetherBlocks.BERRY_BUSH_STEM.get(), "natural/");
 //        this.berryBush(AetherBlocks.BERRY_BUSH.get(), AetherBlocks.BERRY_BUSH_STEM.get());
-//        this.pottedStem(AetherBlocks.POTTED_BERRY_BUSH_STEM.get(), "natural/");
-//        this.pottedBush(AetherBlocks.POTTED_BERRY_BUSH.get(), AetherBlocks.POTTED_BERRY_BUSH_STEM.get(), "natural/");
+//        this.pottedStem(AetherBlocks.POTTED_BERRY_BUSH_STEM.get(), AetherBlocks.POTTED_BERRY_BUSH_STEM.get(), "natural/");
+//        this.pottedBush(AetherBlocks.POTTED_BERRY_BUSH.get(), AetherBlocks.POTTED_BERRY_BUSH.get(), AetherBlocks.POTTED_BERRY_BUSH_STEM.get(), "natural/");
 //
 //        this.crossBlock(AetherBlocks.PURPLE_FLOWER.get(), "natural/");
 //        this.crossBlock(AetherBlocks.WHITE_FLOWER.get(), "natural/");
@@ -127,8 +126,8 @@
 //
 //        this.fence(AetherBlocks.SKYROOT_FENCE.get(), AetherBlocks.SKYROOT_PLANKS.get(), "construction/");
 //        this.fenceGateBlock(AetherBlocks.SKYROOT_FENCE_GATE.get(), AetherBlocks.SKYROOT_PLANKS.get(), "construction/");
-//        this.doorBlock(AetherBlocks.SKYROOT_DOOR.get(), this.texture(this.name(AetherBlocks.SKYROOT_DOOR.get()), "construction/", "_bottom"), this.texture(this.name(AetherBlocks.SKYROOT_DOOR.get()), "construction/", "_top"));
-//        this.trapdoorBlock(AetherBlocks.SKYROOT_TRAPDOOR.get(), this.texture(this.name(AetherBlocks.SKYROOT_TRAPDOOR.get()), "construction/"), false);
+//        this.doorBlock(AetherBlocks.SKYROOT_DOOR.get(), "construction/");
+//        this.trapdoorBlock(AetherBlocks.SKYROOT_TRAPDOOR.get(), "construction/");
 //        this.buttonBlock(AetherBlocks.SKYROOT_BUTTON.get(), this.texture(this.name(AetherBlocks.SKYROOT_PLANKS.get()), "construction/"));
 //        this.pressurePlateBlock(AetherBlocks.SKYROOT_PRESSURE_PLATE.get(), this.texture(this.name(AetherBlocks.SKYROOT_PLANKS.get()), "construction/"));
 //
@@ -164,7 +163,7 @@
 //
 //        this.sunAltar(AetherBlocks.SUN_ALTAR.get());
 //        this.bookshelf(AetherBlocks.SKYROOT_BOOKSHELF.get(), AetherBlocks.SKYROOT_PLANKS.get());
-//        this.bed(AetherBlocks.SKYROOT_BED.get(), AetherBlocks.SKYROOT_PLANKS.get());
+//        this.bed(AetherBlocks.SKYROOT_BED.get());
 //
 //        this.frostedIce(AetherBlocks.FROSTED_ICE.get(), Blocks.FROSTED_ICE);
 //        this.unstableObsidian(AetherBlocks.UNSTABLE_OBSIDIAN.get());

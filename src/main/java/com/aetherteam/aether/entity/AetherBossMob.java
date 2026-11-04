@@ -4,11 +4,12 @@ import com.aetherteam.aether.block.dungeon.DoorwayBlock;
 import com.aetherteam.aether.client.AetherSoundEvents;
 import com.aetherteam.nitrogen.entity.BossMob;
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.Music;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.level.GameRules;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.state.BlockState;
@@ -25,11 +26,16 @@ import java.util.function.Predicate;
  * @see BossMob
  */
 public interface AetherBossMob<T extends Mob & AetherBossMob<T>> extends BossMob<T> {
+    @SuppressWarnings("unchecked")
+    private T self() {
+        return (T) this;
+    }
+
     /**
      * Handles behavior when closing the boss room, like closing the doors.
      */
     default void closeRoom() {
-        this.getDungeon().modifyRoom(state -> {
+        this.getDungeon().modifyRoom(this.self(), (level, pos, state) -> {
             if (state.getBlock() instanceof DoorwayBlock) {
                 return state.setValue(DoorwayBlock.INVISIBLE, false);
             } else {
@@ -42,7 +48,7 @@ public interface AetherBossMob<T extends Mob & AetherBossMob<T>> extends BossMob
      * Handles behavior when opening the boss room, like opening the doors.
      */
     default void openRoom() {
-        this.getDungeon().modifyRoom(state -> {
+        this.getDungeon().modifyRoom(this.self(), (level, pos, state) -> {
             if (state.getBlock() instanceof DoorwayBlock) {
                 return state.setValue(DoorwayBlock.INVISIBLE, true);
             } else {
@@ -60,14 +66,16 @@ public interface AetherBossMob<T extends Mob & AetherBossMob<T>> extends BossMob
      * @param check  An additional check using a {@link BlockState} {@link Predicate}.
      */
     default void evaporate(T entity, BlockPos min, BlockPos max, Predicate<BlockState> check) {
-        if (entity.level().getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
-            for (BlockPos pos : BlockPos.betweenClosed(min, max)) {
-                if (entity.level().getBlockState(pos).getBlock() instanceof LiquidBlock && check.test(entity.level().getBlockState(pos))) {
-                    entity.level().setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState());
-                    this.evaporateEffects(entity, pos);
-                } else if (!entity.level().getFluidState(pos).isEmpty() && entity.level().getBlockState(pos).hasProperty(BlockStateProperties.WATERLOGGED) && check.test(entity.level().getFluidState(pos).createLegacyBlock())) {
-                    entity.level().setBlockAndUpdate(pos, entity.level().getBlockState(pos).setValue(BlockStateProperties.WATERLOGGED, false));
-                    this.evaporateEffects(entity, pos);
+        if (entity.level() instanceof ServerLevel serverLevel) {
+            if (serverLevel.getGameRules().get(GameRules.MOB_GRIEFING)) {
+                for (BlockPos pos : BlockPos.betweenClosed(min, max)) {
+                    if (entity.level().getBlockState(pos).getBlock() instanceof LiquidBlock && check.test(entity.level().getBlockState(pos))) {
+                        entity.level().setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState());
+                        this.evaporateEffects(entity, pos);
+                    } else if (!entity.level().getFluidState(pos).isEmpty() && entity.level().getBlockState(pos).hasProperty(BlockStateProperties.WATERLOGGED) && check.test(entity.level().getFluidState(pos).createLegacyBlock())) {
+                        entity.level().setBlockAndUpdate(pos, entity.level().getBlockState(pos).setValue(BlockStateProperties.WATERLOGGED, false));
+                        this.evaporateEffects(entity, pos);
+                    }
                 }
             }
         }
@@ -98,16 +106,16 @@ public interface AetherBossMob<T extends Mob & AetherBossMob<T>> extends BossMob
     }
 
     /**
-     * @return The {@link ResourceLocation} for this boss's health bar.
+     * @return The {@link Identifier} for this boss's health bar.
      */
     @Nullable
-    ResourceLocation getBossBarTexture();
+    Identifier getBossBarTexture();
 
     /**
-     * @return The {@link ResourceLocation} for this boss's health bar background.
+     * @return The {@link Identifier} for this boss's health bar background.
      */
     @Nullable
-    ResourceLocation getBossBarBackgroundTexture();
+    Identifier getBossBarBackgroundTexture();
 
     /**
      * @return The {@link Music} for this boss's fight.

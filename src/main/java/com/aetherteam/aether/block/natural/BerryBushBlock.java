@@ -1,9 +1,13 @@
 package com.aetherteam.aether.block.natural;
 
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.InsideBlockEffectApplier;
+import net.minecraft.world.entity.EntityTypes;
 import com.aetherteam.aether.AetherConfig;
 import com.aetherteam.aether.block.AetherBlockStateProperties;
 import com.aetherteam.aether.block.AetherBlocks;
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionResult;
@@ -43,9 +47,9 @@ public class BerryBushBlock extends AetherBushBlock {
      * [CODE COPY] - {@link net.minecraft.world.level.block.SweetBerryBushBlock#entityInside(BlockState, Level, BlockPos, Entity)}.<br><br>
      * Modified to remove damage behavior.
      */
-    public void entityInside(BlockState state, Level level, BlockPos pos, Entity entity) {
+    protected void entityInside(BlockState state, Level level, BlockPos pos, Entity entity, InsideBlockEffectApplier effectApplier, boolean isPrecise) {
         if (AetherConfig.SERVER.berry_bush_consistency.get()) {
-            if (entity instanceof LivingEntity && entity.getType() != EntityType.FOX && entity.getType() != EntityType.BEE) {
+            if (entity instanceof LivingEntity && entity.getType() != EntityTypes.FOX && entity.getType() != EntityTypes.BEE) {
                 entity.makeStuckInBlock(state, new Vec3(0.8F, 0.75D, 0.8F));
             }
         }
@@ -68,7 +72,7 @@ public class BerryBushBlock extends AetherBushBlock {
             level.playSound(null, pos, SoundEvents.SWEET_BERRY_BUSH_PICK_BERRIES, SoundSource.BLOCKS, 1.0F, 0.8F + level.getRandom().nextFloat() * 0.4F);
             level.setBlock(pos, AetherBlocks.BERRY_BUSH_STEM.get().defaultBlockState().setValue(AetherBlockStateProperties.DOUBLE_DROPS, state.getValue(AetherBlockStateProperties.DOUBLE_DROPS)), 1 | 2);
             level.gameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Context.of(player, state));
-            return InteractionResult.sidedSuccess(level.isClientSide());
+            return InteractionResult.SUCCESS;
         } else {
             return super.useWithoutItem(state, level, pos, player, hit);
         }
@@ -85,7 +89,7 @@ public class BerryBushBlock extends AetherBushBlock {
      * @param tool        The {@link ItemStack} of the tool used to destroy the block.
      */
     @Override
-    public void playerDestroy(Level level, Player player, BlockPos pos, BlockState state, @Nullable BlockEntity blockEntity, ItemStack tool) {
+    public void playerDestroy(ServerLevel level, ServerPlayer player, BlockPos pos, BlockState state, @Nullable BlockEntity blockEntity, ItemStack tool) {
         super.playerDestroy(level, player, pos, state, blockEntity, tool);
         if (tool.nitrogen_fabric$getEnchantmentLevel(level.registryAccess().nitrogen_fabric$holderOrThrow(Enchantments.SILK_TOUCH)) <= 0) {
             level.setBlock(pos, AetherBlocks.BERRY_BUSH_STEM.get().defaultBlockState().setValue(AetherBlockStateProperties.DOUBLE_DROPS, state.getValue(AetherBlockStateProperties.DOUBLE_DROPS)), 1 | 2);
@@ -103,7 +107,9 @@ public class BerryBushBlock extends AetherBushBlock {
      * @param pos       The {@link BlockPos} of the block.
      * @param explosion The {@link Explosion} affecting the block.
      */
-    public void onBlockExploded(BlockState state, Level level, BlockPos pos, Explosion explosion) {
+    @Override
+    public void onBlockExploded(BlockState state, ServerLevel level, BlockPos pos, Explosion explosion) {
+        super.onBlockExploded(state, level, pos, explosion);
         level.setBlock(pos, AetherBlocks.BERRY_BUSH_STEM.get().defaultBlockState().setValue(AetherBlockStateProperties.DOUBLE_DROPS, state.getValue(AetherBlockStateProperties.DOUBLE_DROPS)), 1 | 2);
         if (AetherConfig.SERVER.berry_bush_consistency.get()) { // Destroy stem too if config is enabled.
             level.destroyBlock(pos, true);

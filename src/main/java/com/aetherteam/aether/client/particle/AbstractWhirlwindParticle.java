@@ -2,30 +2,32 @@ package com.aetherteam.aether.client.particle;
 
 import com.aetherteam.aether.entity.monster.AbstractWhirlwind;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.particle.ParticleRenderType;
+import net.minecraft.client.particle.SingleQuadParticle;
 import net.minecraft.client.particle.SpriteSet;
-import net.minecraft.client.particle.TextureSheetParticle;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.phys.AABB;
 import org.jetbrains.annotations.Nullable;
 
-public abstract class AbstractWhirlwindParticle<T extends AbstractWhirlwind> extends TextureSheetParticle {
-    private static final TargetingConditions TARGET_CONDITION = TargetingConditions.forNonCombat();
+import java.util.Comparator;
+
+public abstract class AbstractWhirlwindParticle<T extends AbstractWhirlwind> extends SingleQuadParticle {
     private final SpriteSet animatedSprite;
     @Nullable
     protected final AbstractWhirlwind whirlwind;
 
     public AbstractWhirlwindParticle(ClientLevel level, double xCoord, double yCoord, double zCoord, double xSpeed, double ySpeed, double zSpeed, SpriteSet sprite) {
-        super(level, xCoord, yCoord, zCoord, xSpeed, ySpeed, zSpeed);
+        super(level, xCoord, yCoord, zCoord, xSpeed, ySpeed, zSpeed, sprite.first());
         this.animatedSprite = sprite;
-        this.whirlwind = level.getNearestEntity(this.getWhirlwindType(), TARGET_CONDITION, null, xCoord, yCoord, zCoord, new AABB(this.x, this.y, this.z, this.x + 1, this.y + 1, this.z + 1));
+        this.whirlwind = level.getEntitiesOfClass(this.getWhirlwindType(), new AABB(this.x, this.y, this.z, this.x + 1, this.y + 1, this.z + 1), AbstractWhirlwind::isAlive).stream()
+            .min(Comparator.comparingDouble((entity) -> entity.distanceToSqr(xCoord, yCoord, zCoord)))
+            .orElse(null);
         if (this.whirlwind != null) {
             this.setPos(this.whirlwind.getX(), this.whirlwind.getY(), this.whirlwind.getZ());
             this.xd = xSpeed + (Math.random() * 2.0 - 1.0) * this.getBaseSpeedModifier();
             this.yd = ySpeed + (Math.random() * 2.0 - 1.0) * this.getBaseSpeedModifier();
             this.zd = zSpeed + (Math.random() * 2.0 - 1.0) * this.getBaseSpeedModifier();
         }
+        this.setSpriteFromAge(sprite);
     }
 
     @Override
@@ -55,8 +57,8 @@ public abstract class AbstractWhirlwindParticle<T extends AbstractWhirlwind> ext
     }
 
     @Override
-    public ParticleRenderType getRenderType() {
-        return ParticleRenderType.PARTICLE_SHEET_OPAQUE;
+    protected SingleQuadParticle.Layer getLayer() {
+        return SingleQuadParticle.Layer.OPAQUE;
     }
 
     protected abstract double getBaseSpeedModifier();

@@ -1,5 +1,7 @@
 package com.aetherteam.aether.world.structure;
 
+import net.minecraft.core.Holder;
+import java.util.Optional;
 import com.aetherteam.aether.world.structurepiece.LargeAercloudChunk;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
@@ -24,11 +26,11 @@ public class LargeAercloudStructure extends Structure {
             Codec.INT.fieldOf("rangeY").forGetter(o -> o.rangeY)
     ).apply(p_229075_, LargeAercloudStructure::new));
 
-    private final BlockStateProvider blocks;
+    private final Holder<BlockStateProvider> blocks;
     private final int size;
     private final int rangeY;
 
-    public LargeAercloudStructure(StructureSettings settings, BlockStateProvider blocks, int size, int rangeY) {
+    public LargeAercloudStructure(StructureSettings settings, Holder<BlockStateProvider> blocks, int size, int rangeY) {
         super(settings);
         this.blocks = blocks;
         this.size = size;
@@ -40,13 +42,13 @@ public class LargeAercloudStructure extends Structure {
         return Structure.onTopOfChunkCenter(context, Heightmap.Types.WORLD_SURFACE_WG, (builder) -> generatePieces(builder, context, this.blocks, this.size, this.rangeY));
     }
 
-    private static void generatePieces(StructurePiecesBuilder builder, GenerationContext context, BlockStateProvider blocks, int size, int rangeY) {
+    private static void generatePieces(StructurePiecesBuilder builder, GenerationContext context, Holder<BlockStateProvider> blocks, int size, int rangeY) {
         Map<ChunkPos, Set<BlockPos>> chunks = new LinkedHashMap<>();
         Set<BlockPos> positions = new LinkedHashSet<>();
 
         WorldgenRandom random = context.random();
         boolean direction = random.nextBoolean();
-        int initialY = context.heightAccessor().getMinBuildHeight() + context.random().nextInt(rangeY);
+        int initialY = context.heightAccessor().getMinY() + context.random().nextInt(rangeY);
         int x = context.chunkPos().getMinBlockX();
         int y = initialY;
         int z = context.chunkPos().getMinBlockZ();
@@ -65,7 +67,7 @@ public class LargeAercloudStructure extends Structure {
                         BlockPos newPosition = new BlockPos(x1, y1, z1);
                         if (Math.abs(x1 - x) + Math.abs(y1 - y) + Math.abs(z1 - z) < 4 * size + random.nextInt(2)) {
                             positions.add(newPosition);
-                            chunks.putIfAbsent(new ChunkPos(newPosition), new HashSet<>());
+                            chunks.putIfAbsent(ChunkPos.containing(newPosition), new HashSet<>());
                         }
                     }
                 }
@@ -75,7 +77,7 @@ public class LargeAercloudStructure extends Structure {
         // Checks if positions are within their chunk.
         chunks.forEach(((chunkPos, blockPosSet) -> {
             Set<BlockPos> withinChunk = new LinkedHashSet<>(positions);
-            withinChunk.removeIf(pos -> !(new ChunkPos(pos).equals(chunkPos)));
+            withinChunk.removeIf(pos -> !(ChunkPos.containing(pos).equals(chunkPos)));
             blockPosSet.addAll(withinChunk);
         }));
 

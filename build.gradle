@@ -3,7 +3,7 @@ plugins {
     id 'eclipse'
     id 'idea'
     id 'maven-publish'
-    id 'fabric-loom' version '1.13-SNAPSHOT'
+    id 'net.fabricmc.fabric-loom' version "${loom_version}"
     id 'com.matthewprenger.cursegradle' version '[1.4,1.5)'
     id 'com.modrinth.minotaur' version '[2,3)'
 }
@@ -19,7 +19,21 @@ base {
     archivesName = mod_id
 }
 
-java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+java.toolchain.languageVersion = JavaLanguageVersion.of(25)
+
+allprojects {
+    repositories {
+        maven { url = "https://maven.fabricmc.net" }
+        maven { url = "https://maven.blamejared.com" }
+        maven { url = "https://maven.shedaniel.me/" }
+        maven { url = "https://maven.architectury.dev/" }
+        maven { url = "https://maven.terraformersmc.com/" }
+        maven { url = "https://maven.nucleoid.xyz/releases" }
+        maven { url = "https://raw.githubusercontent.com/Fuzss/modresources/main/maven/" }
+        maven { url = "https://api.modrinth.com/maven" }
+        mavenCentral()
+    }
+}
 
 loom {
     accessWidenerPath = file('src/main/resources/aether.accesswidener')
@@ -28,11 +42,20 @@ loom {
         "${mod_id}" {
             sourceSet(sourceSets.main)
         }
+        "nitrogen_internals" {
+            sourceSet(project(':nitrogen').sourceSets.main)
+        }
+        "cumulus_menus" {
+            sourceSet(project(':cumulus').sourceSets.main)
+        }
     }
 
     runs {
         client {
             vmArg "-Dowo.debug=false"
+        }
+        server {
+            programArg '--nogui'
         }
     }
 }
@@ -40,6 +63,8 @@ loom {
 fabricApi {
     configureDataGeneration {
         modId = "aether"
+        client = true
+        outputDirectory = file('src/generated/resources')
     }
 }
 
@@ -51,87 +76,31 @@ processResources {
     exclude '.cache/'
 }
 
-//configurations {
-//    runtimeClasspath.extendsFrom localRuntime
-//}
-
 dependencies {
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
 
-    mappings loom.layered() {
-        officialMojangMappings()
-        parchment("org.parchmentmc.data:parchment-${project.property("neogradle.subsystems.parchment.minecraftVersion")}:${project.property("neogradle.subsystems.parchment.mappingsVersion")}@zip")
-    }
+    implementation "net.fabricmc:fabric-loader:${project.fabric_loader_version}"
+    implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
-    modImplementation "net.fabricmc:fabric-loader:${project.fabric_loader_version}"
-    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+    include implementation("me.shedaniel:mm:2.4.1")
 
-    implementation(annotationProcessor("io.github.llamalad7:mixinextras-fabric:${project.mixin_extra_version}"))
-    include("io.github.llamalad7:mixinextras-fabric:${project.mixin_extra_version}:slim")
+    // Nitrogen and Cumulus are built from source (see settings.gradle).
+    implementation project(':nitrogen')
+    include project(':nitrogen')
+    implementation project(':cumulus')
+    include project(':cumulus')
 
-    include modImplementation("me.shedaniel:mm:2.4.1")
+    include implementation("eu.pb4:trinkets:${project.trinkets_version}")
 
-    include modImplementation("com.aetherteam.nitrogen:nitrogen_internals:${project.nitrogen_version}")
-    include modImplementation("com.aetherteam.cumulus:cumulus_menus:${project.cumulus_version}")
+    include implementation("fuzs.forgeconfigapiport:forgeconfigapiport-fabric:${project.forge_config_version}")
 
-    include modImplementation("io.wispforest:accessories-fabric:${project.accessories_version}+${project.minecraft_version}")
+    compileOnly "com.terraformersmc:modmenu:${project.modmenu_version}"
 
-    include modImplementation("fuzs.forgeconfigapiport:forgeconfigapiport-fabric:${project.forge_config_version}")
+    compileOnly "mezz.jei:jei-${project.minecraft_version}-common-api:${project.jei_version}"
+    compileOnly "mezz.jei:jei-${project.minecraft_version}-fabric:${project.jei_version}"
 
-    modCompileOnly("com.terraformersmc:modmenu:${project.modmenu_version}")
-
-    modCompileOnly("io.github.fabricators_of_create.Porting-Lib:extensions:3.1.0-fdrf.4+1.21.1") {
-        transitive = false
-        exclude group : "io.github.fabricators_of_create.Porting-Lib"
-    }
-
-//    for (String module in port_lib_modules.split(",")) {
-//        modLocalRuntime("io.github.fabricators_of_create.Porting-Lib:$module:3.1.0-fdrf.4+1.21.1")
-//    }
-//    for (String module in port_lib_temp_modules.split(",")) {
-//        modLocalRuntime("io.github.fabricators_of_create.Porting-Lib:$module:3.1.0-fdrf.4+1.21.1")
-//    }
-
-    modLocalRuntime "maven.modrinth:debugutils:1.21-${project.debugutils_version}"
-
-    modCompileOnly "mezz.jei:jei-${project.minecraft_version}-common-api:${project.jei_version}"
-    modCompileOnly "mezz.jei:jei-${project.minecraft_version}-fabric:${project.jei_version}"
-
-    modCompileOnly "maven.modrinth:jade:${project.jade_version}"
-    modCompileOnly "maven.modrinth:lootr:${project.lootr_version}"
-
-//    implementation fileTree(dir: 'libs', include: '*.jar')
-
-    modCompileOnly "me.shedaniel:RoughlyEnoughItems-fabric:${project.rei_version}"
-    modCompileOnly "me.shedaniel.cloth:cloth-config-fabric:${cloth_config_version}"
-    modCompileOnly "dev.architectury:architectury-fabric:${architectury_version}"
-}
-
-repositories {
-    maven { url = "https://maven.blamejared.com" }
-    maven { url = "https://maven.theillusivec4.top/" }
-    maven { url = "https://cursemaven.com" }
-    maven { url = "https://dvs1.progwml6.com/files/maven/" }
-    maven { url = "https://gitlab.com/api/v4/projects/21830712/packages/maven" }
-    maven { url = "https://maven.wispforest.io" }
-    maven { url = "https://maven.wispforest.io/releases" }
-    maven { url = "https://maven.shedaniel.me/" }
-    maven { url = "https://maven.fabricmc.net" }
-    maven { url = "https://maven.su5ed.dev/releases" }
-    maven { url = "https://maven.architectury.dev/" }
-    maven { url = "https://api.modrinth.com/maven" }
-    maven { url = "https://maven.parchmentmc.org" }
-    maven { url = "https://raw.githubusercontent.com/Fuzss/modresources/main/maven/" }
-    maven { url = "https://maven.shedaniel.me/" }
-    maven { url = "https://maven.architectury.dev/" }
-    maven { url = "https://maven.terraformersmc.com/" }
-    maven { url = "https://mvn.devos.one/releases/" }
-    maven { url = "https://maven.jamieswhiteshirt.com/libs-release" }
-    maven { url = "https://mvn.devos.one/snapshots/" } // Registrate, Porting Lib, Forge Tags, Milk Lib
-    maven { url = "https://maven.greenhouse.lgbt/snapshots/" } // Temporary Porting Lib\
-    maven { url = "https://jitpack.io" }
-    maven { url = "https://packages.aether-mod.net/Nitrogen" }
-    maven { url = "https://packages.aether-mod.net/Cumulus" }
+    compileOnly "maven.modrinth:jade:${project.jade_version}"
+    compileOnly "maven.modrinth:lootr:${project.lootr_version}"
 }
 
 tasks.withType(ProcessResources).configureEach {
@@ -169,14 +138,10 @@ tasks.register('sourceJar', Jar) {
     archiveClassifier = 'sources'
 }
 
-compileJava {
-    options.incremental = false
-}
-
 publishing {
     publications {
         mavenJava(MavenPublication) {
-            artifactId project.archivesBaseName
+            artifactId base.archivesName.get()
             from components.java
         }
     }
@@ -201,11 +166,11 @@ curseforge {
         changelogType = "markdown"
         addGameVersion("${minecraft_version}")
         addGameVersion("Fabric")
-        mainArtifact(tasks.remapJar) {
+        mainArtifact(tasks.jar) {
             displayName = "${project.mod_name} - ${version}"
             relations {
-                requiredDependency "owo-lib"
-                embeddedLibrary "accessories"
+                requiredDependency "fabric-api"
+                embeddedLibrary "trinkets-updated"
                 embeddedLibrary "cumulus"
             }
         }
@@ -219,12 +184,12 @@ modrinth {
     versionType = "${version_type}"
     versionName = "${mod_name} - ${version}"
     changelog = new File("$rootDir/docs/CHANGELOG.md").text
-    uploadFile = tasks.remapJar
+    uploadFile = tasks.jar
     gameVersions = ["${minecraft_version}"]
     loaders = ["fabric"]
     dependencies {
-        required.project "owo-lib"
-        embedded.version "accessories", "${project.accessories_version}+${project.minecraft_version}"
+        required.project "fabric-api"
+        embedded.version "trinkets-updated", "${project.trinkets_version}"
         embedded.version "cumulus", "${project.cumulus_version}"
     }
 }

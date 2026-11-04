@@ -9,7 +9,6 @@
 //import net.minecraft.data.tags.TagsProvider;
 //import net.minecraft.tags.DamageTypeTags;
 //import net.minecraft.world.damagesource.DamageType;
-//import net.neoforged.neoforge.common.data.ExistingFileHelper;
 //
 //import java.util.concurrent.CompletableFuture;
 //
@@ -17,8 +16,8 @@
 // * Damage type tags are used to change the behavior of damage and how it is calculated.
 // */
 //public class AetherDamageTypeTagData extends TagsProvider<DamageType> {
-//    public AetherDamageTypeTagData(PackOutput output, CompletableFuture<HolderLookup.Provider> registries, ExistingFileHelper existingFileHelper) {
-//        super(output, Registries.DAMAGE_TYPE, registries, Aether.MODID, existingFileHelper);
+//    public AetherDamageTypeTagData(PackOutput output, CompletableFuture<HolderLookup.Provider> registries) {
+//        super(output, Registries.DAMAGE_TYPE, registries, Aether.MODID);
 //    }
 //
 //    @Override

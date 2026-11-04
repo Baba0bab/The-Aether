@@ -1,16 +1,22 @@
 package com.aetherteam.aether.world.structurepiece.bronzedungeon;
 
+import net.minecraft.world.level.levelgen.blockpredicates.BlockPredicate;
+import net.minecraft.world.level.levelgen.placement.BlockPredicateFilter;
+import net.minecraft.world.level.levelgen.placement.OffsetPlacement;
+import net.minecraft.world.level.levelgen.placement.CountPlacement;
+import net.minecraft.world.level.levelgen.placement.PlacedFeature;
+import net.minecraft.world.level.levelgen.feature.SimpleBlockFeature;
+import net.minecraft.data.worldgen.placement.PlacementUtils;
 import com.aetherteam.aether.AetherTags;
 import com.aetherteam.aether.block.AetherBlockStateProperties;
 import com.aetherteam.aether.block.AetherBlocks;
 import com.aetherteam.aether.data.resources.AetherFeatureStates;
 import com.aetherteam.aether.world.structurepiece.AetherStructurePieceTypes;
-import com.aetherteam.nitrogen.data.resources.builders.NitrogenConfiguredFeatureBuilders;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.RandomSource;
-import net.minecraft.util.random.SimpleWeightedRandomList;
+import net.minecraft.util.random.WeightedList;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.StructureManager;
 import net.minecraft.world.level.WorldGenLevel;
@@ -19,8 +25,6 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.SlabType;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.Heightmap;
-import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
-import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvider;
 import net.minecraft.world.level.levelgen.feature.stateproviders.WeightedStateProvider;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
@@ -31,26 +35,30 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class BronzeDungeonSurfaceRuins extends StructurePiece {
-    private static final BlockStateProvider BLOCKS = new WeightedStateProvider(SimpleWeightedRandomList.<BlockState>builder()
+    private static final BlockStateProvider BLOCKS = new WeightedStateProvider(WeightedList.<BlockState>builder()
         .add(AetherBlocks.HOLYSTONE.get().defaultBlockState().setValue(AetherBlockStateProperties.DOUBLE_DROPS, true), 3)
         .add(AetherBlocks.MOSSY_HOLYSTONE.get().defaultBlockState().setValue(AetherBlockStateProperties.DOUBLE_DROPS, true))
         .build());
-    private static final BlockStateProvider TOPS = new WeightedStateProvider(SimpleWeightedRandomList.<BlockState>builder()
+    private static final BlockStateProvider TOPS = new WeightedStateProvider(WeightedList.<BlockState>builder()
         .add(AetherBlocks.HOLYSTONE.get().defaultBlockState().setValue(AetherBlockStateProperties.DOUBLE_DROPS, true), 6)
         .add(AetherBlocks.HOLYSTONE_SLAB.get().defaultBlockState(), 6)
         .add(AetherBlocks.MOSSY_HOLYSTONE.get().defaultBlockState().setValue(AetherBlockStateProperties.DOUBLE_DROPS, true), 3)
         .add(AetherBlocks.MOSSY_HOLYSTONE_SLAB.get().defaultBlockState(), 3)
         .build());
-    private static final BlockStateProvider BOTTOMS = new WeightedStateProvider(SimpleWeightedRandomList.<BlockState>builder()
+    private static final BlockStateProvider BOTTOMS = new WeightedStateProvider(WeightedList.<BlockState>builder()
         .add(AetherBlocks.HOLYSTONE.get().defaultBlockState().setValue(AetherBlockStateProperties.DOUBLE_DROPS, true), 6)
         .add(AetherBlocks.HOLYSTONE_SLAB.get().defaultBlockState().setValue(BlockStateProperties.SLAB_TYPE, SlabType.TOP), 6)
         .add(AetherBlocks.MOSSY_HOLYSTONE.get().defaultBlockState().setValue(AetherBlockStateProperties.DOUBLE_DROPS, true), 3)
         .add(AetherBlocks.MOSSY_HOLYSTONE_SLAB.get().defaultBlockState().setValue(BlockStateProperties.SLAB_TYPE, SlabType.TOP), 3)
         .build());
-    private static final ConfiguredFeature<?, ? extends Feature<?>> MIXED_FLOWER_PATCH = new ConfiguredFeature<>(Feature.FLOWER, NitrogenConfiguredFeatureBuilders.grassPatch(new WeightedStateProvider(SimpleWeightedRandomList.<BlockState>builder()
+    private static final PlacedFeature MIXED_FLOWER_PATCH = PlacementUtils.inlinePlaced(new SimpleBlockFeature(new WeightedStateProvider(WeightedList.<BlockState>builder()
         .add(AetherFeatureStates.PURPLE_FLOWER, 1)
         .add(AetherFeatureStates.WHITE_FLOWER, 1)
-    ), 24));
+    )),
+        CountPlacement.of(24),
+        OffsetPlacement.ofTriangle(7, 3),
+        BlockPredicateFilter.forPredicate(BlockPredicate.ONLY_IN_AIR_PREDICATE)
+    ).value();
 
     public BronzeDungeonSurfaceRuins(BoundingBox horizontalBounds) {
         super(AetherStructurePieceTypes.BRONZE_SURFACE_RUINS.value(), 0, horizontalBounds);
@@ -101,7 +109,7 @@ public class BronzeDungeonSurfaceRuins extends StructurePiece {
         BlockPos topPos = wallColumnStart.above(wallColumnHeight);
 		// Use full block only if the pillar top is too short (or is underground)
 		BlockStateProvider topProvider = wallColumnHeight < 1 ? BLOCKS : TOPS;
-		level.setBlock(topPos, topProvider.getState(random, topPos), 0b11);
+		level.setBlock(topPos, topProvider.getState(level, random, topPos), 0b11);
 	}
 
     private void placeColumnBlocks(WorldGenLevel level, RandomSource random, List<BlockPos> forPlacement) {
@@ -116,13 +124,13 @@ public class BronzeDungeonSurfaceRuins extends StructurePiece {
 
 			if (hasSkippedGap) {
                 BlockStateProvider tailProvider = level.getBlockState(posAt).isAir() ? BOTTOMS : BLOCKS;
-                level.setBlock(posAt, tailProvider.getState(random, posAt), 0b11);
+                level.setBlock(posAt, tailProvider.getState(level, random, posAt), 0b11);
 
                 BlockPos capPos = lastPos.above();
                 BlockStateProvider capProvider = level.getBlockState(capPos).isAir() ? TOPS : BLOCKS;
-                level.setBlock(capPos, capProvider.getState(random, capPos), 0b11);
+                level.setBlock(capPos, capProvider.getState(level, random, capPos), 0b11);
             } else {
-                level.setBlock(posAt, BLOCKS.getState(random, posAt), 0b11);
+                level.setBlock(posAt, BLOCKS.getState(level, random, posAt), 0b11);
             }
 
             lastPos = posAt;

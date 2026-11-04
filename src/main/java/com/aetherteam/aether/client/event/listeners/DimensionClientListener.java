@@ -7,36 +7,34 @@ import com.aetherteam.nitrogen.fabric.client.events.FogColorHelper;
 import com.aetherteam.nitrogen.fabric.client.events.FogEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.client.Camera;
-import net.minecraft.client.renderer.FogRenderer;
+import net.minecraft.client.renderer.fog.FogRenderer;
+import net.minecraft.client.renderer.fog.environment.FogEnvironment;
+import net.minecraft.world.level.material.FogType;
 import org.apache.commons.lang3.tuple.Triple;
 
 public class DimensionClientListener {
     /**
      * @see AetherClient#eventSetup()
      */
-    public static void listen() {
-        FogEvents.ON_FOG_RENDER.register(DimensionClientListener::onRenderFog);
-        FogEvents.ON_FOG_COLORING.register(DimensionClientListener::onRenderFogColor);
-        ClientTickEvents.END_CLIENT_TICK.register(client -> DimensionClientListener.onClientTick());
+    public static void listen(IEventBus bus) {
+        bus.addListener(DimensionClientListener::onRenderFog);
+        bus.addListener(DimensionClientListener::onRenderFogColor);
     }
 
     /**
-     * @see DimensionClientHooks#renderNearFog(Camera, FogRenderer.FogMode, float)
+     * @see DimensionClientHooks#renderNearFog(Camera, FogEnvironment, FogType, float)
      * @see DimensionClientHooks#reduceLavaFog(Camera, float)
      */
     public static void onRenderFog(FogAdjustmentHelper event) {
         Camera camera = event.getCamera();
-        FogRenderer.FogMode fogMode = event.getMode();
-        Float renderNearFog = DimensionClientHooks.renderNearFog(camera, fogMode, event.getFarPlaneDistance());
-        if (!event.isCanceled() && renderNearFog != null) {
+        Float renderNearFog = DimensionClientHooks.renderNearFog(camera, event.getEnvironment(), event.getType(), event.getFarPlaneDistance());
+        if (renderNearFog != null) {
             event.setNearPlaneDistance(renderNearFog);
-            event.setCanceled(true);
         }
         Float reduceLavaFog = DimensionClientHooks.reduceLavaFog(camera, event.getNearPlaneDistance());
-        if (!event.isCanceled() && reduceLavaFog != null) {
+        if (reduceLavaFog != null) {
             event.setNearPlaneDistance(reduceLavaFog);
             event.setFarPlaneDistance(reduceLavaFog * 4);
-            event.setCanceled(true);
         }
     }
 
@@ -59,12 +57,5 @@ public class DimensionClientListener {
             event.setGreen(adjustWeatherFogColors.getMiddle());
             event.setBlue(adjustWeatherFogColors.getRight());
         }
-    }
-
-    /**
-     * @see DimensionClientHooks#tickTime()
-     */
-    public static void onClientTick() {
-        DimensionClientHooks.tickTime();
     }
 }

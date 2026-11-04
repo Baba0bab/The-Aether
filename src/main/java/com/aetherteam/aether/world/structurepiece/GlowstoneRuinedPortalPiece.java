@@ -1,10 +1,11 @@
 package com.aetherteam.aether.world.structurepiece;
 
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.world.level.ChunkPos;
 import com.aetherteam.aether.Aether;
 import com.aetherteam.aether.AetherTags;
 import com.aetherteam.aether.block.AetherBlockStateProperties;
 import com.aetherteam.aether.block.AetherBlocks;
-import com.aetherteam.aether.mixin.mixins.common.accessor.ChunkAccessAccessor;
 import com.aetherteam.aether.mixin.mixins.common.accessor.SpreadingSnowyDirtBlockAccessor;
 import com.aetherteam.aether.world.BlockLogicUtil;
 import com.aetherteam.aether.world.processor.DoubleDropsProcessor;
@@ -19,8 +20,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.ServerChunkCache;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.WorldGenRegion;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.RandomSource;
@@ -29,10 +29,8 @@ import net.minecraft.world.level.*;
 import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
-import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.*;
-import net.minecraft.world.level.levelgen.carver.CarvingContext;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.TemplateStructurePiece;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceSerializationContext;
@@ -45,7 +43,7 @@ public class GlowstoneRuinedPortalPiece extends TemplateStructurePiece {
     private final VerticalPlacement verticalPlacement;
     private final Properties properties;
 
-    public GlowstoneRuinedPortalPiece(StructureTemplateManager structureTemplateManager, BlockPos templatePosition, VerticalPlacement verticalPlacement, Properties properties, ResourceLocation location, Rotation rotation, Mirror mirror, BlockPos pivotPos) {
+    public GlowstoneRuinedPortalPiece(StructureTemplateManager structureTemplateManager, BlockPos templatePosition, VerticalPlacement verticalPlacement, Properties properties, Identifier location, Rotation rotation, Mirror mirror, BlockPos pivotPos) {
         super(AetherStructurePieceTypes.RUINED_PORTAL.get(), 0, structureTemplateManager, location, location.toString(), makeSettings(mirror, rotation, pivotPos, properties), templatePosition);
         this.verticalPlacement = verticalPlacement;
         this.properties = properties;
@@ -53,7 +51,7 @@ public class GlowstoneRuinedPortalPiece extends TemplateStructurePiece {
 
     public GlowstoneRuinedPortalPiece(StructureTemplateManager structureTemplateManager, CompoundTag tag) {
         super(AetherStructurePieceTypes.RUINED_PORTAL.get(), tag, structureTemplateManager, (location) -> makeSettings(structureTemplateManager, tag, location));
-        this.verticalPlacement = VerticalPlacement.byName(tag.getString("VerticalPlacement"));
+        this.verticalPlacement = VerticalPlacement.byName(tag.getStringOr("VerticalPlacement", ""));
         this.properties = Properties.CODEC.codec().parse(new Dynamic<>(NbtOps.INSTANCE, tag.get("Properties"))).getPartialOrThrow();
     }
 
@@ -74,12 +72,12 @@ public class GlowstoneRuinedPortalPiece extends TemplateStructurePiece {
     }
 
     /**
-     * [CODE COPY] - {@link net.minecraft.world.level.levelgen.structure.structures.RuinedPortalPiece#makeSettings(StructureTemplateManager, CompoundTag, ResourceLocation)}.
+     * [CODE COPY] - {@link net.minecraft.world.level.levelgen.structure.structures.RuinedPortalPiece#makeSettings(StructureTemplateManager, CompoundTag, Identifier)}.
      */
-    private static StructurePlaceSettings makeSettings(StructureTemplateManager structureTemplateManager, CompoundTag tag, ResourceLocation location) {
+    private static StructurePlaceSettings makeSettings(StructureTemplateManager structureTemplateManager, CompoundTag tag, Identifier location) {
         StructureTemplate structuretemplate = structureTemplateManager.getOrCreate(location);
         BlockPos blockpos = new BlockPos(structuretemplate.getSize().getX() / 2, 0, structuretemplate.getSize().getZ() / 2);
-        return makeSettings(Mirror.valueOf(tag.getString("Mirror")), Rotation.valueOf(tag.getString("Rotation")), blockpos, Properties.CODEC.codec().parse(new Dynamic<>(NbtOps.INSTANCE, tag.get("Properties"))).getPartialOrThrow());
+        return makeSettings(Mirror.valueOf(tag.getStringOr("Mirror", Mirror.NONE.name())), Rotation.valueOf(tag.getStringOr("Rotation", Rotation.NONE.name())), blockpos, Properties.CODEC.codec().parse(new Dynamic<>(NbtOps.INSTANCE, tag.get("Properties"))).getPartialOrThrow());
     }
 
     /**
@@ -93,7 +91,7 @@ public class GlowstoneRuinedPortalPiece extends TemplateStructurePiece {
                 .addProcessor(new SurfaceRuleProcessor())
                 .addProcessor(new GlowstonePortalAgeProcessor(properties.mossiness))
                 .addProcessor(new DoubleDropsProcessor())
-                .addProcessor(new ProtectedBlockProcessor(BlockTags.FEATURES_CANNOT_REPLACE));
+                .addProcessor(new ProtectedBlockProcessor(BuiltInRegistries.BLOCK.getOrThrow(BlockTags.FEATURES_CANNOT_REPLACE)));
         if (properties.replaceWithHolystone) {
             structurePlaceSettings.addProcessor(HolystoneReplaceProcessor.INSTANCE);
         }
@@ -303,21 +301,10 @@ public class GlowstoneRuinedPortalPiece extends TemplateStructurePiece {
         if (level instanceof WorldGenLevel worldGenLevel) {
             if (!(worldGenLevel instanceof WorldGenRegion region) || !BlockLogicUtil.isOutOfBounds(pos, region.getCenter())) {
                 if (worldGenLevel.getBiome(pos).is(AetherTags.Biomes.HAS_RUINED_PORTAL_AETHER)) {
-                    if (worldGenLevel.getChunkSource() instanceof ServerChunkCache serverChunkCache) {
-                        if (serverChunkCache.getGenerator() instanceof NoiseBasedChunkGenerator noiseBasedChunkGenerator) {
-                            NoiseGeneratorSettings settingsHolder = noiseBasedChunkGenerator.generatorSettings().value();
-                            SurfaceRules.RuleSource surfaceRule = settingsHolder.surfaceRule();
-                            ChunkAccess chunkAccess = worldGenLevel.getChunk(pos);
-                            NoiseChunk noisechunk = ((ChunkAccessAccessor) chunkAccess).aether$getNoiseChunk();
-                            if (noisechunk != null) {
-                                CarvingContext carvingcontext = new CarvingContext(noiseBasedChunkGenerator, worldGenLevel.registryAccess(), chunkAccess.getHeightAccessorForGeneration(), noisechunk, serverChunkCache.randomState(), surfaceRule);
-                                Optional<BlockState> state = carvingcontext.topMaterial(worldGenLevel.getBiomeManager()::getBiome, chunkAccess, pos, false);
-                                if (state.isPresent()) {
-                                    if (originalState.is(AetherTags.Blocks.AETHER_DIRT) && !originalState.is(AetherBlocks.AETHER_DIRT.get()) && state.get().is(AetherTags.Blocks.AETHER_DIRT)) {
-                                        return state.get();
-                                    }
-                                }
-                            }
+                    Optional<BlockState> state = BlockLogicUtil.getTopMaterial(worldGenLevel, pos);
+                    if (state.isPresent()) {
+                        if (originalState.is(AetherTags.Blocks.AETHER_DIRT) && !originalState.is(AetherBlocks.AETHER_DIRT.get()) && state.get().is(AetherTags.Blocks.AETHER_DIRT)) {
+                            return state.get();
                         }
                     }
                 }

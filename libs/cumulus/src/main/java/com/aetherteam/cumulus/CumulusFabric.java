@@ -1,0 +1,34 @@
+package com.aetherteam.cumulus;
+
+import com.aetherteam.cumulus.api.Menus;
+import com.aetherteam.cumulus.client.event.listeners.MenuListener;
+import com.aetherteam.cumulus.client.event.listeners.WorldPreviewListener;
+import com.mojang.logging.LogUtils;
+import fuzs.forgeconfigapiport.fabric.api.v5.ConfigRegistry;
+import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
+import net.neoforged.fml.config.ModConfig;
+import org.slf4j.Logger;
+
+public class CumulusFabric implements ClientModInitializer, ModInitializer {
+    public static final String MODID = "cumulus_menus";
+    public static final Logger LOGGER = LogUtils.getLogger();
+
+    @Override
+    public void onInitializeClient() {
+        MenuListener.initEvents();
+        WorldPreviewListener.initEvents();
+
+        ClientLifecycleEvents.CLIENT_STARTED.register(client -> Menus.init());
+
+        ServerLifecycleEvents.SERVER_STARTED.register(server -> Cumulus.SERVER_INSTANCE = server);
+        ServerLifecycleEvents.SERVER_STOPPED.register(server -> Cumulus.SERVER_INSTANCE = null);
+    }
+
+    @Override
+    public void onInitialize() {
+        ConfigRegistry.INSTANCE.register(Cumulus.MODID, ModConfig.Type.CLIENT, CumulusConfig.CLIENT_SPEC);
+    }
+}

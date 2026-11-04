@@ -1,14 +1,17 @@
 package com.aetherteam.aether.block;
 
+import net.minecraft.core.cauldron.CauldronInteractions;
 import com.aetherteam.aether.item.AetherItems;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.cauldron.CauldronInteraction;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.ItemInteractionResult;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -27,11 +30,11 @@ public class AetherCauldronInteractions {
             emptySkyrootBucket(level, pos, player, hand, stack, Blocks.POWDER_SNOW_CAULDRON.defaultBlockState().setValue(LayeredCauldronBlock.LEVEL, 3), SoundEvents.BUCKET_EMPTY_POWDER_SNOW);
 
     public static final CauldronInteraction EMPTY_WATER = (state, level, pos, player, hand, stack) ->
-            CauldronInteraction.fillBucket(state, level, pos, player, hand, stack, new ItemStack(AetherItems.SKYROOT_WATER_BUCKET.get()), (blockState) ->
+            CauldronInteractions.fillBucket(state, level, pos, player, hand, stack, new ItemStack(AetherItems.SKYROOT_WATER_BUCKET.get()), (blockState) ->
                     blockState.getValue(LayeredCauldronBlock.LEVEL) == 3, SoundEvents.BUCKET_FILL);
 
     public static final CauldronInteraction EMPTY_POWDER_SNOW = (state, level, pos, player, hand, stack) ->
-            CauldronInteraction.fillBucket(state, level, pos, player, hand, stack, new ItemStack(AetherItems.SKYROOT_POWDER_SNOW_BUCKET.get()), (blockState) ->
+            CauldronInteractions.fillBucket(state, level, pos, player, hand, stack, new ItemStack(AetherItems.SKYROOT_POWDER_SNOW_BUCKET.get()), (blockState) ->
                     blockState.getValue(LayeredCauldronBlock.LEVEL) == 3, SoundEvents.BUCKET_FILL);
 
     /**
@@ -43,13 +46,13 @@ public class AetherCauldronInteractions {
             player.awardStat(Stats.CLEAN_ARMOR);
             LayeredCauldronBlock.lowerFillLevel(state, level, pos);
         }
-        return ItemInteractionResult.sidedSuccess(level.isClientSide());
+        return InteractionResult.SUCCESS;
     };
 
     /**
      * Empties a filled Skyroot Bucket into an empty Skyroot Bucket.
      */
-    private static ItemInteractionResult emptySkyrootBucket(Level level, BlockPos pos, Player player, InteractionHand hand, ItemStack stack, BlockState state, SoundEvent sound) {
+    private static InteractionResult emptySkyrootBucket(Level level, BlockPos pos, Player player, InteractionHand hand, ItemStack stack, BlockState state, SoundEvent sound) {
         if (!level.isClientSide()) {
             Item item = stack.getItem();
             player.setItemInHand(hand, ItemUtils.createFilledResult(stack, player, new ItemStack(AetherItems.SKYROOT_BUCKET.get())));
@@ -59,6 +62,20 @@ public class AetherCauldronInteractions {
             level.playSound(null, pos, sound, SoundSource.BLOCKS, 1.0F, 1.0F);
             level.gameEvent(null, GameEvent.FLUID_PLACE, pos);
         }
-        return ItemInteractionResult.sidedSuccess(level.isClientSide());
+        return InteractionResult.SUCCESS;
+    }
+
+
+    public static InteractionResult dyedItemIteration(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, ItemStack stack) {
+        if (!stack.has(DataComponents.DYED_COLOR)) {
+            return InteractionResult.TRY_WITH_EMPTY_HAND;
+        } else {
+            if (!level.isClientSide()) {
+                stack.remove(DataComponents.DYED_COLOR);
+                player.awardStat(Stats.CLEAN_ARMOR);
+                LayeredCauldronBlock.lowerFillLevel(state, level, pos);
+            }
+            return InteractionResult.SUCCESS;
+        }
     }
 }

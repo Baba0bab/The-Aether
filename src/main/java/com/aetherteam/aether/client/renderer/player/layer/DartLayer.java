@@ -1,87 +1,85 @@
 package com.aetherteam.aether.client.renderer.player.layer;
 
-import com.aetherteam.aether.attachment.AetherDataAttachments;
-import com.aetherteam.aether.attachment.AetherPlayerAttachment;
 import com.aetherteam.aether.entity.projectile.dart.AbstractDart;
 import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.client.model.PlayerModel;
+import com.mojang.math.Axis;
+import net.minecraft.client.model.geom.EntityModelSet;
+import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.model.geom.ModelPart;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
+import net.minecraft.client.model.object.projectile.ArrowModel;
+import net.minecraft.client.model.player.PlayerModel;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
-import net.minecraft.client.renderer.entity.layers.StuckInBodyLayer;
+import net.minecraft.client.renderer.entity.layers.RenderLayer;
+import net.minecraft.client.renderer.entity.state.ArrowRenderState;
+import net.minecraft.client.renderer.entity.state.AvatarRenderState;
+import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.player.Player;
+import net.minecraft.util.context.ContextKey;
 
-import java.util.function.Function;
-
-public class DartLayer<T extends LivingEntity, M extends PlayerModel<T>> extends StuckInBodyLayer<T, M> {
-    private final EntityRenderDispatcher dispatcher;
-    private final Function<Entity, AbstractDart> dart;
-    private final Function<AetherPlayerAttachment, Integer> dartCount;
+/**
+ * Renders {@link AbstractDart}s stuck in the body of the player, similar to arrows.
+ */
+public class DartLayer<M extends PlayerModel> extends RenderLayer<AvatarRenderState, M> {
+    private final ContextKey<Integer> dartCount;
+    private final ArrowModel model;
+    private final ArrowRenderState modelState = new ArrowRenderState();
+    private final Identifier texture;
     private final float offset;
 
-    public DartLayer(EntityRenderDispatcher renderDispatcher, LivingEntityRenderer<T, M> renderer, Function<Entity, AbstractDart> dart, Function<AetherPlayerAttachment, Integer> dartCount, float offset) {
+    public DartLayer(LivingEntityRenderer<?, AvatarRenderState, M> renderer, EntityModelSet modelSet, ContextKey<Integer> dartCount, Identifier texture, float offset) {
         super(renderer);
-        this.dispatcher = renderDispatcher;
-        this.dart = dart;
         this.dartCount = dartCount;
+        this.model = new ArrowModel(modelSet.bakeLayer(ModelLayers.ARROW));
+        this.texture = texture;
         this.offset = offset;
     }
 
     /**
-     * [CODE COPY] - {@link StuckInBodyLayer#render(PoseStack, MultiBufferSource, int, LivingEntity, float, float, float, float, float, float)}.
+     * [CODE COPY] - {@link net.minecraft.client.renderer.entity.layers.StuckInBodyLayer#submit(PoseStack, SubmitNodeCollector, int, AvatarRenderState, float, float)}.<br><br>
+     * Modified to offset the random positions so darts don't overlap with arrows.
      */
-    public void render(PoseStack poseStack, MultiBufferSource buffer, int packedLight, T livingEntity, float limbSwing, float limbSwingAmount, float partialTicks, float ageInTicks, float netHeadYaw, float headPitch) {
-        int i = this.numStuck(livingEntity);
-        float offset = this.offset;
-        RandomSource randomSource = RandomSource.create((long) (livingEntity.getId() * (0.25 * offset)));
-        if (i > 0) {
-            for (int j = 0; j < i; ++j) {
+    @Override
+    public void submit(PoseStack poseStack, SubmitNodeCollector submitNodeCollector, int packedLight, AvatarRenderState renderState, float netHeadYaw, float headPitch) {
+        int count = this.numStuck(renderState);
+        if (count > 0) {
+            RandomSource random = RandomSource.create((long) (renderState.id * (0.25 * this.offset)));
+            for (int i = 0; i < count; ++i) {
                 poseStack.pushPose();
-                ModelPart modelPart = this.getParentModel().getRandomModelPart(randomSource);
-                ModelPart.Cube cube = modelPart.getRandomCube(randomSource);
+                ModelPart modelPart = this.getParentModel().getRandomBodyPart(random);
+                ModelPart.Cube cube = modelPart.getRandomCube(random);
                 modelPart.translateAndRotate(poseStack);
-                float f = randomSource.nextFloat();
-                float f1 = randomSource.nextFloat();
-                float f2 = randomSource.nextFloat();
-                float f3 = Mth.lerp(f, cube.minX, cube.maxX) / 16.0F;
-                float f4 = Mth.lerp(f1, cube.minY, cube.maxY) / 16.0F;
-                float f5 = Mth.lerp(f2, cube.minZ, cube.maxZ) / 16.0F;
-                poseStack.translate(f3, f4, f5);
-                f = -1.0F * (f * 2.0F - 1.0F);
-                f1 = -1.0F * (f1 * 2.0F - 1.0F);
-                f2 = -1.0F * (f2 * 2.0F - 1.0F);
-                this.renderStuckItem(poseStack, buffer, packedLight, livingEntity, f, f1, f2, partialTicks);
+                float midX = random.nextFloat();
+                float midY = random.nextFloat();
+                float midZ = random.nextFloat();
+                switch (random.nextInt(3)) {
+                    case 0 -> midX = snapToFace(midX);
+                    case 1 -> midY = snapToFace(midY);
+                    default -> midZ = snapToFace(midZ);
+                }
+                poseStack.translate(Mth.lerp(midX, cube.minX, cube.maxX) / 16.0F, Mth.lerp(midY, cube.minY, cube.maxY) / 16.0F, Mth.lerp(midZ, cube.minZ, cube.maxZ) / 16.0F);
+                this.submitStuckItem(poseStack, submitNodeCollector, packedLight, -(midX * 2.0F - 1.0F), -(midY * 2.0F - 1.0F), -(midZ * 2.0F - 1.0F), renderState.outlineColor);
                 poseStack.popPose();
             }
         }
     }
 
-    /**
-     * [CODE COPY] - {@link net.minecraft.client.renderer.entity.layers.ArrowLayer#renderStuckItem(PoseStack, MultiBufferSource, int, Entity, float, float, float, float)}.
-     * Adapted for {@link AbstractDart}.
-     */
-    @Override
-    protected void renderStuckItem(PoseStack poseStack, MultiBufferSource buffer, int packedLight, Entity entity, float x, float y, float z, float partialTick) {
-        float f = Mth.sqrt(x * x + z * z);
-        AbstractDart dart = this.dart.apply(entity);
-        dart.setPos(entity.position());
-        dart.setYRot((float) (Math.atan2(x, z) * Mth.RAD_TO_DEG));
-        dart.setXRot((float) (Math.atan2(y, f) * Mth.RAD_TO_DEG));
-        dart.yRotO = dart.getYRot();
-        dart.xRotO = dart.getXRot();
-        this.dispatcher.render(dart, 0.0, 0.0, 0.0, 0.0F, partialTick, poseStack, buffer, packedLight);
+    private static float snapToFace(float value) {
+        return value > 0.5F ? 1.0F : 0.5F;
     }
 
-    @Override
-    protected int numStuck(T entity) {
-        if (entity instanceof Player player) {
-            return this.dartCount.apply(player.getAttachedOrCreate(AetherDataAttachments.AETHER_PLAYER));
-        }
-        return 0;
+    private void submitStuckItem(PoseStack poseStack, SubmitNodeCollector submitNodeCollector, int packedLight, float x, float y, float z, int outlineColor) {
+        float horizontal = Mth.sqrt(x * x + z * z);
+        float yRot = (float) (Math.atan2(x, z) * 180.0F / Math.PI);
+        float xRot = (float) (Math.atan2(y, horizontal) * 180.0F / Math.PI);
+        poseStack.rotate(Axis.YP.rotationDegrees(yRot - 90.0F));
+        poseStack.rotate(Axis.ZP.rotationDegrees(xRot));
+        submitNodeCollector.submitModel(this.model, this.modelState, poseStack, this.texture, packedLight, OverlayTexture.NO_OVERLAY, outlineColor);
+    }
+
+    protected int numStuck(AvatarRenderState renderState) {
+        return renderState.getRenderDataOrDefault(this.dartCount, 0);
     }
 }

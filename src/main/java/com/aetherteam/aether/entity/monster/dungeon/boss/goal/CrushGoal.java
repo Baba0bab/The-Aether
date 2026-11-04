@@ -4,12 +4,13 @@ import com.aetherteam.aether.AetherTags;
 import com.aetherteam.aether.entity.EntityUtil;
 import com.aetherteam.aether.entity.monster.dungeon.boss.Slider;
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.goal.Goal;
-import net.minecraft.world.level.GameRules;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.phys.AABB;
@@ -35,24 +36,25 @@ public class CrushGoal extends Goal {
     @Override
     public void start() {
         boolean crushed = false;
-        // TODO: [Fabric Porting] Protection API?
-        if (this.slider.level().getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
-            AABB crushBox = this.slider.getBoundingBox().inflate(0.2);
-            for (BlockPos pos : BlockPos.betweenClosed(Mth.floor(crushBox.minX), Mth.floor(crushBox.minY), Mth.floor(crushBox.minZ), Mth.floor(crushBox.maxX), Mth.floor(crushBox.maxY), Mth.floor(crushBox.maxZ))) {
-                if (this.slider.getDungeon() == null || this.slider.getDungeon().roomBounds().contains(pos.getCenter())) {
-                    BlockState blockState = this.slider.level().getBlockState(pos);
-                    if (this.isBreakable(blockState)) {
-                        crushed = this.slider.level().destroyBlock(pos, true, this.slider) || crushed;
-                        EntityUtil.spawnRemovalParticles(this.slider.level(), pos);
+        if (this.slider.level() instanceof ServerLevel serverLevel) {
+            if (serverLevel.getGameRules().get(GameRules.MOB_GRIEFING)) {
+                AABB crushBox = this.slider.getBoundingBox().inflate(0.2);
+                for (BlockPos pos : BlockPos.betweenClosed(Mth.floor(crushBox.minX), Mth.floor(crushBox.minY), Mth.floor(crushBox.minZ), Mth.floor(crushBox.maxX), Mth.floor(crushBox.maxY), Mth.floor(crushBox.maxZ))) {
+                    if (this.slider.getDungeon() == null || this.slider.getDungeon().roomBounds().contains(Vec3.atCenterOf(pos))) {
+                        BlockState blockState = serverLevel.getBlockState(pos);
+                        if (this.isBreakable(blockState)) {
+                            crushed = serverLevel.destroyBlock(pos, true, this.slider) || crushed;
+                            EntityUtil.spawnRemovalParticles(serverLevel, pos);
+                        }
                     }
                 }
             }
-        }
-        if (crushed) {
-            this.slider.level().playSound(null, this.slider.blockPosition(), SoundEvents.GENERIC_EXPLODE.value(), SoundSource.BLOCKS, 3.0F, (0.625F + (this.slider.getRandom().nextFloat() - this.slider.getRandom().nextFloat()) * 0.2F) * 0.7F);
-            this.slider.playSound(this.slider.getCollideSound(), 2.5F, 1.0F / (this.slider.getRandom().nextFloat() * 0.2F + 0.9F));
-            this.slider.setMoveDelay(this.slider.calculateMoveDelay());
-            this.slider.setDeltaMovement(Vec3.ZERO);
+            if (crushed) {
+                serverLevel.playSound(null, this.slider.blockPosition(), SoundEvents.GENERIC_EXPLODE.value(), SoundSource.BLOCKS, 3.0F, (0.625F + (this.slider.getRandom().nextFloat() - this.slider.getRandom().nextFloat()) * 0.2F) * 0.7F);
+                this.slider.playSound(this.slider.getCollideSound(), 2.5F, 1.0F / (this.slider.getRandom().nextFloat() * 0.2F + 0.9F));
+                this.slider.setMoveDelay(this.slider.calculateMoveDelay());
+                this.slider.setDeltaMovement(Vec3.ZERO);
+            }
         }
     }
 

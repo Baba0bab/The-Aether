@@ -11,7 +11,7 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 import java.util.Map;
 import java.util.UUID;
@@ -21,7 +21,7 @@ public abstract class ClientMoaSkinPacket {
      * Applies a Moa Skin for a player on the client.
      */
     public record Apply(UUID playerUUID, MoaData moaSkinData) implements CustomPacketPayload {
-        public static final Type<ClientMoaSkinPacket.Apply> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Aether.MODID, "apply_moa_skin"));
+        public static final Type<ClientMoaSkinPacket.Apply> TYPE = new Type<>(Identifier.fromNamespaceAndPath(Aether.MODID, "apply_moa_skin"));
 
         public static final StreamCodec<RegistryFriendlyByteBuf, ClientMoaSkinPacket.Apply> STREAM_CODEC = StreamCodec.composite(
             UUIDUtil.STREAM_CODEC,
@@ -46,7 +46,7 @@ public abstract class ClientMoaSkinPacket {
      * Removes a Moa Skin for a player on the client.
      */
     public record Remove(UUID playerUUID) implements CustomPacketPayload {
-        public static final Type<ClientMoaSkinPacket.Remove> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Aether.MODID, "remove_moa_skin"));
+        public static final Type<ClientMoaSkinPacket.Remove> TYPE = new Type<>(Identifier.fromNamespaceAndPath(Aether.MODID, "remove_moa_skin"));
 
         public static final StreamCodec<RegistryFriendlyByteBuf, ClientMoaSkinPacket.Remove> STREAM_CODEC = StreamCodec.composite(
             UUIDUtil.STREAM_CODEC,
@@ -69,7 +69,7 @@ public abstract class ClientMoaSkinPacket {
      * Syncs Moa Skin data for all players to the client.
      */
     public record Sync(Map<UUID, MoaData> moaSkinsData) implements CustomPacketPayload {
-        public static final Type<ClientMoaSkinPacket.Sync> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Aether.MODID, "sync_moa_skin"));
+        public static final Type<ClientMoaSkinPacket.Sync> TYPE = new Type<>(Identifier.fromNamespaceAndPath(Aether.MODID, "sync_moa_skin"));
 
         public static final StreamCodec<RegistryFriendlyByteBuf, ClientMoaSkinPacket.Sync> STREAM_CODEC = StreamCodec.composite(
             ByteBufCodecs.map(Maps::newHashMapWithExpectedSize, UUIDUtil.STREAM_CODEC, MoaData.STREAM_CODEC),

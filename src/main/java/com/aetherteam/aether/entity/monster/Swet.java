@@ -1,5 +1,9 @@
 package com.aetherteam.aether.entity.monster;
 
+import com.mojang.serialization.Codec;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.item.DyeColor;
 import com.aetherteam.aether.AetherTags;
 import com.aetherteam.aether.client.AetherSoundEvents;
 import com.aetherteam.aether.entity.EntityUtil;
@@ -29,7 +33,7 @@ import net.minecraft.world.entity.ai.control.MoveControl;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.decoration.ArmorStand;
-import net.minecraft.world.entity.monster.Slime;
+import net.minecraft.world.entity.monster.cubemob.Slime;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ChunkPos;
@@ -74,7 +78,7 @@ public class Swet extends Slime implements MountableMob {
         this.goalSelector.addGoal(1, new HuntGoal(this));
         this.goalSelector.addGoal(2, new SwetRandomDirectionGoal(this));
         this.goalSelector.addGoal(4, new SwetKeepOnJumpingGoal(this));
-        this.targetSelector.addGoal(1, new NearestAttackableTargetGoal<>(this, Player.class, true, (target) -> !this.isFriendlyTowardEntity(target) && !(target.getRootVehicle() instanceof Swet)));
+        this.targetSelector.addGoal(1, new NearestAttackableTargetGoal<>(this, Player.class, true, (target, serverlevel) -> !this.isFriendlyTowardEntity(target) && !(target.getRootVehicle() instanceof Swet)));
     }
 
     public static AttributeSupplier.Builder createMobAttributes() {
@@ -113,16 +117,16 @@ public class Swet extends Slime implements MountableMob {
      *
      * @param swet   The {@link Swet} {@link EntityType}.
      * @param level  The {@link LevelAccessor}.
-     * @param reason The {@link MobSpawnType} reason.
+     * @param reason The {@link EntitySpawnReason} reason.
      * @param pos    The spawn {@link BlockPos}.
      * @param random The {@link RandomSource}.
      * @return Whether this entity can spawn, as a {@link Boolean}.
      */
-    public static boolean checkSwetSpawnRules(EntityType<? extends Swet> swet, LevelAccessor level, MobSpawnType reason, BlockPos pos, RandomSource random) {
+    public static boolean checkSwetSpawnRules(EntityType<? extends Swet> swet, LevelAccessor level, EntitySpawnReason reason, BlockPos pos, RandomSource random) {
         return level.getBlockState(pos.below()).is(AetherTags.Blocks.SWET_SPAWNABLE_ON)
                 && level.getRawBrightness(pos, 0) > 8
                 && level.getDifficulty() != Difficulty.PEACEFUL
-                && (reason != MobSpawnType.NATURAL || (!inRadiusOfBanner(level, pos, 40) && !inRadiusOfSwetCape(level, pos, 40)));
+                && (reason != EntitySpawnReason.NATURAL || (!inRadiusOfBanner(level, pos, 40) && !inRadiusOfSwetCape(level, pos, 40)));
     }
 
     /**
@@ -134,13 +138,13 @@ public class Swet extends Slime implements MountableMob {
      * @return Whether the blocks were found in the radius, as a {@link Boolean}.
      */
     private static boolean inRadiusOfBanner(LevelAccessor level, BlockPos pos, int radius) {
-        for (ChunkPos chunk : ChunkPos.rangeClosed(new ChunkPos(pos), radius).toList()) {
-            ChunkAccess chunkAccess = level.getChunk(chunk.x, chunk.z, ChunkStatus.FULL, false);
+        for (ChunkPos chunk : ChunkPos.rangeClosed(ChunkPos.containing(pos), radius).toList()) {
+            ChunkAccess chunkAccess = level.getChunk(chunk.x(), chunk.z(), ChunkStatus.FULL, false);
             if (chunkAccess != null) {
                 for (BlockPos blockEntityPos : chunkAccess.getBlockEntitiesPos()) {
                     if (blockEntityPos.distSqr(pos) <= radius * radius) {
                         BlockEntity blockEntity = level.getBlockEntity(blockEntityPos);
-                        if (blockEntity instanceof BannerBlockEntity bannerBlockEntity && blockEntity.getBlockState().is(Blocks.BLACK_BANNER)) {
+                        if (blockEntity instanceof BannerBlockEntity bannerBlockEntity && blockEntity.getBlockState().is(Blocks.BANNER.pick(DyeColor.BLACK))) {
                             if (ItemStack.matches(bannerBlockEntity.getItem(), AetherItems.createSwetBannerItemStack(level.holderLookup(Registries.BANNER_PATTERN)))) {
                                 return true;
                             }
@@ -161,7 +165,7 @@ public class Swet extends Slime implements MountableMob {
      * @return Whether the entity was found in the radius, as a {@link Boolean}.
      */
     private static boolean inRadiusOfSwetCape(LevelAccessor level, BlockPos pos, int radius) {
-        return !level.getEntities(EntityTypeTest.forClass(ArmorStand.class), AABB.ofSize(pos.getCenter(), radius * 2, radius * 2, radius * 2), EquipmentUtil::hasSwetCape).isEmpty();
+        return !level.getEntities(EntityTypeTest.forClass(ArmorStand.class), AABB.ofSize(Vec3.atCenterOf(pos), radius * 2, radius * 2, radius * 2), EquipmentUtil::hasSwetCape).isEmpty();
     }
 
     /**
@@ -170,7 +174,7 @@ public class Swet extends Slime implements MountableMob {
     @Override
     public void tick() {
         // Handle dissolving in water.
-        if (this.isInWater()) {
+        if (this.isInWaterOrRain()) {
             this.spawnDissolveParticles();
             if (this.getWaterDamageScale() < 0.9F) {
                 this.setWaterDamageScale(this.getWaterDamageScale() + 0.02F);
@@ -304,7 +308,7 @@ public class Swet extends Slime implements MountableMob {
         this.playSound(AetherSoundEvents.ENTITY_SWET_ATTACK.get(), 0.5F, (this.getRandom().nextFloat() - this.getRandom().nextFloat()) * 0.2F + 1.0F);
         EntityUtil.copyRotations(livingEntity, this);
         this.setDeltaMovement(livingEntity.getDeltaMovement());
-        livingEntity.startRiding(this, true);
+        livingEntity.startRiding(this, true, true);
     }
 
     /**
@@ -569,8 +573,7 @@ public class Swet extends Slime implements MountableMob {
     /**
      * @return The float for the Swet's hitbox scaling. Calculated from the scale subtracted from itself multiplied by the water damage scale.
      */
-    @Override
-    public float getScale() {
+    public float getSwetScale() {
         return super.getScale() - super.getScale() * this.getWaterDamageScale();
     }
 
@@ -582,18 +585,14 @@ public class Swet extends Slime implements MountableMob {
      */
     @Override
     public EntityDimensions getDefaultDimensions(Pose pose) {
-        return super.getDefaultDimensions(pose).scale(this.getScale());
+        return super.getDefaultDimensions(pose).scale(this.getSwetScale());
     }
 
     @Override
-    protected boolean isDealsDamage() {
+    protected boolean canDealDamage() {
         return false;
     }
 
-    @Override
-    protected boolean shouldDespawnInPeaceful() {
-        return true;
-    }
 
 //    @Override
 //    protected boolean spawnCustomParticles() {
@@ -612,23 +611,23 @@ public class Swet extends Slime implements MountableMob {
                 this.level().addParticle(ParticleTypes.SPLASH, this.getX() + f3, this.getY() + f2, this.getZ() + f4, f3 * 1.5 + this.getDeltaMovement().x(), 4.0, f4 * 1.5 + this.getDeltaMovement().z());
             }
         } else if (id == 71) {
-            this.absMoveTo(this.getX(), this.getY(), this.getZ());
+            this.absSnapTo(this.getX(), this.getY(), this.getZ());
         } else {
             super.handleEntityEvent(id);
         }
     }
 
     @Override
-    public void addAdditionalSaveData(CompoundTag tag) {
+    protected void addAdditionalSaveData(ValueOutput tag) {
         super.addAdditionalSaveData(tag);
         tag.putFloat("WaterDamageScale", this.getWaterDamageScale());
     }
 
     @Override
-    public void readAdditionalSaveData(CompoundTag tag) {
+    protected void readAdditionalSaveData(ValueInput tag) {
         super.readAdditionalSaveData(tag);
-        if (tag.contains("WaterDamageScale")) {
-            this.setWaterDamageScale(tag.getFloat("WaterDamageScale"));
+        if (tag.read("WaterDamageScale", Codec.PASSTHROUGH).isPresent()) {
+            this.setWaterDamageScale(tag.getFloatOr("WaterDamageScale", 0.0F));
         }
     }
 

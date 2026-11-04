@@ -1,12 +1,17 @@
 package com.aetherteam.aether.item;
 
+import java.util.Map;
+import com.aetherteam.aetherfabric.accessories.SlotContext;
 import com.aetherteam.aether.AetherConfig;
 import com.aetherteam.aether.AetherTags;
 import com.aetherteam.aether.item.accessories.cape.CapeItem;
 import com.aetherteam.aether.item.accessories.gloves.GlovesItem;
-import io.wispforest.accessories.api.AccessoriesCapability;
-import io.wispforest.accessories.api.slot.SlotEntryReference;
 import net.fabricmc.loader.api.FabricLoader;
+import com.aetherteam.aetherfabric.accessories.AccessoryApi;
+import eu.pb4.trinkets.api.TrinketInventory;
+import eu.pb4.trinkets.api.TrinketSlotAccess;
+import eu.pb4.trinkets.api.TrinketSlotUtils;
+import com.aetherteam.aetherfabric.accessories.SlotResult;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -43,35 +48,35 @@ public final class EquipmentUtil {
     }
 
     /**
-     * Searches for gloves in an entity's accessory inventory and returns the first {@link SlotEntryReference} instance.
+     * Searches for gloves in an entity's accessory inventory and returns the first {@link SlotResult} instance.
      *
      * @param entity The {@link LivingEntity} wearer.
-     * @return The {@link SlotEntryReference} for the accessory item.
+     * @return The {@link SlotResult} for the accessory item.
      */
     @Nullable
-    public static SlotEntryReference getGloves(LivingEntity entity) {
-        Optional<SlotEntryReference> slotResultOptional = EquipmentUtil.findFirstAccessory(entity, (stack) -> stack.getItem() instanceof GlovesItem);
+    public static SlotResult getGloves(LivingEntity entity) {
+        Optional<SlotResult> slotResultOptional = EquipmentUtil.findFirstAccessory(entity, (stack) -> stack.getItem() instanceof GlovesItem);
         return slotResultOptional.orElse(null);
     }
 
     /**
-     * Searches for Zanite Rings in an entity's accessory inventory and returns all the {@link SlotEntryReference} instances.
+     * Searches for Zanite Rings in an entity's accessory inventory and returns all the {@link SlotResult} instances.
      *
      * @param entity The {@link LivingEntity} wearer.
-     * @return The {@link List} of {@link SlotEntryReference}s for the accessory items.
+     * @return The {@link List} of {@link SlotResult}s for the accessory items.
      */
-    public static List<SlotEntryReference> getZaniteRings(LivingEntity entity) {
+    public static List<SlotResult> getZaniteRings(LivingEntity entity) {
         return getAccessories(entity, AetherItems.ZANITE_RING.get());
     }
 
     /**
-     * Searches for a Zanite Pendant in an entity's accessory inventory and returns the first {@link SlotEntryReference} instance.
+     * Searches for a Zanite Pendant in an entity's accessory inventory and returns the first {@link SlotResult} instance.
      *
      * @param entity The {@link LivingEntity} wearer.
-     * @return The {@link SlotEntryReference} for the accessory item.
+     * @return The {@link SlotResult} for the accessory item.
      */
     @Nullable
-    public static SlotEntryReference getZanitePendant(LivingEntity entity) {
+    public static SlotResult getZanitePendant(LivingEntity entity) {
         return getAccessory(entity, AetherItems.ZANITE_PENDANT.get());
     }
 
@@ -126,13 +131,13 @@ public final class EquipmentUtil {
     }
 
     /**
-     * Searches for a {@link CapeItem} in an entity's accessory inventory and returns the first {@link SlotEntryReference} instance.
+     * Searches for a {@link CapeItem} in an entity's accessory inventory and returns the first {@link SlotResult} instance.
      *
      * @param entity The {@link LivingEntity} wearer.
-     * @return The {@link SlotEntryReference} for the accessory item.
+     * @return The {@link SlotResult} for the accessory item.
      */
     @Nullable
-    public static SlotEntryReference getCape(LivingEntity entity) {
+    public static SlotResult getCape(LivingEntity entity) {
         return findFirstAccessory(entity, stack -> stack.getItem() instanceof CapeItem).orElse(null);
     }
 
@@ -148,30 +153,26 @@ public final class EquipmentUtil {
     }
 
     /**
-     * Searches for an accessory {@link Item} in an entity's accessory inventory and returns the first {@link SlotEntryReference} instance.
+     * Searches for an accessory {@link Item} in an entity's accessory inventory and returns the first {@link SlotResult} instance.
      *
      * @param entity The {@link LivingEntity} wearer.
      * @param item   The accessory {@link Item} to look for.
-     * @return The {@link SlotEntryReference} for the accessory item.
+     * @return The {@link SlotResult} for the accessory item.
      */
     @Nullable
-    public static SlotEntryReference getAccessory(LivingEntity entity, Item item) {
+    public static SlotResult getAccessory(LivingEntity entity, Item item) {
         return findFirstAccessory(entity, item).orElse(null);
     }
 
     /**
-     * Searches for an accessory {@link Item} in an entity's accessory inventory and returns all the {@link SlotEntryReference} instances.
+     * Searches for an accessory {@link Item} in an entity's accessory inventory and returns all the {@link SlotResult} instances.
      *
      * @param entity The {@link LivingEntity} wearer.
      * @param item   The accessory {@link Item} to look for.
-     * @return The {@link List} of {@link SlotEntryReference}s for the accessory items.
+     * @return The {@link List} of {@link SlotResult}s for the accessory items.
      */
-    public static List<SlotEntryReference> getAccessories(LivingEntity entity, Item item) {
-        AccessoriesCapability accessories = AccessoriesCapability.get(entity);
-        if (accessories != null) {
-            return accessories.getEquipped(item);
-        }
-        return List.of();
+    public static List<SlotResult> getAccessories(LivingEntity entity, Item item) {
+        return AccessoryApi.findAll(entity, (stack) -> stack.is(item));
     }
 
     /**
@@ -272,18 +273,98 @@ public final class EquipmentUtil {
                 || findFirstAccessory(entity, gloves).isPresent();
     }
 
-    public static Optional<SlotEntryReference> findFirstAccessory(LivingEntity entity, Item item) {
+    public static Optional<SlotResult> findFirstAccessory(LivingEntity entity, Item item) {
         return findFirstAccessory(entity, (itemStack) -> itemStack.is(item));
     }
 
-    public static Optional<SlotEntryReference> findFirstAccessory(LivingEntity entity, Predicate<ItemStack> predicate) {
-        AccessoriesCapability accessories = AccessoriesCapability.get(entity);
-        if (accessories != null) {
-            SlotEntryReference slotEntryReference = accessories.getFirstEquipped(predicate);
-            if (slotEntryReference != null) {
-                return Optional.of(slotEntryReference);
+    public static Optional<SlotResult> findFirstAccessory(LivingEntity entity, Predicate<ItemStack> predicate) {
+        return AccessoryApi.findFirst(entity, predicate);
+    }
+
+    /**
+     * Gets the Trinkets inventory for an accessory slot type of an entity.
+     *
+     * @param entity     The {@link LivingEntity} wearer.
+     * @param identifier The {@link String} identifier for the slot type, in the format {@code group/slot}.
+     * @return An {@link Optional} of the {@link TrinketInventory}.
+     */
+    public static Optional<TrinketInventory> getSlotHandler(LivingEntity entity, String identifier) {
+        return AccessoryApi.getInventory(entity, identifier);
+    }
+
+    /**
+     * Gets the {@link ItemStack} in an accessory slot of an entity.
+     *
+     * @param entity     The {@link LivingEntity} wearer.
+     * @param identifier The {@link String} identifier for the slot type.
+     * @param index      The {@link Integer} index of the slot.
+     * @return The {@link ItemStack} in the slot, or {@link ItemStack#EMPTY} if the slot doesn't exist.
+     */
+    public static ItemStack getStackInSlot(LivingEntity entity, String identifier, int index) {
+        return getSlotHandler(entity, identifier).filter((handler) -> index < handler.getContainerSize()).map((handler) -> handler.getItem(index)).orElse(ItemStack.EMPTY);
+    }
+
+    /**
+     * Sets the {@link ItemStack} in an accessory slot of an entity.
+     *
+     * @param entity     The {@link LivingEntity} wearer.
+     * @param identifier The {@link String} identifier for the slot type.
+     * @param index      The {@link Integer} index of the slot.
+     * @param stack      The {@link ItemStack} to set.
+     * @return Whether the slot exists, as a {@link Boolean}.
+     */
+    public static boolean setStackInSlot(LivingEntity entity, String identifier, int index, ItemStack stack) {
+        Optional<TrinketInventory> slotHandler = getSlotHandler(entity, identifier).filter((handler) -> index < handler.getContainerSize());
+        slotHandler.ifPresent((handler) -> handler.setItem(index, stack));
+        return slotHandler.isPresent();
+    }
+
+    /**
+     * Gets the amount of slots for an accessory slot type of an entity.
+     *
+     * @param entity     The {@link LivingEntity} wearer.
+     * @param identifier The {@link String} identifier for the slot type.
+     * @return The {@link Integer} amount of slots.
+     */
+    public static int getSlotCount(LivingEntity entity, String identifier) {
+        return getSlotHandler(entity, identifier).map(TrinketInventory::getContainerSize).orElse(0);
+    }
+
+    /**
+     * Finds the first empty accessory slot of an entity that an {@link ItemStack} can be equipped to.
+     *
+     * @param entity The {@link LivingEntity} wearer.
+     * @param stack  The {@link ItemStack} to equip.
+     * @return An {@link Optional} of the {@link SlotContext} for the slot.
+     */
+    public static Optional<SlotContext> findEquippableSlot(LivingEntity entity, ItemStack stack) {
+        for (Map.Entry<String, TrinketInventory> entry : AccessoryApi.getInventories(entity).entrySet()) {
+            TrinketInventory inventory = entry.getValue();
+            for (int i = 0; i < inventory.getContainerSize(); i++) {
+                TrinketSlotAccess access = inventory.getSlotAccess(i);
+                if (access != null && inventory.getItem(i).isEmpty() && TrinketSlotUtils.isEquipable(access, stack)) {
+                    return Optional.of(SlotContext.of(access, entity));
+                }
             }
         }
         return Optional.empty();
+    }
+
+    /**
+     * Gets the visible accessory in the first slot of a slot type, preferring cosmetic accessories if present.
+     *
+     * @param entity     The {@link LivingEntity} wearer.
+     * @param identifier The {@link String} identifier for the slot type.
+     * @return The visible {@link ItemStack}, or {@link ItemStack#EMPTY} if there is none.
+     */
+    public static ItemStack getVisibleStackInSlot(LivingEntity entity, String identifier) {
+        return getSlotHandler(entity, identifier).filter((handler) -> handler.getContainerSize() > 0).map((handler) -> {
+            if (!handler.getCosmeticItem(0).isEmpty()) {
+                return handler.getCosmeticItem(0);
+            } else if (handler.isVisible(0)) {
+                return handler.getItem(0);
+            }
+            return ItemStack.EMPTY;
+        }).orElse(ItemStack.EMPTY);
     }
 }

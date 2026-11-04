@@ -1,19 +1,22 @@
 package com.aetherteam.aether.recipe.builder;
 
+import java.util.Map;
+import java.util.HashSet;
 import com.aetherteam.aether.recipe.recipes.block.AbstractBiomeParameterRecipe;
 import com.aetherteam.aether.recipe.serializer.BiomeParameterRecipeSerializer;
 import com.aetherteam.nitrogen.recipe.BlockPropertyPair;
 import com.aetherteam.nitrogen.recipe.BlockStateIngredient;
 import com.mojang.datafixers.util.Either;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectArrayMap;
-import net.minecraft.advancements.Criterion;
+import net.minecraft.advancements.triggers.Criterion;
 import net.minecraft.data.recipes.RecipeBuilder;
 import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.properties.Property;
@@ -25,7 +28,7 @@ public class BiomeParameterRecipeBuilder implements RecipeBuilder {
     private final Optional<Either<ResourceKey<Biome>, TagKey<Biome>>> biome;
     private final BlockPropertyPair result;
     private final BlockStateIngredient ingredient;
-    private Optional<ResourceLocation> function = Optional.empty();
+    private Optional<Identifier> function = Optional.empty();
     private final BiomeParameterRecipeSerializer.Factory<?> factory;
 
     public BiomeParameterRecipeBuilder(BlockPropertyPair result, BlockStateIngredient ingredient, Optional<Either<ResourceKey<Biome>, TagKey<Biome>>> biome, BiomeParameterRecipeSerializer.Factory<?> factory) {
@@ -44,7 +47,7 @@ public class BiomeParameterRecipeBuilder implements RecipeBuilder {
     }
 
     public static BiomeParameterRecipeBuilder recipe(BlockStateIngredient ingredient, Block resultBlock, Reference2ObjectArrayMap<Property<?>, Comparable<?>> resultProperties, ResourceKey<Biome> biomeKey, BiomeParameterRecipeSerializer.Factory<?> factory) {
-        return recipe(BlockPropertyPair.of(resultBlock, Optional.ofNullable(resultProperties)), ingredient, Optional.of(Either.left(biomeKey)), factory);
+        return recipe(BlockPropertyPair.of(resultBlock, Optional.ofNullable(resultProperties).map(BiomeParameterRecipeBuilder::toValues)), ingredient, Optional.of(Either.left(biomeKey)), factory);
     }
 
     public static BiomeParameterRecipeBuilder recipe(BlockStateIngredient ingredient, Block result, TagKey<Biome> biomeTag, BiomeParameterRecipeSerializer.Factory<?> factory) {
@@ -56,14 +59,14 @@ public class BiomeParameterRecipeBuilder implements RecipeBuilder {
     }
 
     public static BiomeParameterRecipeBuilder recipe(BlockStateIngredient ingredient, Block resultBlock, Reference2ObjectArrayMap<Property<?>, Comparable<?>> resultProperties, TagKey<Biome> biomeTag, BiomeParameterRecipeSerializer.Factory<?> factory) {
-        return recipe(BlockPropertyPair.of(resultBlock, Optional.of(resultProperties)), ingredient, Optional.of(Either.right(biomeTag)), factory);
+        return recipe(BlockPropertyPair.of(resultBlock, Optional.of(toValues(resultProperties))), ingredient, Optional.of(Either.right(biomeTag)), factory);
     }
 
     public static BiomeParameterRecipeBuilder recipe(BlockPropertyPair result, BlockStateIngredient ingredient, Optional<Either<ResourceKey<Biome>, TagKey<Biome>>> biome, BiomeParameterRecipeSerializer.Factory<?> factory) {
         return new BiomeParameterRecipeBuilder(result, ingredient, biome, factory);
     }
 
-    public RecipeBuilder function(Optional<ResourceLocation> function) {
+    public RecipeBuilder function(Optional<Identifier> function) {
         this.function = function;
         return this;
     }
@@ -79,13 +82,24 @@ public class BiomeParameterRecipeBuilder implements RecipeBuilder {
     }
 
     @Override
-    public Item getResult() {
-        return Items.AIR;
+    public @Nullable ResourceKey<Recipe<?>> defaultId() {
+        return null;
     }
 
     @Override
-    public void save(RecipeOutput recipeOutput, ResourceLocation id) {
+    public void save(RecipeOutput recipeOutput, ResourceKey<Recipe<?>> id) {
         AbstractBiomeParameterRecipe recipe = this.factory.create(this.biome, this.ingredient, this.result, this.function);
         recipeOutput.accept(id, recipe, null);
+    }
+
+    public static HashSet<Property.Value<?>> toValues(Map<Property<?>, Comparable<?>> properties) {
+        HashSet<Property.Value<?>> values = new HashSet<>();
+        properties.forEach((property, value) -> values.add(createValue(property, value)));
+        return values;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T extends Comparable<T>> Property.Value<T> createValue(Property<T> property, Comparable<?> value) {
+        return property.value((T) value);
     }
 }

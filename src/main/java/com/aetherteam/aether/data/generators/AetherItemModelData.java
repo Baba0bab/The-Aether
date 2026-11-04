@@ -1,19 +1,19 @@
 //package com.aetherteam.aether.data.generators;
 //
-//import com.aetherteam.aether.Aether;
 //import com.aetherteam.aether.block.AetherBlocks;
 //import com.aetherteam.aether.data.providers.AetherItemModelProvider;
 //import com.aetherteam.aether.item.AetherItems;
-//import net.minecraft.data.PackOutput;
-//import net.neoforged.neoforge.common.data.ExistingFileHelper;
+//import net.minecraft.client.data.models.BlockModelGenerators;
+//import net.minecraft.client.data.models.ItemModelGenerators;
+//import net.minecraft.world.item.component.DyedItemColor;
 //
 //public class AetherItemModelData extends AetherItemModelProvider {
-//    public AetherItemModelData(PackOutput output, ExistingFileHelper helper) {
-//        super(output, Aether.MODID, helper);
+//    public AetherItemModelData(ItemModelGenerators itemModels, BlockModelGenerators blockModels) {
+//        super(itemModels, blockModels);
 //    }
 //
 //    @Override
-//    protected void registerModels() {
+//    public void run() {
 //        this.handheldItem(AetherItems.SKYROOT_PICKAXE.get(), "tools/");
 //        this.handheldItem(AetherItems.SKYROOT_AXE.get(), "tools/");
 //        this.handheldItem(AetherItems.SKYROOT_SHOVEL.get(), "tools/");
@@ -118,7 +118,7 @@
 //        this.item(AetherItems.ZANITE_PENDANT.get(), "accessories/");
 //        this.item(AetherItems.ICE_PENDANT.get(), "accessories/");
 //
-//        this.dyedGlovesItem(AetherItems.LEATHER_GLOVES.get(), "accessories/");
+//        this.dyedGlovesItem(AetherItems.LEATHER_GLOVES.get(), "accessories/", DyedItemColor.LEATHER_COLOR);
 //        this.glovesItem(AetherItems.CHAINMAIL_GLOVES.get(), "accessories/");
 //        this.glovesItem(AetherItems.IRON_GLOVES.get(), "accessories/");
 //        this.glovesItem(AetherItems.GOLDEN_GLOVES.get(), "accessories/");
@@ -228,10 +228,6 @@
 //        this.itemBlock(AetherBlocks.AETHER_FARMLAND.get());
 //        this.itemBlock(AetherBlocks.AETHER_DIRT_PATH.get());
 //
-//        this.aercloudItem(AetherBlocks.COLD_AERCLOUD.get());
-//        this.aercloudItem(AetherBlocks.BLUE_AERCLOUD.get());
-//        this.aercloudItem(AetherBlocks.GOLDEN_AERCLOUD.get());
-//
 //        this.itemBlock(AetherBlocks.ICESTONE.get());
 //        this.itemBlock(AetherBlocks.AMBROSIUM_ORE.get());
 //        this.itemBlock(AetherBlocks.ZANITE_ORE.get());
@@ -254,7 +250,6 @@
 //        this.itemBlock(AetherBlocks.SKYROOT_PLANKS.get());
 //        this.itemBlock(AetherBlocks.HOLYSTONE_BRICKS.get());
 //        this.itemBlock(AetherBlocks.QUICKSOIL_GLASS.get());
-//        this.pane(AetherBlocks.QUICKSOIL_GLASS_PANE.get(), AetherBlocks.QUICKSOIL_GLASS.get(), "construction/");
 //        this.itemBlock(AetherBlocks.AEROGEL.get());
 //
 //        this.itemBlock(AetherBlocks.AMBROSIUM_BLOCK.get());
@@ -265,18 +260,8 @@
 //        this.itemBlock(AetherBlocks.FREEZER.get());
 //        this.itemBlock(AetherBlocks.INCUBATOR.get());
 //
-//        this.itemBlockFlat(AetherBlocks.AMBROSIUM_TORCH.get(), "utility/");
 //        this.item(AetherBlocks.SKYROOT_SIGN.get().asItem(), "miscellaneous/");
 //        this.item(AetherBlocks.SKYROOT_HANGING_SIGN.get().asItem(), "miscellaneous/");
-//
-//        this.itemBlock(AetherBlocks.BERRY_BUSH.get());
-//        this.itemBlockFlat(AetherBlocks.BERRY_BUSH_STEM.get(), "natural/");
-//
-//        this.itemBlockFlat(AetherBlocks.WHITE_FLOWER.get(), "natural/");
-//        this.itemBlockFlat(AetherBlocks.PURPLE_FLOWER.get(), "natural/");
-//
-//        this.itemBlockFlat(AetherBlocks.SKYROOT_SAPLING.get(), "natural/");
-//        this.itemBlockFlat(AetherBlocks.GOLDEN_OAK_SAPLING.get(), "natural/");
 //
 //        this.itemBlock(AetherBlocks.CARVED_STONE.get());
 //        this.itemBlock(AetherBlocks.SENTRY_STONE.get());
@@ -313,57 +298,19 @@
 //        this.itemTreasureDoorwayDungeonBlock(AetherBlocks.TREASURE_DOORWAY_HELLFIRE_STONE.get(), AetherBlocks.HELLFIRE_STONE.get());
 //        this.itemTreasureDoorwayDungeonBlock(AetherBlocks.TREASURE_DOORWAY_LIGHT_HELLFIRE_STONE.get(), AetherBlocks.LIGHT_HELLFIRE_STONE.get());
 //
-//        this.lookalikeBlock(AetherBlocks.CHEST_MIMIC.get(), this.mcLoc("item/chest"));
-//        this.lookalikeBlock(AetherBlocks.TREASURE_CHEST.get(), this.mcLoc("item/chest"));
-//
 //        this.itemBlock(AetherBlocks.PILLAR.get());
 //        this.itemBlock(AetherBlocks.PILLAR_TOP.get());
 //
 //        this.itemBlock(AetherBlocks.PRESENT.get());
 //
-//        this.itemFence(AetherBlocks.SKYROOT_FENCE.get(), AetherBlocks.SKYROOT_PLANKS.get(), "construction/");
-//        this.itemBlock(AetherBlocks.SKYROOT_FENCE_GATE.get());
 //        this.item(AetherBlocks.SKYROOT_DOOR.get().asItem(), "miscellaneous/");
-//        this.itemBlock(AetherBlocks.SKYROOT_TRAPDOOR.get(), "_bottom");
-//        this.itemButton(AetherBlocks.SKYROOT_BUTTON.get(), AetherBlocks.SKYROOT_PLANKS.get(), "construction/");
-//        this.itemBlock(AetherBlocks.SKYROOT_PRESSURE_PLATE.get());
 //
-//        this.itemButton(AetherBlocks.HOLYSTONE_BUTTON.get(), AetherBlocks.HOLYSTONE.get(), "natural/");
-//        this.itemBlock(AetherBlocks.HOLYSTONE_PRESSURE_PLATE.get());
-//
-//        this.itemWallBlock(AetherBlocks.CARVED_WALL.get(), AetherBlocks.CARVED_STONE.get(), "dungeon/");
-//        this.itemWallBlock(AetherBlocks.ANGELIC_WALL.get(), AetherBlocks.ANGELIC_STONE.get(), "dungeon/");
-//        this.itemWallBlock(AetherBlocks.HELLFIRE_WALL.get(), AetherBlocks.HELLFIRE_STONE.get(), "dungeon/");
-//        this.itemWallBlock(AetherBlocks.HOLYSTONE_WALL.get(), AetherBlocks.HOLYSTONE.get(), "natural/");
-//        this.itemWallBlock(AetherBlocks.MOSSY_HOLYSTONE_WALL.get(), AetherBlocks.MOSSY_HOLYSTONE.get(), "natural/");
-//        this.itemWallBlock(AetherBlocks.ICESTONE_WALL.get(), AetherBlocks.ICESTONE.get(), "natural/");
-//        this.itemWallBlock(AetherBlocks.HOLYSTONE_BRICK_WALL.get(), AetherBlocks.HOLYSTONE_BRICKS.get(), "construction/");
 //        this.translucentItemWallBlock(AetherBlocks.AEROGEL_WALL.get(), AetherBlocks.AEROGEL.get(), "construction/");
 //
-//        this.itemBlock(AetherBlocks.SKYROOT_STAIRS.get());
-//        this.itemBlock(AetherBlocks.CARVED_STAIRS.get());
-//        this.itemBlock(AetherBlocks.ANGELIC_STAIRS.get());
-//        this.itemBlock(AetherBlocks.HELLFIRE_STAIRS.get());
-//        this.itemBlock(AetherBlocks.HOLYSTONE_STAIRS.get());
-//        this.itemBlock(AetherBlocks.MOSSY_HOLYSTONE_STAIRS.get());
-//        this.itemBlock(AetherBlocks.ICESTONE_STAIRS.get());
-//        this.itemBlock(AetherBlocks.HOLYSTONE_BRICK_STAIRS.get());
 //        this.itemBlock(AetherBlocks.AEROGEL_STAIRS.get());
-//
-//        this.itemBlock(AetherBlocks.SKYROOT_SLAB.get());
-//        this.itemBlock(AetherBlocks.CARVED_SLAB.get());
-//        this.itemBlock(AetherBlocks.ANGELIC_SLAB.get());
-//        this.itemBlock(AetherBlocks.HELLFIRE_SLAB.get());
-//        this.itemBlock(AetherBlocks.HOLYSTONE_SLAB.get());
-//        this.itemBlock(AetherBlocks.MOSSY_HOLYSTONE_SLAB.get());
-//        this.itemBlock(AetherBlocks.ICESTONE_SLAB.get());
-//        this.itemBlock(AetherBlocks.HOLYSTONE_BRICK_SLAB.get());
-//        this.itemBlock(AetherBlocks.AEROGEL_SLAB.get());
 //
 //        this.itemBlock(AetherBlocks.SUN_ALTAR.get());
 //
 //        this.itemBlock(AetherBlocks.SKYROOT_BOOKSHELF.get());
-//
-//        this.lookalikeBlock(AetherBlocks.SKYROOT_BED.get(), this.mcLoc("item/template_bed"));
 //    }
 //}

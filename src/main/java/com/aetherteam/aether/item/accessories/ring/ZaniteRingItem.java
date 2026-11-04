@@ -7,11 +7,6 @@ import net.minecraft.world.item.ItemStack;
 
 public class ZaniteRingItem extends RingItem implements ZaniteAccessory {
     public ZaniteRingItem(Properties properties) {
-        super(AetherSoundEvents.ITEM_ACCESSORY_EQUIP_ZANITE_RING, properties);
-    }
-
-    @Override
-    public boolean isValidRepairItem(ItemStack repairItem, ItemStack repairMaterial) {
-        return repairMaterial.is(AetherTags.Items.ZANITE_REPAIRING);
+        super(AetherSoundEvents.ITEM_ACCESSORY_EQUIP_ZANITE_RING, properties.repairable(AetherTags.Items.ZANITE_REPAIRING));
     }
 }

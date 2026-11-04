@@ -1,34 +1,40 @@
 package com.aetherteam.aether.client.gui.component.inventory;
 
+import net.minecraft.client.input.InputWithModifiers;
+import net.minecraft.client.renderer.RenderPipelines;
 import com.aetherteam.aether.Aether;
 import com.aetherteam.nitrogen.fabric.BuilderMadeButton;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.WidgetSprites;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.resources.Identifier;
+import net.minecraft.util.ARGB;
 
-public class LorePageButton extends BuilderMadeButton {
-    private static final WidgetSprites BUTTON_TEXTURES = new WidgetSprites(ResourceLocation.fromNamespaceAndPath(Aether.MODID, "menu/lore_button"), ResourceLocation.fromNamespaceAndPath(Aether.MODID, "menu/lore_button_disabled"), ResourceLocation.fromNamespaceAndPath(Aether.MODID, "menu/lore_button_highlighted"));
+public class LorePageButton extends Button {
+    private static final WidgetSprites BUTTON_TEXTURES = new WidgetSprites(Identifier.fromNamespaceAndPath(Aether.MODID, "menu/lore_button"), Identifier.fromNamespaceAndPath(Aether.MODID, "menu/lore_button_disabled"), Identifier.fromNamespaceAndPath(Aether.MODID, "menu/lore_button_highlighted"));
 
     public LorePageButton(Builder builder) {
         super(builder.createNarration(DEFAULT_NARRATION));
         this.active = false;
     }
 
-    public void onPress() {
+    @Override
+    public void onPress(InputWithModifiers input) {
         if (this.isActive()) {
             this.onPress.onPress(this);
         }
     }
 
     @Override
-    public void renderWidget(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
-        ResourceLocation location = BUTTON_TEXTURES.get(this.isActive(), this.isHoveredOrFocused());
+    protected void extractContents(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTicks) {
+        Identifier location = BUTTON_TEXTURES.get(this.isActive(), this.isHoveredOrFocused());
         Minecraft minecraft = Minecraft.getInstance();
         Font fontRenderer = minecraft.font;
-        guiGraphics.blitSprite(location, this.getX(), this.getY(), this.width, this.height);
-        int color = this.active ? 16777215 : 10526880;
-        guiGraphics.drawCenteredString(fontRenderer, this.getMessage(), this.getX() + this.width / 2, this.getY() + (this.height - 8) / 2, color | 255 << 24);
+        guiGraphics.blitSprite(RenderPipelines.GUI_TEXTURED, location, this.getX(), this.getY(), this.width, this.height);
+        int color = this.active ? 0xFFFFFF : 0xA0A0A0;
+        guiGraphics.centeredText(fontRenderer, this.getMessage(), this.getX() + this.width / 2, this.getY() + (this.height - 8) / 2, ARGB.opaque(color));
     }
 }

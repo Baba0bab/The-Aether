@@ -1,13 +1,16 @@
 package com.aetherteam.aether.client.gui.screen.menu.logo;
 
+import net.minecraft.client.renderer.RenderPipelines;
 import com.aetherteam.aether.Aether;
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.LogoRenderer;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.resources.Identifier;
+import net.minecraft.util.ARGB;
 
 public class AetherLogoRenderer extends LogoRenderer {
-    private static final ResourceLocation AETHER_LOGO = ResourceLocation.fromNamespaceAndPath(Aether.MODID, "textures/gui/title/aether.png");
+    private static final Identifier AETHER_LOGO = Identifier.fromNamespaceAndPath(Aether.MODID, "textures/gui/title/aether.png");
     private final boolean keepLogoThroughFade;
     private final boolean alignedLeft;
 
@@ -17,17 +20,12 @@ public class AetherLogoRenderer extends LogoRenderer {
         this.alignedLeft = alignedLeft;
     }
 
-    public void renderLogo(GuiGraphics guiGraphics, int screenWidth, float transparency) {
-        this.renderLogo(guiGraphics, screenWidth, transparency, 30);
-    }
-
-    public void renderLogo(GuiGraphics guiGraphics, int screenWidth, float transparency, int height) {
-        guiGraphics.setColor(1.0F, 1.0F, 1.0F, this.keepLogoThroughFade ? 1.0F : transparency);
-        RenderSystem.enableBlend();
+    @Override
+    public void extractRenderState(GuiGraphicsExtractor guiGraphics, int screenWidth, float transparency, int height) {
+        float fade = this.keepLogoThroughFade ? 1.0F : transparency;
+        int color = ARGB.white(fade);
         int logoX = this.alignedLeft ? 28 : (int) ((screenWidth / 2.0F - (190.0F / 2.0F)));
         int logoY = this.alignedLeft ? 25 : 36;
-        guiGraphics.blit(AETHER_LOGO, logoX, logoY, 0, 0, 190, 38, 190, 38);
-        guiGraphics.setColor(1.0F, 1.0F, 1.0F, 1.0F);
-        RenderSystem.disableBlend();
+        guiGraphics.blit(RenderPipelines.GUI_TEXTURED, AETHER_LOGO, logoX, logoY, 0.0F, 0.0F, 190, 38, 190, 38, color);
     }
 }

@@ -10,13 +10,14 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessorType;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessor;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 import org.jetbrains.annotations.Nullable;
 
 /**
  * This processor replaces Cobblestone blocks with Mossy Cobblestone blocks.
  */
-public class GlowstonePortalAgeProcessor extends ExtendedStructureProcessor {
+public class GlowstonePortalAgeProcessor implements StructureProcessor {
     public static final MapCodec<GlowstonePortalAgeProcessor> CODEC = Codec.FLOAT.fieldOf("mossiness").xmap(GlowstonePortalAgeProcessor::new, (codec) -> codec.mossiness);
     private final float mossiness;
 
@@ -67,7 +68,7 @@ public class GlowstonePortalAgeProcessor extends ExtendedStructureProcessor {
     }
 
     @Override
-    protected StructureProcessorType<?> getType() {
-        return AetherStructureProcessors.GLOWSTONE_PORTAL_AGE.get();
+    public MapCodec<GlowstonePortalAgeProcessor> codec() {
+        return CODEC;
     }
 }

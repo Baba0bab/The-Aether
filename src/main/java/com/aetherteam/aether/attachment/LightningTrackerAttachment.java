@@ -1,5 +1,6 @@
 package com.aetherteam.aether.attachment;
 
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.world.entity.Entity;
@@ -17,7 +18,7 @@ public class LightningTrackerAttachment {
     @Nullable
     private Entity owner;
 
-    public static final Codec<LightningTrackerAttachment> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+    public static final MapCodec<LightningTrackerAttachment> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
             Codec.INT.fieldOf("owner_id").forGetter(o -> o.owner.getId())
     ).apply(instance, LightningTrackerAttachment::new));
 

@@ -1,18 +1,20 @@
 package com.aetherteam.aether.recipe.builder;
 
+import net.minecraft.data.recipes.RecipeUnlockAdvancementBuilder;
 import com.aetherteam.aether.recipe.recipes.item.AltarRepairRecipe;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.AdvancementRequirements;
 import net.minecraft.advancements.AdvancementRewards;
-import net.minecraft.advancements.Criterion;
-import net.minecraft.advancements.critereon.RecipeUnlockedTrigger;
+import net.minecraft.advancements.triggers.Criterion;
+import net.minecraft.advancements.triggers.RecipeUnlockedTrigger;
 import net.minecraft.data.recipes.RecipeBuilder;
 import net.minecraft.data.recipes.RecipeCategory;
 import net.minecraft.data.recipes.RecipeOutput;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.crafting.Ingredient;
 import org.jetbrains.annotations.Nullable;
+import net.minecraft.world.item.crafting.Recipe;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -22,7 +24,7 @@ public class AltarRepairBuilder implements RecipeBuilder {
     private final RecipeCategory category;
     private final Ingredient ingredient;
     private final int repairTime;
-    private final Map<String, Criterion<?>> criteria = new LinkedHashMap<>();
+    private final RecipeUnlockAdvancementBuilder advancementBuilder = new RecipeUnlockAdvancementBuilder();
     @Nullable
     private String group;
 
@@ -38,7 +40,7 @@ public class AltarRepairBuilder implements RecipeBuilder {
 
     @Override
     public AltarRepairBuilder unlockedBy(String name, Criterion<?> criterion) {
-        this.criteria.put(name, criterion);
+        this.advancementBuilder.unlockedBy(name, criterion);
         return this;
     }
 
@@ -49,23 +51,13 @@ public class AltarRepairBuilder implements RecipeBuilder {
     }
 
     @Override
-    public Item getResult() {
-        return this.ingredient.getItems()[0].getItem();
+    public ResourceKey<Recipe<?>> defaultId() {
+        return RecipeBuilder.getDefaultRecipeId(this.ingredient.items().findFirst().orElseThrow().value().getDefaultInstance());
     }
 
     @Override
-    public void save(RecipeOutput recipeOutput, ResourceLocation id) {
-        this.ensureValid(id);
-        Advancement.Builder advancement$builder = recipeOutput.advancement().addCriterion("has_the_recipe", RecipeUnlockedTrigger.unlocked(id)).rewards(AdvancementRewards.Builder.recipe(id)).requirements(AdvancementRequirements.Strategy.OR);
-        Objects.requireNonNull(advancement$builder);
-        this.criteria.forEach(advancement$builder::addCriterion);
+    public void save(RecipeOutput recipeOutput, ResourceKey<Recipe<?>> id) {
         AltarRepairRecipe recipe = new AltarRepairRecipe(this.group == null ? "" : this.group, this.ingredient, this.repairTime);
-        recipeOutput.accept(id, recipe, advancement$builder.build(id.withPrefix("recipes/" + this.category.getFolderName() + "/")));
-    }
-
-    private void ensureValid(ResourceLocation id) {
-        if (this.criteria.isEmpty()) {
-            throw new IllegalStateException("No way of obtaining recipe " + id);
-        }
+        recipeOutput.accept(id, recipe, this.advancementBuilder.build(recipeOutput, id, this.category));
     }
 }

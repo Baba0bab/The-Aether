@@ -1,35 +1,36 @@
 package com.aetherteam.aether.data.resources.builders;
 
 import com.aetherteam.aether.client.AetherSoundEvents;
-import com.aetherteam.aether.data.resources.AetherMobCategory;
 import com.aetherteam.aether.data.resources.registries.AetherBiomes;
 import com.aetherteam.aether.data.resources.registries.AetherPlacedFeatures;
 import com.aetherteam.aether.entity.AetherEntityTypes;
 import com.mojang.datafixers.util.Pair;
 import net.minecraft.core.HolderGetter;
-import net.minecraft.sounds.Musics;
-import net.minecraft.world.entity.MobCategory;
+import net.minecraft.util.ARGB;
+import net.minecraft.world.attribute.BackgroundMusic;
+import net.minecraft.world.attribute.EnvironmentAttributeMap;
+import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.level.biome.*;
 import net.minecraft.world.level.levelgen.GenerationStep;
-import net.minecraft.world.level.levelgen.carver.ConfiguredWorldCarver;
+import net.minecraft.world.level.levelgen.carver.WorldCarver;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 
 import java.util.List;
 
 public class AetherBiomeBuilders {
-    public static Biome skyrootMeadowBiome(HolderGetter<PlacedFeature> placedFeatures, HolderGetter<ConfiguredWorldCarver<?>> worldCarvers) {
+    public static Biome skyrootMeadowBiome(HolderGetter<PlacedFeature> placedFeatures, HolderGetter<WorldCarver> worldCarvers) {
         return makeDefaultBiome(new BiomeGenerationSettings.Builder(placedFeatures, worldCarvers).addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, AetherPlacedFeatures.SKYROOT_MEADOW_TREES_PLACEMENT));
     }
 
-    public static Biome skyrootGroveBiome(HolderGetter<PlacedFeature> placedFeatures, HolderGetter<ConfiguredWorldCarver<?>> worldCarvers) {
+    public static Biome skyrootGroveBiome(HolderGetter<PlacedFeature> placedFeatures, HolderGetter<WorldCarver> worldCarvers) {
         return makeDefaultBiome(new BiomeGenerationSettings.Builder(placedFeatures, worldCarvers).addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, AetherPlacedFeatures.SKYROOT_GROVE_TREES_PLACEMENT));
     }
 
-    public static Biome skyrootWoodlandBiome(HolderGetter<PlacedFeature> placedFeatures, HolderGetter<ConfiguredWorldCarver<?>> worldCarvers) {
+    public static Biome skyrootWoodlandBiome(HolderGetter<PlacedFeature> placedFeatures, HolderGetter<WorldCarver> worldCarvers) {
         return makeDefaultBiome(new BiomeGenerationSettings.Builder(placedFeatures, worldCarvers).addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, AetherPlacedFeatures.SKYROOT_WOODLAND_TREES_PLACEMENT));
     }
 
-    public static Biome skyrootForestBiome(HolderGetter<PlacedFeature> placedFeatures, HolderGetter<ConfiguredWorldCarver<?>> worldCarvers) {
+    public static Biome skyrootForestBiome(HolderGetter<PlacedFeature> placedFeatures, HolderGetter<WorldCarver> worldCarvers) {
         return makeDefaultBiome(new BiomeGenerationSettings.Builder(placedFeatures, worldCarvers).addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, AetherPlacedFeatures.SKYROOT_FOREST_TREES_PLACEMENT));
     }
 
@@ -38,41 +39,43 @@ public class AetherBiomeBuilders {
                 false,
                 0.8F,
                 0.0F,
+                EnvironmentAttributeMap.builder()
+                        .set(EnvironmentAttributes.FOG_COLOR, ARGB.vector3fFromRGB24(0x93_93_bc))
+                        .set(EnvironmentAttributes.SKY_COLOR, ARGB.vector3fFromRGB24(0xc0_c0_ff))
+                        .set(EnvironmentAttributes.WATER_FOG_COLOR, ARGB.vector3fFromRGB24(0x05_05_33))
+                        .set(EnvironmentAttributes.BACKGROUND_MUSIC, new BackgroundMusic(AetherSoundEvents.MUSIC_AETHER))
+                        .set(EnvironmentAttributes.CREATURE_WORLD_GEN_SPAWN_PROBABILITY, 0.25F)
+                        .build(),
                 new BiomeSpecialEffects.Builder()
-                        .fogColor(0x93_93_bc)
-                        .skyColor(0xc0_c0_ff)
                         .waterColor(0x3f_76_e4)
-                        .waterFogColor(0x05_05_33)
                         .grassColorOverride(0xb1_ff_cb)
                         .foliageColorOverride(0xb1_ff_cb)
                         .grassColorModifier(BiomeSpecialEffects.GrassColorModifier.NONE)
-                        .backgroundMusic(Musics.createGameMusic(AetherSoundEvents.MUSIC_AETHER))
                         .build(),
                 new MobSpawnSettings.Builder()
-                        .addMobCharge(AetherEntityTypes.COCKATRICE.get(), 0.5, 0.15)
-                        .addMobCharge(AetherEntityTypes.ZEPHYR.get(), 0.6, 0.16)
-                        .addMobCharge(AetherEntityTypes.AECHOR_PLANT.get(), 0.4, 0.11)
-                        .addMobCharge(AetherEntityTypes.BLUE_SWET.get(), 0.5, 0.1)
-                        .addMobCharge(AetherEntityTypes.GOLDEN_SWET.get(), 0.5, 0.1)
-                        .addMobCharge(AetherEntityTypes.WHIRLWIND.get(), 0.4, 0.1)
-                        .addMobCharge(AetherEntityTypes.EVIL_WHIRLWIND.get(), 0.4, 0.1)
-                        .addMobCharge(AetherEntityTypes.AERWHALE.get(), 0.5, 0.11)
+                        .addMobSpawnCost(AetherEntityTypes.COCKATRICE.get(), 0.5, 0.15)
+                        .addMobSpawnCost(AetherEntityTypes.ZEPHYR.get(), 0.6, 0.16)
+                        .addMobSpawnCost(AetherEntityTypes.AECHOR_PLANT.get(), 0.4, 0.11)
+                        .addMobSpawnCost(AetherEntityTypes.BLUE_SWET.get(), 0.5, 0.1)
+                        .addMobSpawnCost(AetherEntityTypes.GOLDEN_SWET.get(), 0.5, 0.1)
+                        .addMobSpawnCost(AetherEntityTypes.WHIRLWIND.get(), 0.4, 0.1)
+                        .addMobSpawnCost(AetherEntityTypes.EVIL_WHIRLWIND.get(), 0.4, 0.1)
+                        .addMobSpawnCost(AetherEntityTypes.AERWHALE.get(), 0.5, 0.11)
 
-                        .addSpawn(AetherMobCategory.AETHER_DARKNESS_MONSTER, new MobSpawnSettings.SpawnerData(AetherEntityTypes.COCKATRICE.get(), 8, 1, 1))
-                        .addSpawn(AetherMobCategory.AETHER_SKY_MONSTER, new MobSpawnSettings.SpawnerData(AetherEntityTypes.ZEPHYR.get(), 20, 1, 1))
-                        .addSpawn(AetherMobCategory.AETHER_SURFACE_MONSTER, new MobSpawnSettings.SpawnerData(AetherEntityTypes.AECHOR_PLANT.get(), 7, 1, 1))
-                        .addSpawn(AetherMobCategory.AETHER_SURFACE_MONSTER, new MobSpawnSettings.SpawnerData(AetherEntityTypes.BLUE_SWET.get(), 6, 1, 1))
-                        .addSpawn(AetherMobCategory.AETHER_SURFACE_MONSTER, new MobSpawnSettings.SpawnerData(AetherEntityTypes.GOLDEN_SWET.get(), 6, 1, 1))
-                        .addSpawn(AetherMobCategory.AETHER_SURFACE_MONSTER, new MobSpawnSettings.SpawnerData(AetherEntityTypes.WHIRLWIND.get(), 3, 1, 1))
-                        .addSpawn(AetherMobCategory.AETHER_SURFACE_MONSTER, new MobSpawnSettings.SpawnerData(AetherEntityTypes.EVIL_WHIRLWIND.get(), 1, 1, 1))
-                        .addSpawn(AetherMobCategory.AETHER_AERWHALE, new MobSpawnSettings.SpawnerData(AetherEntityTypes.AERWHALE.get(), 10, 1, 1))
+                        .addSpawn(AetherEntityTypes.COCKATRICE.get(), 8, 1, 1)
+                        .addSpawn(AetherEntityTypes.ZEPHYR.get(), 20, 1, 1)
+                        .addSpawn(AetherEntityTypes.AECHOR_PLANT.get(), 7, 1, 1)
+                        .addSpawn(AetherEntityTypes.BLUE_SWET.get(), 6, 1, 1)
+                        .addSpawn(AetherEntityTypes.GOLDEN_SWET.get(), 6, 1, 1)
+                        .addSpawn(AetherEntityTypes.WHIRLWIND.get(), 3, 1, 1)
+                        .addSpawn(AetherEntityTypes.EVIL_WHIRLWIND.get(), 1, 1, 1)
+                        .addSpawn(AetherEntityTypes.AERWHALE.get(), 10, 1, 1)
 
-                        .creatureGenerationProbability(0.25F)
-                        .addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(AetherEntityTypes.PHYG.get(), 10, 3, 4))
-                        .addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(AetherEntityTypes.SHEEPUFF.get(), 12, 3, 4))
-                        .addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(AetherEntityTypes.FLYING_COW.get(), 12, 2, 5))
-                        .addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(AetherEntityTypes.AERBUNNY.get(), 11, 3, 3))
-                        .addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(AetherEntityTypes.MOA.get(), 8, 1, 3))
+                        .addSpawn(AetherEntityTypes.PHYG.get(), 10, 3, 4)
+                        .addSpawn(AetherEntityTypes.SHEEPUFF.get(), 12, 3, 4)
+                        .addSpawn(AetherEntityTypes.FLYING_COW.get(), 12, 2, 5)
+                        .addSpawn(AetherEntityTypes.AERBUNNY.get(), 11, 3, 3)
+                        .addSpawn(AetherEntityTypes.MOA.get(), 8, 1, 3)
                         .build(),
                 builder
                         .addFeature(GenerationStep.Decoration.RAW_GENERATION, AetherPlacedFeatures.QUICKSOIL_SHELF_PLACEMENT)
@@ -99,11 +102,12 @@ public class AetherBiomeBuilders {
         );
     }
 
-    public static Biome fullDefinition(boolean precipitation, float temperature, float downfall, BiomeSpecialEffects effects, MobSpawnSettings spawnSettings, BiomeGenerationSettings generationSettings, Biome.TemperatureModifier temperatureModifier) {
+    public static Biome fullDefinition(boolean precipitation, float temperature, float downfall, EnvironmentAttributeMap attributes, BiomeSpecialEffects effects, MobSpawnSettings spawnSettings, BiomeGenerationSettings generationSettings, Biome.TemperatureModifier temperatureModifier) {
         return new Biome.BiomeBuilder()
                 .hasPrecipitation(precipitation)
                 .temperature(temperature)
                 .downfall(downfall)
+                .putAttributes(attributes)
                 .specialEffects(effects)
                 .mobSpawnSettings(spawnSettings)
                 .generationSettings(generationSettings)

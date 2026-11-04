@@ -3,18 +3,26 @@ package com.aetherteam.aether.client.gui.screen.menu;
 import com.aetherteam.aether.attachment.AetherDataAttachments;
 import com.aetherteam.aether.block.AetherBlocks;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.screens.ReceivingLevelScreen;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.screens.LevelLoadingScreen;
+import net.minecraft.client.multiplayer.LevelLoadTracker;
+import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 
-import java.util.function.BooleanSupplier;
+import org.jetbrains.annotations.Nullable;
 
-public class AetherReceivingLevelScreen extends ReceivingLevelScreen {
+/**
+ * A {@link LevelLoadingScreen} that displays the Aether Portal texture when travelling through an Aether Portal.
+ */
+public class AetherReceivingLevelScreen extends LevelLoadingScreen {
     private boolean isInAetherPortal;
     private float portalIntensity;
     private float oPortalIntensity;
+    @Nullable
+    private TextureAtlasSprite portalSprite;
 
-    public AetherReceivingLevelScreen(BooleanSupplier levelReceived, Reason reason) {
-        super(levelReceived, reason);
+    public AetherReceivingLevelScreen(LevelLoadTracker loadTracker, Reason reason) {
+        super(loadTracker, reason);
         if (Minecraft.getInstance().player != null && Minecraft.getInstance().player.portalProcess != null && Minecraft.getInstance().player.portalProcess.isSamePortal(AetherBlocks.AETHER_PORTAL.get())) {
             var data = Minecraft.getInstance().player.getAttachedOrCreate(AetherDataAttachments.AETHER_PLAYER);
             this.isInAetherPortal = true;
@@ -24,9 +32,14 @@ public class AetherReceivingLevelScreen extends ReceivingLevelScreen {
     }
 
     @Override
-    public void renderBackground(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+    public void extractBackground(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTick) {
         if (this.isInAetherPortal) {
-            guiGraphics.blit(0, 0, -90, guiGraphics.guiWidth(), guiGraphics.guiHeight(), Minecraft.getInstance().getBlockRenderer().getBlockModelShaper().getParticleIcon(AetherBlocks.AETHER_PORTAL.get().defaultBlockState()));
+            if (this.portalSprite == null) {
+                this.portalSprite = Minecraft.getInstance().getModelManager().getBlockStateModelSet().getParticleMaterial(AetherBlocks.AETHER_PORTAL.get().defaultBlockState()).sprite();
+            }
+            guiGraphics.blitSprite(RenderPipelines.GUI_OPAQUE_TEXTURED_BACKGROUND, this.portalSprite, 0, 0, guiGraphics.guiWidth(), guiGraphics.guiHeight());
+        } else {
+            super.extractBackground(guiGraphics, mouseX, mouseY, partialTick);
         }
     }
 

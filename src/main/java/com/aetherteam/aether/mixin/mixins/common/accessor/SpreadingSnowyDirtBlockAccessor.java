@@ -2,14 +2,14 @@ package com.aetherteam.aether.mixin.mixins.common.accessor;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.LevelReader;
-import net.minecraft.world.level.block.SpreadingSnowyDirtBlock;
+import net.minecraft.world.level.block.SpreadingSnowyBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Invoker;
 
-@Mixin(SpreadingSnowyDirtBlock.class)
+@Mixin(SpreadingSnowyBlock.class)
 public interface SpreadingSnowyDirtBlockAccessor {
-    @Invoker
+    @Invoker("canStayAlive")
     static boolean callCanBeGrass(BlockState state, LevelReader levelReader, BlockPos pos) {
         throw new AssertionError();
     }

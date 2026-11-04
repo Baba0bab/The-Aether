@@ -1,5 +1,7 @@
 package com.aetherteam.aether.entity.monster;
 
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
 import com.aetherteam.aether.AetherTags;
 import com.aetherteam.aether.client.AetherSoundEvents;
 import net.minecraft.core.BlockPos;
@@ -17,7 +19,7 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -76,17 +78,17 @@ public abstract class AbstractWhirlwind extends Mob {
     }
 
     /**
-     * Whirlwinds can spawn if {@link Mob#checkMobSpawnRules(EntityType, LevelAccessor, MobSpawnType, BlockPos, RandomSource)} is true,
+     * Whirlwinds can spawn if {@link Mob#checkMobSpawnRules(EntityType, LevelAccessor, EntitySpawnReason, BlockPos, RandomSource)} is true,
      * if they are spawning at a light level above 12, and if the difficulty isn't peaceful.
      *
      * @param whirlwind The {@link AbstractWhirlwind} {@link EntityType}.
      * @param level     The {@link LevelAccessor}.
-     * @param reason    The {@link MobSpawnType} reason.
+     * @param reason    The {@link EntitySpawnReason} reason.
      * @param pos       The spawn {@link BlockPos}.
      * @param random    The {@link RandomSource}.
      * @return Whether this entity can spawn, as a {@link Boolean}.
      */
-    public static boolean checkWhirlwindSpawnRules(EntityType<? extends AbstractWhirlwind> whirlwind, LevelAccessor level, MobSpawnType reason, BlockPos pos, RandomSource random) {
+    public static boolean checkWhirlwindSpawnRules(EntityType<? extends AbstractWhirlwind> whirlwind, LevelAccessor level, EntitySpawnReason reason, BlockPos pos, RandomSource random) {
         return Mob.checkMobSpawnRules(whirlwind, level, reason, pos, random)
                 && level.getRawBrightness(pos, 0) > 12
                 && level.getDifficulty() != Difficulty.PEACEFUL;
@@ -133,7 +135,7 @@ public abstract class AbstractWhirlwind extends Mob {
 
         // This code is used to move other entities around the Whirlwind.
         List<Entity> entityList = this.level().getEntities(this, this.getBoundingBox().expandTowards(2.5, 2.5, 2.5))
-                .stream().filter((entity -> !entity.getType().is(AetherTags.Entities.WHIRLWIND_UNAFFECTED))).toList();
+                .stream().filter((entity -> !entity.is(AetherTags.Entities.WHIRLWIND_UNAFFECTED))).toList();
         for (Entity entity : entityList) {
             double x = (float) entity.getX();
             double y = (float) entity.getY() - entity.getPassengerRidingPosition(this).y() * 0.6F;
@@ -184,22 +186,22 @@ public abstract class AbstractWhirlwind extends Mob {
                 List<ItemStack> list = lootTable.getRandomItems(parameters);
                 for (ItemStack itemstack : list) {
                     serverLevel.playSound(null, this.blockPosition(), AetherSoundEvents.ENTITY_WHIRLWIND_DROP.get(), SoundSource.HOSTILE, 0.5F, 1.0F);
-                    this.spawnAtLocation(itemstack, 1);
+                    this.spawnAtLocation(serverLevel, itemstack, 1);
                 }
             }
         }
     }
 
     @Override
-    public boolean hurt(DamageSource source, float damage) {
+    public boolean hurtServer(ServerLevel level, DamageSource damageSource, float amount) {
         return false;
     }
 
     /**
-     * [CODE COPY] - {@link Entity#kill()}.
+     * [CODE COPY] - {@link Entity#kill(ServerLevel)}.
      */
     @Override
-    public void kill() {
+    public void kill(ServerLevel level) {
         this.remove(Entity.RemovalReason.KILLED);
         this.gameEvent(GameEvent.ENTITY_DIE);
     }
@@ -271,10 +273,6 @@ public abstract class AbstractWhirlwind extends Mob {
         return 1;
     }
 
-    @Override
-    protected boolean shouldDespawnInPeaceful() {
-        return true;
-    }
 
     @Override
     protected boolean canRide(Entity vehicle) {
@@ -282,7 +280,7 @@ public abstract class AbstractWhirlwind extends Mob {
     }
 
     @Override
-    public void addAdditionalSaveData(CompoundTag tag) {
+    protected void addAdditionalSaveData(ValueOutput tag) {
         super.addAdditionalSaveData(tag);
         tag.putFloat("Movement Angle", this.movementAngle);
         tag.putFloat("Movement Curve", this.movementCurve);
@@ -291,20 +289,12 @@ public abstract class AbstractWhirlwind extends Mob {
     }
 
     @Override
-    public void readAdditionalSaveData(CompoundTag tag) {
+    protected void readAdditionalSaveData(ValueInput tag) {
         super.readAdditionalSaveData(tag);
-        if (tag.contains("Movement Angle")) {
-            this.movementAngle = tag.getFloat("Movement Angle");
-        }
-        if (tag.contains("Movement Curve")) {
-            this.movementCurve = tag.getFloat("Movement Curve");
-        }
-        if (tag.contains("Life Left")) {
-            this.lifeLeft = tag.getInt("Life Left");
-        }
-        if (tag.contains("Color")) {
-            this.setColorData(tag.getInt("Color"));
-        }
+        this.movementAngle = tag.getFloatOr("Movement Angle", this.movementAngle);
+        this.movementCurve = tag.getFloatOr("Movement Curve", this.movementCurve);
+        this.lifeLeft = tag.getIntOr("Life Left", this.lifeLeft);
+        tag.getInt("Color").ifPresent(this::setColorData);
     }
 
     /**

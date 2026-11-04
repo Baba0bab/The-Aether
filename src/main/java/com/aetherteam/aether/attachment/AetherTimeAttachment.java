@@ -1,9 +1,15 @@
 package com.aetherteam.aether.attachment;
 
+import net.minecraft.world.clock.WorldClock;
+import net.minecraft.world.clock.ServerClockManager;
+import net.minecraft.world.clock.ClockInstance;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.core.Holder;
+import com.mojang.serialization.MapCodec;
+import net.minecraft.SharedConstants;
 import com.aetherteam.aether.AetherConfig;
 import com.aetherteam.aether.data.resources.registries.AetherDimensions;
 import com.aetherteam.aether.network.packet.AetherTimeSyncPacket;
-import com.aetherteam.aether.world.AetherLevelData;
 import com.aetherteam.nitrogen.attachment.INBTSynchable;
 import com.aetherteam.nitrogen.network.packet.SyncPacket;
 import com.mojang.serialization.Codec;
@@ -24,6 +30,9 @@ import java.util.function.Supplier;
  * @see com.aetherteam.aether.event.hooks.CapabilityHooks.AetherTimeHooks
  */
 public class AetherTimeAttachment implements INBTSynchable {
+    public static final long DAY_LENGTH = SharedConstants.TICKS_PER_GAME_DAY;
+    public static final long NOON = DAY_LENGTH / 4;
+    private static final long MIGRATED = -2;
     private static int ticksPerDayMultiplier = -1;
     private long dayTime = -1;
     private boolean isEternalDay = true;
@@ -37,7 +46,7 @@ public class AetherTimeAttachment implements INBTSynchable {
         Map.entry("setShouldWait", Triple.of(Type.BOOLEAN, (object) -> this.setShouldWait((boolean) object), this::getShouldWait))
     );
 
-    public static final Codec<AetherTimeAttachment> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+    public static final MapCodec<AetherTimeAttachment> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
             Codec.LONG.fieldOf("day_time").forGetter(AetherTimeAttachment::getDayTime),
             Codec.BOOL.fieldOf("eternal_day").forGetter(AetherTimeAttachment::isEternalDay),
             Codec.BOOL.fieldOf("should_wait").forGetter(AetherTimeAttachment::getShouldWait)
@@ -59,39 +68,89 @@ public class AetherTimeAttachment implements INBTSynchable {
     }
 
     /**
-     * Used to increment the time in Aether levels.
+     * Handles the Aether's day/night cycle, which uses the dimension's default {@link WorldClock}.<br><br>
+     * The clock is slowed down for the Aether's longer days, kept at noon during eternal day, and kept in sync with the Overworld if configured.
+     *
+     * @param level The {@link ServerLevel}.
      */
-    public long tickTime(Level level) {
-        long dayTime = level.getDayTime();
-        if (this.getDayTime() == -1 && !AetherConfig.SERVER.disable_eternal_day.get()) {
-            dayTime = getTicksPerDay() / 4;
+    public void tickTime(ServerLevel level) {
+        Holder<WorldClock> clock = level.dimensionType().defaultClock().orElse(null);
+        if (clock == null) {
+            return;
         }
-        dayTime = this.configsChanged(dayTime);
-        if (!this.isTimeSynced()) {
-            if (this.isEternalDay() || this.getShouldWait()) {
-                if (dayTime != getTicksPerDay() / 4) {
-                    long tempTime = dayTime % (long) getTicksPerDay();
-                    if (tempTime > getTicksPerDay() * 0.75) {
-                        tempTime -= getTicksPerDay();
-                    }
-                    long target = Mth.clamp((getTicksPerDay() / 4) - tempTime, -10, 10);
-                    dayTime += target;
-                }
-                if (!level.isClientSide() && level.getLevelData() instanceof AetherLevelData aetherLevelData) {
-                    if (AetherConfig.SERVER.sync_aether_time.get()) {
-                        if (aetherLevelData.getOverworldDayTime() == aetherLevelData.getDayTime()) {
-                            this.setSynched(-1, Direction.DIMENSION, "setShouldWait", false, level);
-                        }
-                    } else if (this.getShouldWait()) {
-                        this.setSynched(-1, Direction.DIMENSION, "setShouldWait", false, level);
-                    }
+        ServerClockManager clockManager = level.clockManager();
+        ClockInstance instance = clockManager.getInstance(clock);
+        long clockTime = instance.totalTicks();
+
+        if (this.getDayTime() != MIGRATED) { // Initializes the clock for new worlds, or converts the time from older worlds.
+            if (this.getDayTime() == -1) {
+                if (!AetherConfig.SERVER.disable_eternal_day.get()) {
+                    clockManager.setTotalTicks(clock, NOON);
                 }
             } else {
-                dayTime++;
+                clockManager.setTotalTicks(clock, this.getDayTime() * DAY_LENGTH / getTicksPerDay());
+            }
+            this.setDayTime(MIGRATED);
+            clockTime = clockManager.getInstance(clock).totalTicks();
+        }
+
+        configsChanged(clockTime);
+        if (this.isEternalDay() || this.getShouldWait()) {
+            if (!instance.isPaused()) {
+                clockManager.setPaused(clock, true);
+            }
+            long timeOfDay = Math.floorMod(clockTime, DAY_LENGTH);
+            if (timeOfDay != NOON) { // Moves the time towards noon.
+                long tempTime = timeOfDay > DAY_LENGTH * 0.75 ? timeOfDay - DAY_LENGTH : timeOfDay;
+                long target = Mth.clamp(NOON - tempTime, -10, 10);
+                clockManager.setTotalTicks(clock, clockTime + target);
+            }
+            if (this.getShouldWait()) {
+                if (AetherConfig.SERVER.sync_aether_time.get()) {
+                    if (Math.floorMod(level.getOverworldClockTime(), DAY_LENGTH) == Math.floorMod(clockManager.getInstance(clock).totalTicks(), DAY_LENGTH)) {
+                        this.setSynched(-1, Direction.DIMENSION, "setShouldWait", false, level);
+                    }
+                } else {
+                    this.setSynched(-1, Direction.DIMENSION, "setShouldWait", false, level);
+                }
+            }
+        } else {
+            if (instance.isPaused()) {
+                clockManager.setPaused(clock, false);
+            }
+            if (this.isTimeSynced()) {
+                if (instance.rate() != 1.0F) {
+                    clockManager.setRate(clock, 1.0F);
+                }
+                long overworldTime = level.getOverworldClockTime();
+                if (clockTime != overworldTime) {
+                    clockManager.setTotalTicks(clock, overworldTime);
+                }
+            } else {
+                float rate = 1.0F / getTicksPerDayMultiplier();
+                if (instance.rate() != rate) {
+                    clockManager.setRate(clock, rate);
+                }
             }
         }
-        this.setDayTime(dayTime);
-        return dayTime;
+    }
+
+    /**
+     * @param level The {@link Level}.
+     * @return The {@link Long} time of the dimension's default clock.
+     */
+    public static long getClockTime(Level level) {
+        return level.dimensionType().defaultClock().map((clock) -> level.clockManager().getInstance(clock).totalTicks()).orElse(0L);
+    }
+
+    /**
+     * Sets the time of the dimension's default clock.
+     *
+     * @param level The {@link ServerLevel}.
+     * @param time  The {@link Long} time to set.
+     */
+    public static void setClockTime(ServerLevel level, long time) {
+        level.dimensionType().defaultClock().ifPresent((clock) -> level.clockManager().setTotalTicks(clock, time));
     }
 
     private long configsChanged(long time) {
@@ -166,7 +225,7 @@ public class AetherTimeAttachment implements INBTSynchable {
     }
 
     public static int getTicksPerDay() {
-        return Level.TICKS_PER_DAY * getTicksPerDayMultiplier(); // Time in ticks of how long a day/night cycle lasts.
+        return SharedConstants.TICKS_PER_GAME_DAY * getTicksPerDayMultiplier(); // Time in ticks of how long a day/night cycle lasts.
     }
 
     public static int configMultiplier() {

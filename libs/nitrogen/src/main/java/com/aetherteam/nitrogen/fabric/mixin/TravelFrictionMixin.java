@@ -1,0 +1,18 @@
+package com.aetherteam.nitrogen.fabric.mixin;
+
+import com.aetherteam.nitrogen.fabric.pond.BlockStateExtension;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.block.Block;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.injection.At;
+
+@Mixin(value = {LivingEntity.class})
+public abstract class TravelFrictionMixin {
+    @WrapOperation(method = "travelInAir", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/Block;getFriction()F"))
+    private float nitrogen_fabric$adjustFriction(Block instance, Operation<Float> original) {
+        return BlockStateExtension.nitrogen_fabric$getFriction((Entity) (Object) this, () -> original.call(instance));
+    }
+}

@@ -1,5 +1,6 @@
 package com.aetherteam.aether.item.combat.loot;
 
+import net.minecraft.world.item.component.SwingAnimation;
 import com.aetherteam.aether.AetherConfig;
 import com.aetherteam.aether.attachment.AetherDataAttachments;
 import com.aetherteam.aether.attachment.AetherPlayerAttachment;
@@ -9,7 +10,7 @@ import com.aetherteam.aether.item.AetherItems;
 import com.aetherteam.nitrogen.fabric.events.LivingEntityEvents;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.LivingEntity;
@@ -20,12 +21,12 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class CloudStaffItem extends Item {
-    public CloudStaffItem() {
-        super(new Item.Properties().durability(60).rarity(AetherItems.AETHER_LOOT));
+    public CloudStaffItem(Properties properties) {
+        super(properties.durability(60).rarity(AetherItems.AETHER_LOOT));
 
         LivingEntityEvents.ON_SWING.register((stack, entity, hand, callback) -> {
             if (!stack.isEmpty() && stack.getItem() instanceof CloudStaffItem staffItem) {
-                staffItem.onEntitySwing(stack, (LivingEntity)(Object) this, hand);
+                staffItem.onEntitySwing(stack, entity, hand);
             }
         });
     }
@@ -38,17 +39,17 @@ public class CloudStaffItem extends Item {
      * @param level  The {@link Level} of the user.
      * @param player The {@link Player} using this item.
      * @param hand   The {@link InteractionHand} in which the item is being used.
-     * @return Pass (do nothing) (we handle swing behavior manually in the lambda earlier on). This is an {@link InteractionResultHolder InteractionResultHolder&lt;ItemStack&gt;}.
+     * @return Pass (do nothing) (we handle swing behavior manually in the lambda earlier on). This is an {@link InteractionResult InteractionResult&lt;ItemStack&gt;}.
      */
     @Override
-    public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
+    public InteractionResult use(Level level, Player player, InteractionHand hand) {
         ItemStack heldItem = player.getItemInHand(hand);
         var data = player.getAttachedOrCreate(AetherDataAttachments.AETHER_PLAYER);
         if (data.getCloudMinions().isEmpty()) {
-            player.swing(hand);
+            player.swing(hand, SwingAnimation.DEFAULT, true);
             if (!level.isClientSide()) {
                 if (!player.getAbilities().instabuild) {
-                    heldItem.hurtAndBreak(1, player, LivingEntity.getSlotForHand(hand));
+                    heldItem.hurtAndBreak(1, player, hand.asEquipmentSlot());
                 }
                 CloudMinion cloudMinionRight = new CloudMinion(level, player, HumanoidArm.RIGHT);
                 CloudMinion cloudMinionLeft = new CloudMinion(level, player, HumanoidArm.LEFT);
@@ -58,12 +59,12 @@ public class CloudStaffItem extends Item {
             }
             this.spawnExplosionParticles(player);
         } else if (player.isShiftKeyDown()) {
-            player.swing(hand);
+            player.swing(hand, SwingAnimation.DEFAULT, true);
             for (CloudMinion cloudMinion : data.getCloudMinions()) {
                 cloudMinion.setLifeSpan(0);
             }
         }
-        return InteractionResultHolder.pass(heldItem);
+        return InteractionResult.PASS;
     }
 
     /**
@@ -77,7 +78,7 @@ public class CloudStaffItem extends Item {
     public boolean onEntitySwing(ItemStack stack, LivingEntity entity, InteractionHand hand) {
         if (entity instanceof Player player) {
             var data = player.getAttachedOrCreate(AetherDataAttachments.AETHER_PLAYER);
-            if (!player.getCooldowns().isOnCooldown(this) && data.isHitting()) {
+            if (!player.getCooldowns().isOnCooldown(stack) && data.isHitting()) {
                 boolean hasMinions = false;
                 for (int i = 0; i < data.getCloudMinions().size(); i++) {
                     CloudMinion cloudMinion = data.getCloudMinions().get(i);
@@ -87,7 +88,7 @@ public class CloudStaffItem extends Item {
                     }
                 }
                 if (hasMinions && !player.getAbilities().instabuild) {
-                    player.getCooldowns().addCooldown(this, AetherConfig.SERVER.cloud_staff_cooldown.get());
+                    player.getCooldowns().addCooldown(stack, AetherConfig.SERVER.cloud_staff_cooldown.get());
                 }
             }
         }
@@ -105,7 +106,7 @@ public class CloudStaffItem extends Item {
     }
 
     @Override
-    public boolean canAttackBlock(BlockState state, Level level, BlockPos pos, Player player) {
-        return !player.isCreative();
+    public boolean canDestroyBlock(ItemStack stack, BlockState state, Level level, BlockPos pos, LivingEntity user) {
+        return !(user instanceof Player player && player.isCreative());
     }
 }

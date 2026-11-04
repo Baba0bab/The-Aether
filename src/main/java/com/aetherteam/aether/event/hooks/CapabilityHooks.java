@@ -1,5 +1,6 @@
 package com.aetherteam.aether.event.hooks;
 
+import com.aetherteam.aether.world.LevelUtil;
 import com.aetherteam.aether.attachment.AetherDataAttachments;
 import com.aetherteam.aether.attachment.AetherPlayerAttachment;
 import com.aetherteam.aether.data.resources.registries.AetherDimensions;
@@ -103,7 +104,7 @@ public class CapabilityHooks {
          */
         private static void syncAetherTime(Player player) {
             if (player instanceof ServerPlayer serverPlayer) {
-                if (player.level().dimensionType().effectsLocation().equals(AetherDimensions.AETHER_DIMENSION_TYPE.location())) {
+                if (LevelUtil.isAetherDimensionType(player.level())) {
                     player.level().getAttachedOrCreate(AetherDataAttachments.AETHER_TIME).updateEternalDay(serverPlayer);
                 }
             }

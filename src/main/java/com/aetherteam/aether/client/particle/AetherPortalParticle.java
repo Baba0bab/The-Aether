@@ -5,11 +5,13 @@ import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleProvider;
 import net.minecraft.client.particle.PortalParticle;
 import net.minecraft.client.particle.SpriteSet;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.particles.SimpleParticleType;
+import net.minecraft.util.RandomSource;
 
 public class AetherPortalParticle extends PortalParticle {
-    public AetherPortalParticle(ClientLevel level, double xCoord, double yCoord, double zCoord, double xSpeed, double ySpeed, double zSpeed) {
-        super(level, xCoord, yCoord, zCoord, xSpeed, ySpeed, zSpeed);
+    public AetherPortalParticle(ClientLevel level, double xCoord, double yCoord, double zCoord, double xSpeed, double ySpeed, double zSpeed, TextureAtlasSprite sprite) {
+        super(level, xCoord, yCoord, zCoord, xSpeed, ySpeed, zSpeed, sprite);
         float f = this.random.nextFloat() * 0.6F + 0.4F;
         this.rCol = this.gCol = this.bCol = f;
         this.rCol *= 0.2F;
@@ -18,10 +20,8 @@ public class AetherPortalParticle extends PortalParticle {
 
     public record Factory(SpriteSet spriteSet) implements ParticleProvider<SimpleParticleType> {
         @Override
-        public Particle createParticle(SimpleParticleType particleType, ClientLevel level, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed) {
-            AetherPortalParticle particle = new AetherPortalParticle(level, x, y, z, xSpeed, ySpeed, zSpeed);
-            particle.pickSprite(this.spriteSet());
-            return particle;
+        public Particle createParticle(SimpleParticleType particleType, ClientLevel level, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed, RandomSource random) {
+            return new AetherPortalParticle(level, x, y, z, xSpeed, ySpeed, zSpeed, this.spriteSet().get(random));
         }
     }
 }

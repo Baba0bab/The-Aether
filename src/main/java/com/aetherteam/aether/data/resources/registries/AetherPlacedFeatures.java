@@ -8,7 +8,6 @@ import com.aetherteam.aether.world.placementmodifier.ConfigFilter;
 import com.aetherteam.aether.world.placementmodifier.DungeonBlacklistFilter;
 import com.aetherteam.aether.world.placementmodifier.HolidayFilter;
 import com.aetherteam.aether.world.placementmodifier.ImprovedLayerPlacementModifier;
-import com.aetherteam.nitrogen.data.resources.builders.NitrogenPlacedFeatureBuilders;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.registries.Registries;
@@ -16,13 +15,14 @@ import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.data.worldgen.features.VegetationFeatures;
 import net.minecraft.data.worldgen.placement.PlacementUtils;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.VerticalAnchor;
-import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
+import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.levelgen.placement.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class AetherPlacedFeatures {
@@ -54,11 +54,11 @@ public class AetherPlacedFeatures {
     public static final ResourceKey<PlacedFeature> GOLD_DUNGEON_ISLAND_FOLIAGE = createKey("gold_dungeon_island_foliage");
 
     private static ResourceKey<PlacedFeature> createKey(String name) {
-        return ResourceKey.create(Registries.PLACED_FEATURE, ResourceLocation.fromNamespaceAndPath(Aether.MODID, name));
+        return ResourceKey.create(Registries.PLACED_FEATURE, Identifier.fromNamespaceAndPath(Aether.MODID, name));
     }
 
     public static void bootstrap(BootstrapContext<PlacedFeature> context) {
-        HolderGetter<ConfiguredFeature<?, ?>> configuredFeatures = context.lookup(Registries.CONFIGURED_FEATURE);
+        HolderGetter<Feature> configuredFeatures = context.lookup(Registries.FEATURE);
         register(context, COLD_AERCLOUD_PLACEMENT, configuredFeatures.getOrThrow(AetherConfiguredFeatures.COLD_AERCLOUD_CONFIGURATION), AetherPlacedFeatureBuilders.aercloudPlacement(32, 64, 7));
         register(context, BLUE_AERCLOUD_PLACEMENT, configuredFeatures.getOrThrow(AetherConfiguredFeatures.BLUE_AERCLOUD_CONFIGURATION), AetherPlacedFeatureBuilders.aercloudPlacement(32, 64, 24));
         register(context, GOLDEN_AERCLOUD_PLACEMENT, configuredFeatures.getOrThrow(AetherConfiguredFeatures.GOLDEN_AERCLOUD_CONFIGURATION), AetherPlacedFeatureBuilders.aercloudPlacement(96, 32, 75));
@@ -88,29 +88,34 @@ public class AetherPlacedFeatures {
                 NoiseThresholdCountPlacement.of(-0.8, 5, 10),
                 ImprovedLayerPlacementModifier.of(Heightmap.Types.MOTION_BLOCKING, UniformInt.of(0, 1), 4),
                 BiomeFilter.biome(),
-                new ConfigFilter(AetherConfig.SERVER.generate_tall_grass));
+                new ConfigFilter(AetherConfig.SERVER.generate_tall_grass),
+                AetherPlacedFeatureBuilders.patch(32));
         register(context, TALL_GRASS_PATCH_PLACEMENT, configuredFeatures.getOrThrow(AetherConfiguredFeatures.TALL_GRASS_PATCH_CONFIGURATION),
                 NoiseThresholdCountPlacement.of(-0.8, 0, 7),
                 RarityFilter.onAverageOnceEvery(32),
                 ImprovedLayerPlacementModifier.of(Heightmap.Types.MOTION_BLOCKING, UniformInt.of(0, 1), 4),
                 BiomeFilter.biome(),
-                new ConfigFilter(AetherConfig.SERVER.generate_tall_grass));
-        register(context, AETHER_GRASS_BONEMEAL, configuredFeatures.getOrThrow(VegetationFeatures.SINGLE_PIECE_OF_GRASS),
+                new ConfigFilter(AetherConfig.SERVER.generate_tall_grass),
+                AetherPlacedFeatureBuilders.patch(96));
+        register(context, AETHER_GRASS_BONEMEAL, configuredFeatures.getOrThrow(VegetationFeatures.GRASS),
                 PlacementUtils.isEmpty());
-        register(context, ENCHANTED_AETHER_GRASS_BONEMEAL, configuredFeatures.getOrThrow(VegetationFeatures.SINGLE_PIECE_OF_GRASS),
+        register(context, ENCHANTED_AETHER_GRASS_BONEMEAL, configuredFeatures.getOrThrow(VegetationFeatures.GRASS),
             PlacementUtils.isEmpty());
         register(context, WHITE_FLOWER_PATCH_PLACEMENT, configuredFeatures.getOrThrow(AetherConfiguredFeatures.WHITE_FLOWER_PATCH_CONFIGURATION),
                 RarityFilter.onAverageOnceEvery(8),
                 ImprovedLayerPlacementModifier.of(Heightmap.Types.MOTION_BLOCKING, UniformInt.of(0, 1), 4),
-                BiomeFilter.biome());
+                BiomeFilter.biome(),
+                AetherPlacedFeatureBuilders.patch(64));
         register(context, PURPLE_FLOWER_PATCH_PLACEMENT, configuredFeatures.getOrThrow(AetherConfiguredFeatures.PURPLE_FLOWER_PATCH_CONFIGURATION),
                 RarityFilter.onAverageOnceEvery(16),
                 ImprovedLayerPlacementModifier.of(Heightmap.Types.MOTION_BLOCKING, UniformInt.of(0, 1), 4),
-                BiomeFilter.biome());
+                BiomeFilter.biome(),
+                AetherPlacedFeatureBuilders.patch(64));
         register(context, BERRY_BUSH_PATCH_PLACEMENT, configuredFeatures.getOrThrow(AetherConfiguredFeatures.BERRY_BUSH_PATCH_CONFIGURATION),
                 RarityFilter.onAverageOnceEvery(8),
                 ImprovedLayerPlacementModifier.of(Heightmap.Types.MOTION_BLOCKING, UniformInt.of(0, 1), 4),
-                BiomeFilter.biome());
+                BiomeFilter.biome(),
+                AetherPlacedFeatureBuilders.patch(32));
         register(context, QUICKSOIL_SHELF_PLACEMENT, configuredFeatures.getOrThrow(AetherConfiguredFeatures.QUICKSOIL_SHELF_CONFIGURATION),
                 RarityFilter.onAverageOnceEvery(5),
                 PlacementUtils.HEIGHTMAP_WORLD_SURFACE,
@@ -127,26 +132,34 @@ public class AetherPlacedFeatures {
                 BiomeFilter.biome(),
                 new DungeonBlacklistFilter());
         register(context, ORE_AETHER_DIRT_PLACEMENT, configuredFeatures.getOrThrow(AetherConfiguredFeatures.ORE_AETHER_DIRT_CONFIGURATION),
-                NitrogenPlacedFeatureBuilders.commonOrePlacement(20, HeightRangePlacement.uniform(VerticalAnchor.bottom(), VerticalAnchor.aboveBottom(128))));
+                AetherPlacedFeatureBuilders.commonOrePlacement(20, HeightRangePlacement.uniform(VerticalAnchor.bottom(), VerticalAnchor.aboveBottom(128))));
         register(context, ORE_ICESTONE_PLACEMENT, configuredFeatures.getOrThrow(AetherConfiguredFeatures.ORE_ICESTONE_CONFIGURATION),
-                NitrogenPlacedFeatureBuilders.commonOrePlacement(10, HeightRangePlacement.uniform(VerticalAnchor.bottom(), VerticalAnchor.aboveBottom(128))));
+                AetherPlacedFeatureBuilders.commonOrePlacement(10, HeightRangePlacement.uniform(VerticalAnchor.bottom(), VerticalAnchor.aboveBottom(128))));
         register(context, ORE_AMBROSIUM_PLACEMENT, configuredFeatures.getOrThrow(AetherConfiguredFeatures.ORE_AMBROSIUM_CONFIGURATION),
-                NitrogenPlacedFeatureBuilders.commonOrePlacement(20, HeightRangePlacement.uniform(VerticalAnchor.bottom(), VerticalAnchor.aboveBottom(128))));
+                AetherPlacedFeatureBuilders.commonOrePlacement(20, HeightRangePlacement.uniform(VerticalAnchor.bottom(), VerticalAnchor.aboveBottom(128))));
         register(context, ORE_ZANITE_PLACEMENT, configuredFeatures.getOrThrow(AetherConfiguredFeatures.ORE_ZANITE_CONFIGURATION),
-                NitrogenPlacedFeatureBuilders.commonOrePlacement(14, HeightRangePlacement.uniform(VerticalAnchor.bottom(), VerticalAnchor.aboveBottom(75))));
+                AetherPlacedFeatureBuilders.commonOrePlacement(14, HeightRangePlacement.uniform(VerticalAnchor.bottom(), VerticalAnchor.aboveBottom(75))));
         register(context, ORE_GRAVITITE_BURIED_PLACEMENT, configuredFeatures.getOrThrow(AetherConfiguredFeatures.ORE_GRAVITITE_BURIED_CONFIGURATION),
-                NitrogenPlacedFeatureBuilders.commonOrePlacement(5, HeightRangePlacement.uniform(VerticalAnchor.bottom(), VerticalAnchor.aboveBottom(74))));
+                AetherPlacedFeatureBuilders.commonOrePlacement(5, HeightRangePlacement.uniform(VerticalAnchor.bottom(), VerticalAnchor.aboveBottom(74))));
         register(context, ORE_GRAVITITE_PLACEMENT, configuredFeatures.getOrThrow(AetherConfiguredFeatures.ORE_GRAVITITE_CONFIGURATION),
-                NitrogenPlacedFeatureBuilders.commonOrePlacement(7, HeightRangePlacement.triangle(VerticalAnchor.aboveBottom(-58), VerticalAnchor.aboveBottom(74))));
+                AetherPlacedFeatureBuilders.commonOrePlacement(7, HeightRangePlacement.triangle(VerticalAnchor.aboveBottom(-58), VerticalAnchor.aboveBottom(74))));
         register(context, GOLD_DUNGEON_ISLAND_FOLIAGE, configuredFeatures.getOrThrow(AetherConfiguredFeatures.GOLD_DUNGEON_ISLAND_FOLIAGE_CONFIGURATION),
             PlacementUtils.isEmpty(), RarityFilter.onAverageOnceEvery(16));
     }
 
-    private static void register(BootstrapContext<PlacedFeature> context, ResourceKey<PlacedFeature> key, Holder<ConfiguredFeature<?, ?>> configuration, List<PlacementModifier> modifiers) {
+    private static void register(BootstrapContext<PlacedFeature> context, ResourceKey<PlacedFeature> key, Holder<Feature> configuration, List<PlacementModifier> modifiers) {
         context.register(key, new PlacedFeature(configuration, List.copyOf(modifiers)));
     }
 
-    private static void register(BootstrapContext<PlacedFeature> context, ResourceKey<PlacedFeature> key, Holder<ConfiguredFeature<?, ?>> configuration, PlacementModifier... modifiers) {
-        register(context, key, configuration, List.of(modifiers));
+    private static void register(BootstrapContext<PlacedFeature> context, ResourceKey<PlacedFeature> key, Holder<Feature> configuration, Object... modifiers) {
+        List<PlacementModifier> list = new ArrayList<>();
+        for (Object modifier : modifiers) {
+            if (modifier instanceof PlacementModifier placementModifier) {
+                list.add(placementModifier);
+            } else if (modifier instanceof List<?> modifierList) {
+                modifierList.forEach((entry) -> list.add((PlacementModifier) entry));
+            }
+        }
+        register(context, key, configuration, list);
     }
 }

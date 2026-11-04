@@ -1,5 +1,7 @@
 package com.aetherteam.aether.inventory.menu;
 
+import net.minecraft.locale.Language;
+import net.minecraft.util.Prediction;
 import com.aetherteam.aether.inventory.container.LoreInventory;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -87,9 +89,9 @@ public class LoreBookMenu extends AbstractContainerMenu {
             ItemStack stack = this.loreInventory.getItem(0);
             if (!stack.isEmpty()) {
                 if (player.isAlive() && !serverPlayer.hasDisconnected()) {
-                    player.getInventory().placeItemBackInInventory(stack);
+                    player.getInventory().placeItemBackInInventory(stack, Prediction.SERVER_ONLY);
                 } else {
-                    player.drop(stack, false);
+                    player.drop(stack, false, Prediction.SERVER_ONLY);
                 }
                 this.loreInventory.setItem(0, ItemStack.EMPTY);
             }
@@ -105,19 +107,16 @@ public class LoreBookMenu extends AbstractContainerMenu {
         this.loreEntryExists = loreEntryExists;
     }
 
-    @Environment(EnvType.CLIENT)
     public static void addLoreEntryOverride(Function<RegistryAccess, Predicate<ItemStack>> predicate, String entry) {
         LORE_ENTRY_OVERRIDES.putIfAbsent(predicate, entry);
     }
 
-    @Environment(EnvType.CLIENT)
     public String getLoreEntryKey(ItemStack stack) {
         Optional<String> key = LORE_ENTRY_OVERRIDES.entrySet().stream().filter(e -> e.getKey().apply(this.loreInventory.player.registryAccess()).test(stack)).findAny().map(Map.Entry::getValue);
-        return key.orElseGet(() -> "lore." + stack.getDescriptionId());
+        return key.orElseGet(() -> "lore." + stack.getItem().getDescriptionId());
     }
 
-    @Environment(EnvType.CLIENT)
     public boolean loreEntryKeyExists(ItemStack stack) {
-        return I18n.exists(this.getLoreEntryKey(stack));
+        return Language.getInstance().has(this.getLoreEntryKey(stack));
     }
 }

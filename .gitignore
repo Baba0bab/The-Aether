@@ -26,4 +26,6 @@ runs/client/options.txt
 __pycache__
 logs
 src/generated/resources/.cache
-libs
+libs/*.jar
+libs/*/build/
+libs/*/run/

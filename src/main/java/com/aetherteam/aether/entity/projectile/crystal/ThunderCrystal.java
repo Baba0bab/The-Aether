@@ -1,5 +1,8 @@
 package com.aetherteam.aether.entity.projectile.crystal;
 
+import com.mojang.serialization.Codec;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
 import com.aetherteam.aether.client.AetherSoundEvents;
 import com.aetherteam.aether.client.particle.AetherParticleTypes;
 import com.aetherteam.aether.data.resources.registries.AetherDamageTypes;
@@ -49,7 +52,7 @@ public class ThunderCrystal extends AbstractCrystal {
         if (result.getEntity() instanceof LivingEntity livingTarget && livingTarget != this.getOwner()) {
             livingTarget.hurt(AetherDamageTypes.indirectEntityDamageSource(this.level(), AetherDamageTypes.THUNDER_CRYSTAL, this, this.getOwner()), 5.0F);
             this.knockback(0.1, this.position().subtract(livingTarget.position())); // Apply knockback to the projectile from the distance difference between the projectile and hit entity.
-            livingTarget.knockback(0.25, this.getX() - livingTarget.getX(), this.getZ() - livingTarget.getZ());
+            livingTarget.knockback(0.25, this.getX() - livingTarget.getX(), this.getZ() - livingTarget.getZ(), AetherDamageTypes.indirectEntityDamageSource(this.level(), AetherDamageTypes.THUNDER_CRYSTAL, this, this.getOwner()), 5.0F);
         }
     }
 
@@ -79,7 +82,7 @@ public class ThunderCrystal extends AbstractCrystal {
                 }
             }
         }
-        this.checkInsideBlocks();
+        this.applyEffectsFromBlocks();
         Vec3 motion = this.getDeltaMovement();
         this.setPos(this.getX() + motion.x(), this.getY() + motion.y(), this.getZ() + motion.z());
     }
@@ -88,8 +91,8 @@ public class ThunderCrystal extends AbstractCrystal {
      * When this projectile is hurt, this method particles, knocks the projectile back, and increases the time it is considered in the air.
      */
     @Override
-    public boolean hurt(DamageSource source, float amount) {
-        if (!this.level().isClientSide() && source.getSourcePosition() != null && this.level() instanceof ServerLevel serverLevel) {
+    public boolean hurtServer(ServerLevel serverLevel, DamageSource source, float amount) {
+        if (source.getSourcePosition() != null) {
             serverLevel.sendParticles(ParticleTypes.CRIT, this.getX(), this.getY(), this.getZ(), 15, 0.2, 0.2, 0.2, 0.0);
             this.knockback(0.15 + amount / 8, this.position().subtract(source.getSourcePosition())); // Sets knockback movement in the direction of the damage.
         }
@@ -104,7 +107,7 @@ public class ThunderCrystal extends AbstractCrystal {
      * @param target   The {@link Vec3} motion for the knockback.
      */
     public void knockback(double strength, Vec3 target) {
-        this.hasImpulse = true;
+        this.needsSync = true;
         Vec3 vec3 = this.getDeltaMovement();
         Vec3 vec31 = target.normalize().scale(strength);
         this.setDeltaMovement(vec3.x() / 2.0 + vec31.x(), vec3.y() / 2 + vec31.y(), vec3.z() / 2.0 + vec31.z());
@@ -132,7 +135,7 @@ public class ThunderCrystal extends AbstractCrystal {
     }
 
     @Override
-    public void addAdditionalSaveData(CompoundTag tag) {
+    protected void addAdditionalSaveData(ValueOutput tag) {
         super.addAdditionalSaveData(tag);
         if (this.target != null) {
             tag.putInt("Target", this.target.getId());
@@ -140,10 +143,10 @@ public class ThunderCrystal extends AbstractCrystal {
     }
 
     @Override
-    public void readAdditionalSaveData(CompoundTag tag) {
+    protected void readAdditionalSaveData(ValueInput tag) {
         super.readAdditionalSaveData(tag);
-        if (tag.contains("Target")) {
-            this.target = this.level().getEntity(tag.getInt("Target"));
+        if (tag.read("Target", Codec.PASSTHROUGH).isPresent()) {
+            this.target = this.level().getEntity(tag.getIntOr("Target", 0));
         }
     }
 }

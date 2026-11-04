@@ -10,7 +10,7 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 
@@ -18,7 +18,7 @@ import net.minecraft.world.level.Level;
  * Stores Cloud Minions to {@link AetherPlayerAttachment} when summoned.
  */
 public record CloudMinionPacket(int entityID, int rightCloudMinionID, int leftCloudMinionID) implements CustomPacketPayload {
-    public static final Type<CloudMinionPacket> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Aether.MODID, "add_cloud_minions"));
+    public static final Type<CloudMinionPacket> TYPE = new Type<>(Identifier.fromNamespaceAndPath(Aether.MODID, "add_cloud_minions"));
 
     public static final StreamCodec<RegistryFriendlyByteBuf, CloudMinionPacket> STREAM_CODEC = StreamCodec.composite(
         ByteBufCodecs.INT,

@@ -7,9 +7,7 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.Recipe;
-import net.minecraft.world.item.crafting.RecipeInput;
-import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.item.crafting.*;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.state.BlockState;
@@ -18,12 +16,12 @@ import java.util.Optional;
 import java.util.function.Predicate;
 
 public abstract class AbstractPlacementBanRecipe<T, S extends Predicate<T>, R extends RecipeInput> implements Recipe<R> {
-    protected final RecipeType<?> type;
+    protected final RecipeType<? extends Recipe<R>> type;
     private final Either<ResourceKey<Biome>, TagKey<Biome>> biome;
     protected final Optional<BlockStateIngredient> bypassBlock;
     protected final S ingredient;
 
-    public AbstractPlacementBanRecipe(RecipeType<?> type, Either<ResourceKey<Biome>, TagKey<Biome>> biome, Optional<BlockStateIngredient> bypassBlock, S ingredient) {
+    public AbstractPlacementBanRecipe(RecipeType<? extends Recipe<R>> type, Either<ResourceKey<Biome>, TagKey<Biome>> biome, Optional<BlockStateIngredient> bypassBlock, S ingredient) {
         this.type = type;
         this.biome = biome;
         this.bypassBlock = bypassBlock;
@@ -67,8 +65,31 @@ public abstract class AbstractPlacementBanRecipe<T, S extends Predicate<T>, R ex
     }
 
     @Override
-    public RecipeType<?> getType() {
-        return this.type;
+    public String group() {
+        return "";
+    }
+
+    @Override
+    public boolean showNotification() {
+        return false;
+    }
+
+    /**
+     * Placement bans are not crafted, so they are excluded from recipe books and placement checks.
+     */
+    @Override
+    public boolean isSpecial() {
+        return true;
+    }
+
+    @Override
+    public PlacementInfo placementInfo() {
+        return PlacementInfo.NOT_PLACEABLE;
+    }
+
+    @Override
+    public RecipeBookCategory recipeBookCategory() {
+        return null;
     }
 
     @Override
@@ -77,17 +98,12 @@ public abstract class AbstractPlacementBanRecipe<T, S extends Predicate<T>, R ex
     }
 
     @Override
-    public boolean canCraftInDimensions(int pWidth, int pHeight) {
-        return false;
-    }
-
-    @Override
-    public ItemStack assemble(R container, HolderLookup.Provider provider) {
+    public ItemStack assemble(R container) {
         return ItemStack.EMPTY;
     }
 
     @Override
-    public ItemStack getResultItem(HolderLookup.Provider provider) {
-        return ItemStack.EMPTY;
+    public RecipeType<? extends Recipe<R>> getType() {
+        return this.type;
     }
 }

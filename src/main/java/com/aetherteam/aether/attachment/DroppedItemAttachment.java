@@ -1,5 +1,6 @@
 package com.aetherteam.aether.attachment;
 
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.world.entity.Entity;
@@ -21,7 +22,7 @@ public class DroppedItemAttachment {
     @Nullable
     private Entity owner;
 
-    public static final Codec<DroppedItemAttachment> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+    public static final MapCodec<DroppedItemAttachment> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
             Codec.INT.optionalFieldOf("owner_id").forGetter(o -> o.ownerID)
     ).apply(instance, DroppedItemAttachment::new));
 

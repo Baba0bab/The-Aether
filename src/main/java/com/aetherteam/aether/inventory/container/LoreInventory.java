@@ -1,5 +1,6 @@
 package com.aetherteam.aether.inventory.container;
 
+import com.aetherteam.nitrogen.fabric.network.PacketDistributor;
 import com.aetherteam.aether.advancement.AetherAdvancementTriggers;
 import com.aetherteam.aether.advancement.LoreTrigger;
 import com.aetherteam.aether.inventory.menu.LoreBookMenu;

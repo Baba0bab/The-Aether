@@ -19,7 +19,7 @@ public class AetherEventDispatch {
     /**
      * @see BossFightEvent.Start
      */
-    public static BossFightEvent.Start onBossFightStart(Entity entity, BossRoomTracker<?> dungeon) {
+    public static BossFightEvent.Start onBossFightStart(Entity entity, BossRoomTracker dungeon) {
         BossFightEvent.Start event = new BossFightEvent.Start(entity, dungeon);
         BossFightEvent.START_BOSS_FIGHT.invoker().startFight(event);
         return event;
@@ -28,7 +28,7 @@ public class AetherEventDispatch {
     /**
      * @see BossFightEvent.Stop
      */
-    public static BossFightEvent.Stop onBossFightStop(Entity entity, BossRoomTracker<?> dungeon) {
+    public static BossFightEvent.Stop onBossFightStop(Entity entity, BossRoomTracker dungeon) {
         BossFightEvent.Stop event = new BossFightEvent.Stop(entity, dungeon);
         BossFightEvent.STOP_BOSS_FIGHT.invoker().stopFight(event);
         return event;
@@ -37,7 +37,7 @@ public class AetherEventDispatch {
     /**
      * @see BossFightEvent.AddPlayer
      */
-    public static BossFightEvent.AddPlayer onBossFightPlayerAdd(Entity entity, BossRoomTracker<?> dungeon, ServerPlayer player) {
+    public static BossFightEvent.AddPlayer onBossFightPlayerAdd(Entity entity, BossRoomTracker dungeon, ServerPlayer player) {
         BossFightEvent.AddPlayer event = new BossFightEvent.AddPlayer(entity, dungeon, player);
         BossFightEvent.ADD_PLAYER.invoker().onAdd(event);
         return event;
@@ -46,7 +46,7 @@ public class AetherEventDispatch {
     /**
      * @see BossFightEvent.RemovePlayer
      */
-    public static BossFightEvent.RemovePlayer onBossFightPlayerRemove(Entity entity, BossRoomTracker<?> dungeon, ServerPlayer player) {
+    public static BossFightEvent.RemovePlayer onBossFightPlayerRemove(Entity entity, BossRoomTracker dungeon, ServerPlayer player) {
         BossFightEvent.RemovePlayer event = new BossFightEvent.RemovePlayer(entity, dungeon, player);
         BossFightEvent.REMOVE_PLAYER.invoker().onRemove(event);
         return event;

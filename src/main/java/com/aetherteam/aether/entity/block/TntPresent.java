@@ -1,12 +1,17 @@
 package com.aetherteam.aether.entity.block;
 
+import com.mojang.serialization.Codec;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
 import com.aetherteam.aether.entity.AetherEntityTypes;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.Level;
@@ -59,11 +64,16 @@ public class TntPresent extends Entity implements TraceableEntity {
                 this.level().explode(this, Explosion.getDefaultDamageSource(this.level(), this), null, this.getX(), this.getY(0.0625), this.getZ(), 1.0F, false, Level.ExplosionInteraction.TNT);
             }
         } else {
-            this.updateInWaterStateAndDoFluidPushing();
+            this.updateFluidInteraction();
             if (this.level().isClientSide()) {
                 this.level().addParticle(ParticleTypes.SMOKE, this.getX(), this.getY() + 0.5, this.getZ(), 0.0, 0.0, 0.0);
             }
         }
+    }
+
+    @Override
+    public boolean hurtServer(ServerLevel level, DamageSource damageSource, float amount) {
+        return false;
     }
 
     public int getFuse() {
@@ -96,14 +106,14 @@ public class TntPresent extends Entity implements TraceableEntity {
     }
 
     @Override
-    protected void addAdditionalSaveData(CompoundTag tag) {
+    protected void addAdditionalSaveData(ValueOutput tag) {
         tag.putShort("Fuse", (short) this.getFuse());
     }
 
     @Override
-    protected void readAdditionalSaveData(CompoundTag tag) {
-        if (tag.contains("Fuse")) {
-            this.setFuse(tag.getShort("Fuse"));
+    protected void readAdditionalSaveData(ValueInput tag) {
+        if (tag.read("Fuse", Codec.PASSTHROUGH).isPresent()) {
+            this.setFuse(tag.getShortOr("Fuse", (short) 0));
         }
     }
 }

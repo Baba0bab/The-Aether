@@ -9,7 +9,7 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
@@ -18,7 +18,7 @@ import net.minecraft.world.entity.player.Player;
  * Sets the player's Life Shard data and refreshes the modifier and health values. This is called by {@link com.aetherteam.aether.command.PlayerCapabilityCommand}.
  */
 public record HealthResetPacket(int entityID, int value) implements CustomPacketPayload {
-    public static final Type<HealthResetPacket> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Aether.MODID, "reset_health"));
+    public static final Type<HealthResetPacket> TYPE = new Type<>(Identifier.fromNamespaceAndPath(Aether.MODID, "reset_health"));
 
     public static final StreamCodec<RegistryFriendlyByteBuf, HealthResetPacket> STREAM_CODEC = StreamCodec.composite(
         ByteBufCodecs.INT,

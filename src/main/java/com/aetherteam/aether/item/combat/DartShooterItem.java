@@ -12,11 +12,15 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
 import net.minecraft.util.Unit;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.*;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemUseAnimation;
+import net.minecraft.world.item.ProjectileWeaponItem;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
@@ -43,10 +47,10 @@ public class DartShooterItem extends ProjectileWeaponItem implements FabricItem 
      * @param player The {@link Player} using this item.
      * @param hand   The {@link InteractionHand} in which the item is being used.
      * @return Consume (cause the item to bob down then up in hand) if the player has ammo or is in creative, or fail (do nothing) if those conditions aren't met, or use the result of the Forge event hook if there is one.
-     * This is an {@link InteractionResultHolder InteractionResultHolder&lt;ItemStack&gt;}.
+     * This is an {@link InteractionResult InteractionResult&lt;ItemStack&gt;}.
      */
     @Override
-    public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
+    public InteractionResult use(Level level, Player player, InteractionHand hand) {
         ItemStack heldStack = player.getItemInHand(hand);
         boolean hasAmmo = !player.getProjectile(heldStack).isEmpty();
 
@@ -54,9 +58,9 @@ public class DartShooterItem extends ProjectileWeaponItem implements FabricItem 
 //        if (result == null) {
             if (player.getAbilities().instabuild || hasAmmo) {
                 player.startUsingItem(hand);
-                return InteractionResultHolder.consume(heldStack);
+                return InteractionResult.CONSUME;
             } else {
-                return InteractionResultHolder.fail(heldStack);
+                return InteractionResult.FAIL;
             }
 //        } else {
 //            return result;
@@ -157,8 +161,8 @@ public class DartShooterItem extends ProjectileWeaponItem implements FabricItem 
     }
 
     @Override
-    public UseAnim getUseAnimation(ItemStack stack) {
-        return UseAnim.BOW;
+    public ItemUseAnimation getUseAnimation(ItemStack stack) {
+        return ItemUseAnimation.BOW;
     }
 
     @Override
@@ -175,13 +179,13 @@ public class DartShooterItem extends ProjectileWeaponItem implements FabricItem 
     }
 
     @Override
-    public boolean isEnchantable(ItemStack stack) {
-        return true;
+    public boolean isPrimaryItemFor(ItemStack stack, Holder<Enchantment> enchantment) {
+        return super.isPrimaryItemFor(stack, enchantment) && !enchantment.is(Enchantments.FLAME) && !enchantment.is(Enchantments.INFINITY);
     }
 
     @Override
-    public boolean canBeEnchantedWith(ItemStack stack, Holder<Enchantment> enchantment, EnchantingContext context) {
-        return super.canBeEnchantedWith(stack, enchantment, context) && !enchantment.is(Enchantments.FLAME) && !enchantment.is(Enchantments.INFINITY);
+    public boolean supportsEnchantment(ItemStack stack, Holder<Enchantment> enchantment) {
+        return super.supportsEnchantment(stack, enchantment) && !enchantment.is(Enchantments.FLAME) && !enchantment.is(Enchantments.INFINITY);
     }
 
     /**

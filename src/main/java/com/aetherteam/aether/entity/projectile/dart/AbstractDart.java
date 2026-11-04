@@ -1,7 +1,11 @@
 package com.aetherteam.aether.entity.projectile.dart;
 
+import com.aetherteam.aether.entity.EntityUtil;
+import com.aetherteam.aether.mixin.mixins.common.accessor.AbstractArrowAccessor;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.entity.EntityTypes;
 import com.aetherteam.aether.client.AetherSoundEvents;
-import com.aetherteam.aether.mixin.mixins.common.accessor.PlayerAccessor;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.game.ClientboundGameEventPacket;
 import net.minecraft.server.level.ServerLevel;
@@ -13,7 +17,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.projectile.AbstractArrow;
+import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
 import net.minecraft.world.entity.projectile.ProjectileDeflection;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -72,8 +76,7 @@ public abstract class AbstractDart extends AbstractArrow {
         if (result.getType() == HitResult.Type.ENTITY) {
             Entity entity = ((EntityHitResult) result).getEntity();
             if (entity instanceof Player player && player.isBlocking()) {
-                PlayerAccessor playerAccessor = (PlayerAccessor) player;
-                playerAccessor.callHurtCurrentlyUsedShield(3.0F);
+                EntityUtil.hurtBlockingItem(player, 3.0F);
             }
         }
     }
@@ -86,7 +89,7 @@ public abstract class AbstractDart extends AbstractArrow {
     protected void onHitEntity(EntityHitResult result) {
         Entity entity = result.getEntity();
         float f = (float) this.getDeltaMovement().length();
-        double d0 = this.getBaseDamage();
+        double d0 = ((AbstractArrowAccessor) this).aether$getBaseDamage();
         Entity owner = this.getOwner();
         DamageSource damageSource = this.damageSources().arrow(this, owner != null ? owner : this);
         if (this.getWeaponItem() != null && this.level() instanceof ServerLevel serverlevel) {
@@ -103,13 +106,13 @@ public abstract class AbstractDart extends AbstractArrow {
             livingEntity.setLastHurtMob(entity);
         }
 
-        boolean flag = entity.getType() == EntityType.ENDERMAN;
+        boolean flag = entity.getType() == EntityTypes.ENDERMAN;
         int k = entity.getRemainingFireTicks();
         if (this.isOnFire() && !flag) {
             entity.igniteForSeconds(5);
         }
 
-        if (entity.hurt(damageSource, (float) i)) {
+        if (entity.hurtOrSimulate(damageSource, (float) i)) {
             if (flag) {
                 return;
             }
@@ -123,7 +126,7 @@ public abstract class AbstractDart extends AbstractArrow {
 
                 this.doPostHurtEffects(livingentity);
                 if (livingentity != owner && livingentity instanceof Player && owner instanceof ServerPlayer serverPlayer && !this.isSilent()) {
-                    serverPlayer.connection.send(new ClientboundGameEventPacket(ClientboundGameEventPacket.ARROW_HIT_PLAYER, 0.0F));
+                    serverPlayer.connection.send(new ClientboundGameEventPacket(ClientboundGameEventPacket.PLAY_ARROW_HIT_SOUND, 0.0F));
                 }
             }
 
@@ -131,11 +134,10 @@ public abstract class AbstractDart extends AbstractArrow {
             this.discard();
         } else {
             entity.setRemainingFireTicks(k);
-            this.deflect(ProjectileDeflection.REVERSE, entity, this.getOwner(), false);
-            this.setDeltaMovement(this.getDeltaMovement().scale(0.2));
-            if (!this.level().isClientSide() && this.getDeltaMovement().lengthSqr() < 1.0E-7) {
+            this.deflect(ProjectileDeflection.REVERSE, entity, this.owner, false, 0.2);
+            if (this.level() instanceof ServerLevel serverLevel && this.getDeltaMovement().lengthSqr() < 1.0E-7) {
                 if (this.pickup == AbstractArrow.Pickup.ALLOWED) {
-                    this.spawnAtLocation(this.getPickupItem(), 0.1F);
+                    this.spawnAtLocation(serverLevel, this.getPickupItem(), 0.1F);
                 }
                 this.discard();
             }
@@ -160,16 +162,14 @@ public abstract class AbstractDart extends AbstractArrow {
     }
 
     @Override
-    public void addAdditionalSaveData(CompoundTag tag) {
+    protected void addAdditionalSaveData(ValueOutput tag) {
         super.addAdditionalSaveData(tag);
         tag.putInt("TicksInAir", this.ticksInAir);
     }
 
     @Override
-    public void readAdditionalSaveData(CompoundTag tag) {
+    protected void readAdditionalSaveData(ValueInput tag) {
         super.readAdditionalSaveData(tag);
-        if (tag.contains("TicksInAir")) {
-            this.ticksInAir = tag.getInt("TicksInAir");
-        }
+        this.ticksInAir = tag.getIntOr("TicksInAir", this.ticksInAir);
     }
 }

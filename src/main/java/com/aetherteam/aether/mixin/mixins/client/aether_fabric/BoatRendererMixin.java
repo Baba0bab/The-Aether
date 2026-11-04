@@ -6,7 +6,7 @@ import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.mojang.datafixers.util.Pair;
 import net.minecraft.client.renderer.entity.BoatRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
-import net.minecraft.world.entity.vehicle.Boat;
+import net.minecraft.world.entity.vehicle.boat.Boat;
 import org.spongepowered.asm.mixin.Mixin;
 
 @Mixin(BoatRenderer.class)

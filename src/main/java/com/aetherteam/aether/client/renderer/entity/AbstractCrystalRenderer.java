@@ -1,47 +1,59 @@
 package com.aetherteam.aether.client.renderer.entity;
 
+import net.minecraft.client.renderer.state.level.CameraRenderState;
+import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import com.aetherteam.aether.client.renderer.entity.model.CrystalModel;
+import com.aetherteam.aether.client.renderer.entity.state.CrystalRenderState;
 import com.aetherteam.aether.entity.projectile.crystal.AbstractCrystal;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
+import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.resources.Identifier;
 
-public abstract class AbstractCrystalRenderer<T extends AbstractCrystal> extends EntityRenderer<T> {
-    private final CrystalModel<AbstractCrystal> crystal;
+public abstract class AbstractCrystalRenderer<T extends AbstractCrystal, R extends CrystalRenderState> extends EntityRenderer<T, R> {
+    private final CrystalModel<CrystalRenderState> crystal;
 
-    public AbstractCrystalRenderer(EntityRendererProvider.Context context, CrystalModel<AbstractCrystal> crystalModel) {
+    public AbstractCrystalRenderer(EntityRendererProvider.Context context, CrystalModel<CrystalRenderState> crystalModel) {
         super(context);
         this.crystal = crystalModel;
+    }
+
+    @Override
+    public void extractRenderState(T entity, R reusedState, float partialTick) {
+        super.extractRenderState(entity, reusedState, partialTick);
+        reusedState.xRot = entity.getXRot(partialTick);
+        reusedState.yRot = entity.getYRot(partialTick);
     }
 
     /**
      * Rotates the different parts of the crystal model.
      *
-     * @param crystal      The entity.
-     * @param entityYaw    The {@link Float} for the entity's yaw rotation.
-     * @param partialTicks The {@link Float} for the game's partial ticks.
+     * @param renderState  The {@link EntityRenderState}.
      * @param poseStack    The rendering {@link PoseStack}.
-     * @param buffer       The rendering {@link MultiBufferSource}.
+     * @param submitNodeCollector       The rendering {@link SubmitNodeCollector}.
      * @param packedLight  The {@link Integer} for the packed lighting for rendering.
      */
     @Override
-    public void render(T crystal, float entityYaw, float partialTicks, PoseStack poseStack, MultiBufferSource buffer, int packedLight) {
+    public void submit(R renderState, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, CameraRenderState camera) {
+        int packedLight = renderState.lightCoords;
         poseStack.pushPose();
         poseStack.translate(0.0, 0.4, 0.0);
-        VertexConsumer iVertexBuilder = buffer.getBuffer(RenderType.entityTranslucent(this.getTextureLocation(crystal)));
-        float f = (float) crystal.tickCount + partialTicks;
-        poseStack.mulPose(Axis.XP.rotationDegrees(f * 0.1F * 360.0F));
-        this.crystal.crystal1.render(poseStack, iVertexBuilder, packedLight, OverlayTexture.NO_OVERLAY);
-        poseStack.mulPose(Axis.YP.rotationDegrees(f * 0.1F * 360.0F));
-        this.crystal.crystal2.render(poseStack, iVertexBuilder, packedLight, OverlayTexture.NO_OVERLAY);
-        poseStack.mulPose(Axis.ZP.rotationDegrees(f * 0.1F * 360.0F));
-        this.crystal.crystal3.render(poseStack, iVertexBuilder, packedLight, OverlayTexture.NO_OVERLAY);
+        RenderType renderType = RenderTypes.entityTranslucent(this.getTextureLocation(renderState));
+        float f = renderState.ageInTicks + renderState.partialTick;
+        poseStack.rotate(Axis.XP.rotationDegrees(f * 0.1F * 360.0F));
+        submitNodeCollector.submitModelPart(this.crystal.crystal1, poseStack, renderType, packedLight, OverlayTexture.NO_OVERLAY, null);
+        poseStack.rotate(Axis.YP.rotationDegrees(f * 0.1F * 360.0F));
+        submitNodeCollector.submitModelPart(this.crystal.crystal2, poseStack, renderType, packedLight, OverlayTexture.NO_OVERLAY, null);
+        poseStack.rotate(Axis.ZP.rotationDegrees(f * 0.1F * 360.0F));
+        submitNodeCollector.submitModelPart(this.crystal.crystal3, poseStack, renderType, packedLight, OverlayTexture.NO_OVERLAY, null);
         poseStack.popPose();
-        super.render(crystal, entityYaw, partialTicks, poseStack, buffer, packedLight);
+        super.submit(renderState, poseStack, submitNodeCollector, camera);
     }
+
+    protected abstract Identifier getTextureLocation(R renderState);
 }

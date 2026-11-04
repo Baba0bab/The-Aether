@@ -1,5 +1,7 @@
 package com.aetherteam.aether.block.natural;
 
+import net.minecraft.util.Util;
+import net.minecraft.world.level.block.BonemealSource;
 import com.aetherteam.aether.block.AetherBlockStateProperties;
 import com.aetherteam.aether.block.AetherBlocks;
 import com.aetherteam.aether.data.resources.registries.AetherPlacedFeatures;
@@ -11,15 +13,15 @@ import net.minecraft.core.Holder;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.BonemealableBlock;
 import net.minecraft.world.level.block.GrassBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
-import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
-import net.minecraft.world.level.levelgen.feature.configurations.RandomPatchConfiguration;
-import net.minecraft.world.level.levelgen.feature.configurations.TreeConfiguration;
+import net.minecraft.world.level.levelgen.feature.Feature;
+import net.minecraft.world.level.levelgen.feature.TreeFeature;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 
 import java.util.List;
@@ -44,7 +46,8 @@ public class AetherGrassBlock extends GrassBlock {
         builder.add(AetherBlockStateProperties.DOUBLE_DROPS);
     }
 
-    public boolean onTreeGrow(BlockState state, LevelReader level, BiConsumer<BlockPos, BlockState> placeFunction, RandomSource randomSource, BlockPos pos, TreeConfiguration config) {
+    @Override
+    public boolean onTreeGrow(BlockState state, WorldGenLevel level, BiConsumer<BlockPos, BlockState> placeFunction, RandomSource randomSource, BlockPos pos, TreeFeature tree) {
         placeFunction.accept(pos, AetherBlocks.AETHER_DIRT.get().defaultBlockState().setValue(AetherBlockStateProperties.DOUBLE_DROPS, state.getValue(AetherBlockStateProperties.DOUBLE_DROPS)));
         return true;
     }
@@ -75,7 +78,7 @@ public class AetherGrassBlock extends GrassBlock {
     }
 
     @Override
-    public void performBonemeal(ServerLevel level, RandomSource random, BlockPos pos, BlockState state) {
+    public void performBonemeal(ServerLevel level, RandomSource random, BlockPos pos, BlockState state, BonemealSource source) {
         BlockPos abovePos = pos.above();
         Block grass = AetherBlocks.AETHER_GRASS_BLOCK.get();
         Optional<Holder.Reference<PlacedFeature>> grassFeatureOptional = level.registryAccess().nitrogen_fabric$holder(AetherPlacedFeatures.AETHER_GRASS_BONEMEAL);
@@ -93,24 +96,22 @@ public class AetherGrassBlock extends GrassBlock {
 
             BlockState blockState = level.getBlockState(blockPos);
             if (blockState.is(grass) && random.nextInt(10) == 0) {
-                ((BonemealableBlock) grass).performBonemeal(level, random, blockPos, blockState);
+                ((BonemealableBlock) grass).performBonemeal(level, random, blockPos, blockState, source);
             }
 
             if (blockState.isAir()) {
-                Holder<PlacedFeature> featureHolder;
                 if (random.nextInt(8) == 0) {
-                    List<ConfiguredFeature<?, ?>> list = level.getBiome(blockPos).value().getGenerationSettings().getFlowerFeatures();
-                    if (list.isEmpty()) {
+                    List<Feature> features = level.getBiome(blockPos).value().getGenerationSettings().getBoneMealFeatures();
+                    if (features.isEmpty()) {
                         continue;
                     }
-                    featureHolder = ((RandomPatchConfiguration) list.get(random.nextInt(list.size())).config()).feature();
+                    Util.getRandom(features, random).place(level, level.getChunkSource().getGenerator(), random, blockPos);
                 } else {
                     if (grassFeatureOptional.isEmpty()) {
                         continue;
                     }
-                    featureHolder = grassFeatureOptional.get();
+                    grassFeatureOptional.get().value().place(level, level.getChunkSource().getGenerator(), random, blockPos);
                 }
-                featureHolder.value().place(level, level.getChunkSource().getGenerator(), random, blockPos);
             }
         }
     }

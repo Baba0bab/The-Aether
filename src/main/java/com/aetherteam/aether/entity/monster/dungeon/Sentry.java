@@ -1,5 +1,9 @@
 package com.aetherteam.aether.entity.monster.dungeon;
 
+import net.minecraft.world.entity.ai.goal.WrappedGoal;
+import net.minecraft.world.entity.ai.goal.Goal;
+import java.util.List;
+import java.util.ArrayList;
 import com.aetherteam.aether.block.AetherBlocks;
 import com.aetherteam.aether.client.AetherSoundEvents;
 import net.minecraft.core.particles.BlockParticleOption;
@@ -17,7 +21,7 @@ import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
-import net.minecraft.world.entity.monster.Slime;
+import net.minecraft.world.entity.monster.cubemob.Slime;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
@@ -31,13 +35,22 @@ public class Sentry extends Slime {
         super(type, level);
     }
 
+    /**
+     * Registers the Slime goals, but wraps them so that they only run while the Sentry is awake.
+     */
     @Override
     protected void registerGoals() {
-        this.goalSelector.addGoal(1, new SentryFloatGoal(this));
-        this.goalSelector.addGoal(2, new SentryAttackGoal(this));
-        this.goalSelector.addGoal(3, new SentryRandomDirectionGoal(this));
-        this.goalSelector.addGoal(5, new SentryKeepOnJumpingGoal(this));
-        this.targetSelector.addGoal(1, new NearestAttackableTargetGoal<>(this, Player.class, 10, true, false, (entity) -> Math.abs(entity.getY() - this.getY()) <= 4.0));
+        super.registerGoals();
+        List<WrappedGoal> goals = new ArrayList<>(this.goalSelector.getAvailableGoals());
+        for (WrappedGoal wrappedGoal : goals) {
+            this.goalSelector.removeGoal(wrappedGoal.getGoal());
+            this.goalSelector.addGoal(wrappedGoal.getPriority(), new AwakeGoal(this, wrappedGoal.getGoal()));
+        }
+    }
+
+    @Override
+    protected void addTargetingGoals() {
+        this.targetSelector.addGoal(1, new NearestAttackableTargetGoal<>(this, Player.class, 10, true, false, (entity, serverLevel) -> Math.abs(entity.getY() - this.getY()) <= 4.0));
     }
 
     public static AttributeSupplier.Builder createMobAttributes() {
@@ -113,7 +126,7 @@ public class Sentry extends Slime {
      */
     protected void explodeAt(LivingEntity entity) {
         DamageSource damageSource = this.damageSources().mobAttack(this);
-        if (this.distanceToSqr(entity) < 1.5 && this.isAwake() && this.hasLineOfSight(entity) && entity.hurt(damageSource, 1.0F) && this.tickCount > 20 && this.isAlive()) {
+        if (this.distanceToSqr(entity) < 1.5 && this.isAwake() && this.hasLineOfSight(entity) && entity.hurtOrSimulate(damageSource, 1.0F) && this.tickCount > 20 && this.isAlive()) {
             entity.push(0.3, 0.4, 0.3);
             this.level().explode(this, this.getX(), this.getY(), this.getZ(), 1.0F, Level.ExplosionInteraction.MOB);
             this.playSound(SoundEvents.GENERIC_EXPLODE.value(), 1.0F, 0.2F * (this.getRandom().nextFloat() - this.getRandom().nextFloat()) + 1);
@@ -182,10 +195,6 @@ public class Sentry extends Slime {
         return AetherSoundEvents.ENTITY_SENTRY_SQUISH.get();
     }
 
-    @Override
-    protected boolean shouldDespawnInPeaceful() {
-        return true;
-    }
 
     @Override
     public void handleEntityEvent(byte id) {
@@ -202,79 +211,52 @@ public class Sentry extends Slime {
         }
     }
 
-    static class SentryAttackGoal extends SlimeAttackGoal {
+    /**
+     * Wraps a goal so that it can only be used while the Sentry is awake.
+     */
+    static class AwakeGoal extends Goal {
         private final Sentry sentry;
+        private final Goal goal;
 
-        public SentryAttackGoal(Sentry sentry) {
-            super(sentry);
+        public AwakeGoal(Sentry sentry, Goal goal) {
             this.sentry = sentry;
+            this.goal = goal;
+            this.setFlags(goal.getFlags());
         }
 
         @Override
         public boolean canUse() {
-            return this.sentry.isAwake() && super.canUse();
+            return this.sentry.isAwake() && this.goal.canUse();
         }
 
         @Override
         public boolean canContinueToUse() {
-            return this.sentry.isAwake() && super.canContinueToUse();
-        }
-    }
-
-    static class SentryFloatGoal extends SlimeFloatGoal {
-        private final Sentry sentry;
-
-        public SentryFloatGoal(Sentry sentry) {
-            super(sentry);
-            this.sentry = sentry;
+            return this.sentry.isAwake() && this.goal.canContinueToUse();
         }
 
         @Override
-        public boolean canUse() {
-            return this.sentry.isAwake() && super.canUse();
+        public boolean isInterruptable() {
+            return this.goal.isInterruptable();
         }
 
         @Override
-        public boolean canContinueToUse() {
-            return this.sentry.isAwake() && super.canContinueToUse();
-        }
-    }
-
-    static class SentryKeepOnJumpingGoal extends SlimeKeepOnJumpingGoal {
-        private final Sentry sentry;
-
-        public SentryKeepOnJumpingGoal(Sentry sentry) {
-            super(sentry);
-            this.sentry = sentry;
+        public void start() {
+            this.goal.start();
         }
 
         @Override
-        public boolean canUse() {
-            return this.sentry.isAwake() && super.canUse();
+        public void stop() {
+            this.goal.stop();
         }
 
         @Override
-        public boolean canContinueToUse() {
-            return this.sentry.isAwake() && super.canContinueToUse();
-        }
-    }
-
-    static class SentryRandomDirectionGoal extends SlimeRandomDirectionGoal {
-        private final Sentry sentry;
-
-        public SentryRandomDirectionGoal(Sentry sentry) {
-            super(sentry);
-            this.sentry = sentry;
+        public boolean requiresUpdateEveryTick() {
+            return this.goal.requiresUpdateEveryTick();
         }
 
         @Override
-        public boolean canUse() {
-            return this.sentry.isAwake() && super.canUse();
-        }
-
-        @Override
-        public boolean canContinueToUse() {
-            return this.sentry.isAwake() && super.canContinueToUse();
+        public void tick() {
+            this.goal.tick();
         }
     }
 }

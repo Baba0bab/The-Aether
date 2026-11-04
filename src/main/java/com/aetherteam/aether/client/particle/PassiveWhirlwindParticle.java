@@ -6,6 +6,7 @@ import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleProvider;
 import net.minecraft.client.particle.SpriteSet;
 import net.minecraft.core.particles.SimpleParticleType;
+import net.minecraft.util.RandomSource;
 
 public class PassiveWhirlwindParticle extends AbstractWhirlwindParticle<PassiveWhirlwind> {
     public PassiveWhirlwindParticle(ClientLevel level, double xCoord, double yCoord, double zCoord, double xSpeed, double ySpeed, double zSpeed, SpriteSet sprite) {
@@ -45,10 +46,8 @@ public class PassiveWhirlwindParticle extends AbstractWhirlwindParticle<PassiveW
 
     public record Factory(SpriteSet spriteSet) implements ParticleProvider<SimpleParticleType> {
         @Override
-        public Particle createParticle(SimpleParticleType particleType, ClientLevel level, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed) {
-            PassiveWhirlwindParticle particle = new PassiveWhirlwindParticle(level, x, y, z, xSpeed, ySpeed, zSpeed, this.spriteSet());
-            particle.pickSprite(this.spriteSet());
-            return particle;
+        public Particle createParticle(SimpleParticleType particleType, ClientLevel level, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed, RandomSource random) {
+            return new PassiveWhirlwindParticle(level, x, y, z, xSpeed, ySpeed, zSpeed, this.spriteSet());
         }
     }
 }

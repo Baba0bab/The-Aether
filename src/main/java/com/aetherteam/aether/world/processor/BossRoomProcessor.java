@@ -1,6 +1,8 @@
 package com.aetherteam.aether.world.processor;
 
 import com.aetherteam.nitrogen.fabric.level.EntityStructureProcessor;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.nbt.NbtOps;
 import com.aetherteam.nitrogen.entity.BossRoomTracker;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
@@ -8,7 +10,6 @@ import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessor;
-import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessorType;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 import net.minecraft.world.phys.AABB;
 
@@ -17,7 +18,7 @@ import java.util.ArrayList;
 /**
  * This processor will give every boss mob in the template the bounding box of the room to use for its dungeon tracker.
  */
-public class BossRoomProcessor extends StructureProcessor implements EntityStructureProcessor {
+public class BossRoomProcessor implements StructureProcessor {
     public static final BossRoomProcessor INSTANCE = new BossRoomProcessor();
 
     public static final MapCodec<BossRoomProcessor> CODEC = MapCodec.unit(BossRoomProcessor.INSTANCE);
@@ -25,16 +26,17 @@ public class BossRoomProcessor extends StructureProcessor implements EntityStruc
     @Override
     public StructureTemplate.StructureEntityInfo nitrogen_fabric$processEntity(LevelReader level, BlockPos seedPos, StructureTemplate.StructureEntityInfo rawEntityInfo, StructureTemplate.StructureEntityInfo entityInfo, StructurePlaceSettings placementSettings, StructureTemplate template) {
         BoundingBox boundingBox = template.getBoundingBox(placementSettings, seedPos);
-        BossRoomTracker<?> tracker = new BossRoomTracker<>(null,
+        BossRoomTracker tracker = new BossRoomTracker(
                 entityInfo.pos,
-                new AABB(boundingBox.minX(), boundingBox.minY(), boundingBox.minZ(), boundingBox.maxX() + 1, boundingBox.maxY() + 1, boundingBox.maxZ() + 1),
+                new Vec3(boundingBox.minX(), boundingBox.minY(), boundingBox.minZ()),
+                new Vec3(boundingBox.maxX() + 1, boundingBox.maxY() + 1, boundingBox.maxZ() + 1),
                 new ArrayList<>());
-        entityInfo.nbt.put("Dungeon", tracker.addAdditionalSaveData());
-        return EntityStructureProcessor.super.nitrogen_fabric$processEntity(level, seedPos, rawEntityInfo, entityInfo, placementSettings, template);
+        entityInfo.nbt.put("Dungeon", BossRoomTracker.CODEC.encodeStart(NbtOps.INSTANCE, tracker).getOrThrow());
+        return StructureProcessor.super.processEntity(level, seedPos, rawEntityInfo, entityInfo, placementSettings, template);
     }
 
     @Override
-    protected StructureProcessorType<?> getType() {
-        return AetherStructureProcessors.BOSS_ROOM.get();
+    public MapCodec<BossRoomProcessor> codec() {
+        return CODEC;
     }
 }

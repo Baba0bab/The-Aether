@@ -4,12 +4,11 @@ import com.aetherteam.aether.item.combat.AetherItemTiers;
 import com.aetherteam.aether.item.tools.abilities.GravititeTool;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ShovelItem;
 import net.minecraft.world.item.context.UseOnContext;
 
-public class GravititeShovelItem extends ShovelItem implements GravititeTool {
-    public GravititeShovelItem() {
-        super(AetherItemTiers.GRAVITITE, new Item.Properties().attributes(ShovelItem.createAttributes(AetherItemTiers.GRAVITITE, 1.5F, -3.0F)));
+public class GravititeShovelItem extends Item implements GravititeTool {
+    public GravititeShovelItem(Properties properties) {
+        super(properties.shovel(AetherItemTiers.GRAVITITE, 1.5F, -3.0F));
     }
 
     /**
@@ -23,7 +22,7 @@ public class GravititeShovelItem extends ShovelItem implements GravititeTool {
         if (!this.floatBlock(context)) {
             return super.useOn(context);
         } else {
-            return InteractionResult.sidedSuccess(context.getLevel().isClientSide());
+            return InteractionResult.SUCCESS;
         }
     }
 }

@@ -3,7 +3,7 @@ package com.aetherteam.aether.advancement;
 import com.aetherteam.aether.Aether;
 import com.aetherteam.nitrogen.fabric.registries.DeferredHolder;
 import com.aetherteam.nitrogen.fabric.registries.DeferredRegister;
-import net.minecraft.advancements.CriterionTrigger;
+import net.minecraft.advancements.triggers.CriterionTrigger;
 import net.minecraft.core.registries.Registries;
 
 public class AetherAdvancementTriggers {

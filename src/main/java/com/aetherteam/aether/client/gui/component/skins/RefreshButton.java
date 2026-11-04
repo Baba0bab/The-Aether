@@ -1,14 +1,17 @@
 package com.aetherteam.aether.client.gui.component.skins;
 
+import net.minecraft.client.renderer.RenderPipelines;
 import com.aetherteam.aether.Aether;
 import com.aetherteam.nitrogen.fabric.BuilderMadeButton;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.WidgetSprites;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.resources.Identifier;
 
-public class RefreshButton extends BuilderMadeButton {
-    public static final WidgetSprites REFRESH_WIDGET = new WidgetSprites(ResourceLocation.fromNamespaceAndPath(Aether.MODID, "skins/refresh_button"), ResourceLocation.fromNamespaceAndPath(Aether.MODID, "skins/refresh_button_highlighted"), ResourceLocation.fromNamespaceAndPath(Aether.MODID, "skins/refresh_button_highlighted"));
+public class RefreshButton extends Button {
+    public static final WidgetSprites REFRESH_WIDGET = new WidgetSprites(Identifier.fromNamespaceAndPath(Aether.MODID, "skins/refresh_button"), Identifier.fromNamespaceAndPath(Aether.MODID, "skins/refresh_button_highlighted"), Identifier.fromNamespaceAndPath(Aether.MODID, "skins/refresh_button_highlighted"));
 
     public static final int reboundMax = 1200;
     public static int reboundTimer = 0;
@@ -18,11 +21,11 @@ public class RefreshButton extends BuilderMadeButton {
     }
 
     @Override
-    public void renderWidget(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
+    protected void extractContents(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTicks) {
         Minecraft minecraft = Minecraft.getInstance();
-        ResourceLocation location = REFRESH_WIDGET.get(this.isActive(), this.isHoveredOrFocused());
-        guiGraphics.blitSprite(location, this.getX(), this.getY(), this.getWidth(), this.getHeight());
-        guiGraphics.drawCenteredString(minecraft.font, this.getMessage(), this.getX() + (this.getWidth() / 2), this.getY() + (this.getHeight() / 2) - 4, 16777215);
+        Identifier location = REFRESH_WIDGET.get(this.isActive(), this.isHoveredOrFocused());
+        guiGraphics.blitSprite(RenderPipelines.GUI_TEXTURED, location, this.getX(), this.getY(), this.getWidth(), this.getHeight());
+        guiGraphics.centeredText(minecraft.font, this.getMessage(), this.getX() + (this.getWidth() / 2), this.getY() + (this.getHeight() / 2) - 4, 0xFFFFFFFF);
     }
 
     @Override

@@ -12,6 +12,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
@@ -115,8 +117,8 @@ public abstract class AbstractValkyrie extends Monster implements NotGrounded {
      * @return Whether the entity was hurt, as a {@link Boolean}.
      */
     @Override
-    public boolean hurt(DamageSource source, float amount) {
-        boolean result = super.hurt(source, amount);
+    public boolean hurtServer(ServerLevel serverLevel, DamageSource source, float amount) {
+        boolean result = super.hurtServer(serverLevel, source, amount);
         if (!this.level().isClientSide() && result && source.getEntity() instanceof LivingEntity living) {
             this.mostDamageTargetGoal.addAggro(living, amount);
         }
@@ -137,7 +139,7 @@ public abstract class AbstractValkyrie extends Monster implements NotGrounded {
         double z = target.getZ() + targetVec.y * 3;
         BlockPos.MutableBlockPos mutableBlockPos = new BlockPos.MutableBlockPos(x, y, z);
         int i = 0;
-        while (mutableBlockPos.getY() > this.level().getMinBuildHeight() && !this.level().getBlockState(mutableBlockPos).blocksMotion() && i <= 4) {
+        while (mutableBlockPos.getY() > this.level().getMinY() && !this.level().getBlockState(mutableBlockPos).isSolid() && i <= 4) {
             mutableBlockPos.move(Direction.DOWN);
             i++;
         }
@@ -157,7 +159,7 @@ public abstract class AbstractValkyrie extends Monster implements NotGrounded {
         if (event.isCanceled()) {
             return false;
         }
-        boolean flag = this.randomTeleport(event.getTargetX(), event.getTargetY(), event.getTargetZ(), false);
+        boolean flag = this.randomTeleport(event.getTargetX(), event.getTargetY(), event.getTargetZ(), false, (state) -> false);
         if (flag) {
             this.spawnExplosionParticles();
         }
@@ -176,10 +178,10 @@ public abstract class AbstractValkyrie extends Monster implements NotGrounded {
     /**
      * Sends a message to the player who interacted with the Valkyrie.
      *
-     * @param player  The interacting {@link Player}.
+     * @param player  The interacting {@link ServerPlayer}.
      * @param message The message {@link Component}.
      */
-    protected void chat(Player player, Component message, boolean sound) {
+    protected void chat(ServerPlayer player, Component message, boolean sound) {
         player.sendSystemMessage(message);
     }
 
@@ -214,10 +216,6 @@ public abstract class AbstractValkyrie extends Monster implements NotGrounded {
         return false;
     }
 
-    @Override
-    protected boolean shouldDespawnInPeaceful() {
-        return false;
-    }
 
     @Override
     public void handleEntityEvent(byte id) {

@@ -11,17 +11,17 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import org.jetbrains.annotations.Nullable;
 
 public class AetherAdvancementSoundOverrides {
-    public static final ResourceKey<Registry<AdvancementSoundOverride>> ADVANCEMENT_SOUND_OVERRIDE_REGISTRY_KEY = ResourceKey.createRegistryKey(ResourceLocation.fromNamespaceAndPath(Aether.MODID, "advancement_sound_override"));
+    public static final ResourceKey<Registry<AdvancementSoundOverride>> ADVANCEMENT_SOUND_OVERRIDE_REGISTRY_KEY = ResourceKey.createRegistryKey(Identifier.fromNamespaceAndPath(Aether.MODID, "advancement_sound_override"));
     public static final DeferredRegister<AdvancementSoundOverride> ADVANCEMENT_SOUND_OVERRIDES = DeferredRegister.create(ADVANCEMENT_SOUND_OVERRIDE_REGISTRY_KEY, Aether.MODID);
-    public static final Registry<AdvancementSoundOverride> ADVANCEMENT_SOUND_OVERRIDE_REGISTRY = FabricRegistryBuilder.createSimple(ADVANCEMENT_SOUND_OVERRIDE_REGISTRY_KEY).buildAndRegister();
+    public static final Registry<AdvancementSoundOverride> ADVANCEMENT_SOUND_OVERRIDE_REGISTRY = FabricRegistryBuilder.create(ADVANCEMENT_SOUND_OVERRIDE_REGISTRY_KEY).buildAndRegister();
 
-    public static final DeferredHolder<AdvancementSoundOverride, AdvancementSoundOverride> GENERAL = ADVANCEMENT_SOUND_OVERRIDES.register("general", () -> new AdvancementSoundOverride(0, advancement -> checkRoot(advancement, ResourceLocation.fromNamespaceAndPath(Aether.MODID, "enter_aether")), AetherSoundEvents.UI_TOAST_AETHER_GENERAL));
+    public static final DeferredHolder<AdvancementSoundOverride, AdvancementSoundOverride> GENERAL = ADVANCEMENT_SOUND_OVERRIDES.register("general", () -> new AdvancementSoundOverride(0, advancement -> checkRoot(advancement, Identifier.fromNamespaceAndPath(Aether.MODID, "enter_aether")), AetherSoundEvents.UI_TOAST_AETHER_GENERAL));
     public static final DeferredHolder<AdvancementSoundOverride, AdvancementSoundOverride> BRONZE_DUNGEON = ADVANCEMENT_SOUND_OVERRIDES.register("bronze_dungeon", () -> new AdvancementSoundOverride(10, advancement -> advancement.id().getPath().equals("bronze_dungeon"), AetherSoundEvents.UI_TOAST_AETHER_BRONZE));
     public static final DeferredHolder<AdvancementSoundOverride, AdvancementSoundOverride> SILVER_DUNGEON = ADVANCEMENT_SOUND_OVERRIDES.register("silver_dungeon", () -> new AdvancementSoundOverride(10, advancement -> advancement.id().getPath().equals("silver_dungeon"), AetherSoundEvents.UI_TOAST_AETHER_SILVER));
     public static final DeferredHolder<AdvancementSoundOverride, AdvancementSoundOverride> GOLD_DUNGEON = ADVANCEMENT_SOUND_OVERRIDES.register("gold_dungeon", () -> new AdvancementSoundOverride(10, advancement -> advancement.id().getPath().equals("gold_dungeon"), AetherSoundEvents.UI_TOAST_AETHER_GOLD));
@@ -29,7 +29,7 @@ public class AetherAdvancementSoundOverrides {
 
     @Nullable
     public static AdvancementSoundOverride get(String id) {
-        return ADVANCEMENT_SOUND_OVERRIDE_REGISTRY.get(ResourceLocation.parse(id));
+        return ADVANCEMENT_SOUND_OVERRIDE_REGISTRY.getValue(Identifier.parse(id));
     }
 
     /**
@@ -52,7 +52,7 @@ public class AetherAdvancementSoundOverrides {
     /**
      * Checks all the way up to the root of the advancement tree to determine if it matches a given root.
      */
-    public static boolean checkRoot(AdvancementHolder holder, ResourceLocation root) {
+    public static boolean checkRoot(AdvancementHolder holder, Identifier root) {
         LocalPlayer player = Minecraft.getInstance().player;
         if (player != null) {
             for (AdvancementHolder current = holder; current != null && current.value().parent().isPresent(); current = player.connection.getAdvancements().get(current.value().parent().get())) {

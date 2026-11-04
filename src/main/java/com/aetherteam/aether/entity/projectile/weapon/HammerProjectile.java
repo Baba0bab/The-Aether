@@ -1,5 +1,8 @@
 package com.aetherteam.aether.entity.projectile.weapon;
 
+import com.aetherteam.nitrogen.fabric.network.PacketDistributor;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
 import com.aetherteam.aether.entity.AetherEntityTypes;
 import com.aetherteam.aether.network.packet.serverbound.HammerProjectileLaunchPacket;
 import com.aetherteam.nitrogen.fabric.network.PacketDistributor;
@@ -30,7 +33,8 @@ public class HammerProjectile extends ThrowableProjectile {
     }
 
     public HammerProjectile(LivingEntity owner, Level level) {
-        super(AetherEntityTypes.HAMMER_PROJECTILE.get(), owner, level);
+        super(AetherEntityTypes.HAMMER_PROJECTILE.get(), level);
+        this.setOwner(owner);
     }
 
     public HammerProjectile(Level level) {
@@ -179,16 +183,14 @@ public class HammerProjectile extends ThrowableProjectile {
     }
 
     @Override
-    public void addAdditionalSaveData(CompoundTag tag) {
+    protected void addAdditionalSaveData(ValueOutput tag) {
         super.addAdditionalSaveData(tag);
         tag.putInt("TicksInAir", this.ticksInAir);
     }
 
     @Override
-    public void readAdditionalSaveData(CompoundTag tag) {
+    protected void readAdditionalSaveData(ValueInput tag) {
         super.readAdditionalSaveData(tag);
-        if (tag.contains("TicksInAir")) {
-            this.ticksInAir = tag.getInt("TicksInAir");
-        }
+        this.ticksInAir = tag.getIntOr("TicksInAir", this.ticksInAir);
     }
 }

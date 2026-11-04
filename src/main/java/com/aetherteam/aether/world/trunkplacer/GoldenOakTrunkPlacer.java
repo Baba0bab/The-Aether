@@ -5,9 +5,9 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.level.LevelSimulatedReader;
+import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.levelgen.feature.configurations.TreeConfiguration;
+import net.minecraft.world.level.levelgen.feature.TreeFeature;
 import net.minecraft.world.level.levelgen.feature.foliageplacers.FoliagePlacer;
 import net.minecraft.world.level.levelgen.feature.trunkplacers.TrunkPlacer;
 import net.minecraft.world.level.levelgen.feature.trunkplacers.TrunkPlacerType;
@@ -29,17 +29,17 @@ public class GoldenOakTrunkPlacer extends TrunkPlacer {
     /**
      * Randomly places logs in Golden Oak Trees branching out from the center until they reach the edge of the leaves.
      *
-     * @param level       The {@link LevelSimulatedReader}.
+     * @param level       The {@link WorldGenLevel}.
      * @param blockSetter The {@link BiConsumer} of a {@link BlockPos} and {@link BlockState} used for block placement.
      * @param random      The {@link RandomSource}.
      * @param height      The {@link Integer} height of the tree.
      * @param pos         The initial {@link BlockPos} for placement.
-     * @param config      The {@link TreeConfiguration}.
+     * @param config      The {@link TreeFeature}.
      * @return A {@link List} of {@link net.minecraft.world.level.levelgen.feature.foliageplacers.FoliagePlacer.FoliageAttachment}s for the tree.
      */
     @Override
-    public List<FoliagePlacer.FoliageAttachment> placeTrunk(LevelSimulatedReader level, BiConsumer<BlockPos, BlockState> blockSetter, RandomSource random, int height, BlockPos pos, TreeConfiguration config) {
-        TrunkPlacer.setDirtAt(level, blockSetter, random, pos.below(), config);
+    public List<FoliagePlacer.FoliageAttachment> placeTrunk(WorldGenLevel level, BiConsumer<BlockPos, BlockState> blockSetter, RandomSource random, int height, BlockPos pos, TreeFeature config) {
+        TrunkPlacer.placeBelowTrunkBlock(level, blockSetter, random, pos.below(), config);
         for (int i = 0; i < height; ++i) {
             if (i > 4 && random.nextInt(3) > 0 && i < 9) {
                 this.branch(level, random, blockSetter, pos.getX(), pos.getY() + i, pos.getZ(), i / 4 - 1, config);
@@ -52,16 +52,16 @@ public class GoldenOakTrunkPlacer extends TrunkPlacer {
     /**
      * Places a branch.
      *
-     * @param level       The {@link LevelSimulatedReader}.
+     * @param level       The {@link WorldGenLevel}.
      * @param random      The {@link RandomSource}.
      * @param blockSetter The {@link BiConsumer} of a {@link BlockPos} and {@link BlockState} used for block placement.
      * @param i           The x {@link Integer} position.
      * @param j           The y {@link Integer} position.
      * @param k           The z {@link Integer} position.
      * @param slant       The {@link Integer} value for the branch slant.
-     * @param config      The {@link TreeConfiguration}.
+     * @param config      The {@link TreeFeature}.
      */
-    public void branch(LevelSimulatedReader level, RandomSource random, BiConsumer<BlockPos, BlockState> blockSetter, int i, int j, int k, int slant, TreeConfiguration config) {
+    public void branch(WorldGenLevel level, RandomSource random, BiConsumer<BlockPos, BlockState> blockSetter, int i, int j, int k, int slant, TreeFeature config) {
         int directionX = random.nextInt(3) - 1;
         int directionZ = random.nextInt(3) - 1;
 

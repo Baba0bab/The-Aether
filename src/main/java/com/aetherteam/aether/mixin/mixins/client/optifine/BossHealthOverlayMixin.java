@@ -13,7 +13,7 @@ public class BossHealthOverlayMixin {
      * @param event The original {@link CustomizeGuiOverlayEvent.BossEventProgress} parameter value.
      * @return The modified {@link CustomizeGuiOverlayEvent.BossEventProgress} parameter value.
      */
-//    @ModifyVariable(at = @At(value = "STORE"), method = "render(Lnet/minecraft/client/gui/GuiGraphics;)V", index = 9)
+//    @ModifyVariable(at = @At(value = "STORE"), method = "render(Lnet/minecraft/client/gui/GuiGraphicsExtractor;)V", index = 9)
 //    @SuppressWarnings({"MixinAnnotationTarget", "InvalidInjectorMethodSignature"})
 //    private Object event(Object event) {
 //        CustomizeGuiOverlayEvent.BossEventProgress e = (CustomizeGuiOverlayEvent.BossEventProgress) event;

@@ -1,13 +1,16 @@
 package com.aetherteam.aether.advancement;
 
+import net.minecraft.core.Holder;
+import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.advancements.Criterion;
-import net.minecraft.advancements.critereon.ContextAwarePredicate;
-import net.minecraft.advancements.critereon.EntityPredicate;
-import net.minecraft.advancements.critereon.ItemPredicate;
-import net.minecraft.advancements.critereon.SimpleCriterionTrigger;
+import net.minecraft.advancements.triggers.Criterion;
+import net.minecraft.advancements.predicates.entity.EntityPredicate;
+import net.minecraft.advancements.predicates.ItemPredicate;
+import net.minecraft.advancements.triggers.SimpleCriterionTrigger;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ItemLike;
 
@@ -26,9 +29,9 @@ public class LoreTrigger extends SimpleCriterionTrigger<LoreTrigger.Instance> {
         this.trigger(player, (instance) -> instance.test(stack));
     }
 
-    public record Instance(Optional<ContextAwarePredicate> player, Optional<ItemPredicate> item) implements SimpleInstance {
+    public record Instance(Optional<Holder<LootItemCondition>> player, Optional<ItemPredicate> item) implements SimpleInstance {
         public static final Codec<LoreTrigger.Instance> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-                        EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(LoreTrigger.Instance::player),
+                        LootItemCondition.CODEC.optionalFieldOf("player").forGetter(LoreTrigger.Instance::player),
                         ItemPredicate.CODEC.optionalFieldOf("item").forGetter(LoreTrigger.Instance::item))
                 .apply(instance, LoreTrigger.Instance::new));
 
@@ -36,8 +39,8 @@ public class LoreTrigger extends SimpleCriterionTrigger<LoreTrigger.Instance> {
             return AetherAdvancementTriggers.LORE_ENTRY.get().createCriterion(new LoreTrigger.Instance(Optional.empty(), Optional.of(item)));
         }
 
-        public static Criterion<Instance> forItem(ItemLike item) {
-            return forItem(ItemPredicate.Builder.item().of(item).build());
+        public static Criterion<Instance> forItem(HolderGetter<Item> getter, ItemLike item) {
+            return forItem(ItemPredicate.Builder.item().of(getter, item).build());
         }
 
         public static Criterion<Instance> forAny() {

@@ -1,0 +1,107 @@
+package com.aetherteam.cumulus.client.gui.screen;
+
+import com.aetherteam.cumulus.Cumulus;
+import com.aetherteam.cumulus.CumulusConfig;
+import com.aetherteam.cumulus.api.Menu;
+import com.aetherteam.cumulus.api.Menus;
+import com.aetherteam.cumulus.client.CumulusClient;
+import com.aetherteam.cumulus.client.gui.component.MenuSelectionList;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.ObjectSelectionList;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.Function;
+
+public class MenuSelectionScreen extends Screen {
+    public static final Identifier LIST_FRAME = Identifier.fromNamespaceAndPath(Cumulus.MODID, "textures/gui/menu_api/list.png");
+    private static final int EXTERIOR_WIDTH_PADDING = 13;
+    private static final int EXTERIOR_TOP_PADDING = 28;
+    private static final int EXTERIOR_BOTTOM_PADDING = 33;
+
+    public final int frameWidth = 141;
+    public final int frameHeight = 168;
+
+    private final List<Menu> menus;
+    private final Screen parentScreen;
+    private MenuSelectionList menuList;
+    private Button launchButton;
+    @Nullable
+    private MenuSelectionList.MenuEntry selected = null;
+
+    private boolean setup = false;
+
+    public MenuSelectionScreen(Screen parentScreen) {
+        super(Component.literal(""));
+        this.parentScreen = parentScreen;
+        this.menus = Menus.getMenus();
+    }
+
+    @Override
+    public void init() {
+        this.menuList = new MenuSelectionList(this, this.frameWidth - (EXTERIOR_WIDTH_PADDING * 2), this.frameHeight - EXTERIOR_TOP_PADDING - EXTERIOR_BOTTOM_PADDING, (this.height / 2) - (this.frameHeight / 2) + EXTERIOR_TOP_PADDING, 24);
+        this.menuList.setX((this.width / 2) - (this.frameWidth / 2) + EXTERIOR_WIDTH_PADDING);
+        this.addRenderableWidget(this.menuList);
+
+        this.launchButton = Button.builder(Component.translatable("gui.cumulus_menus.button.menu_launch"), press -> this.switchMenu(this.selected)).bounds((this.width / 2) - (this.frameWidth / 2) + 34, (this.height / 2) + (this.frameHeight / 2) - 27, 72, 20).build();
+        this.addRenderableWidget(this.launchButton);
+        this.launchButton.active = false;
+    }
+
+    public void switchMenu(MenuSelectionList.MenuEntry entry) {
+        if (entry != null) {
+            CumulusConfig.CLIENT.active_menu.set(entry.getMenu().toString());
+            CumulusConfig.CLIENT.active_menu.save();
+            CumulusClient.MENU_HELPER.setShouldFade(true);
+            Minecraft.getInstance().gui.setScreen(CumulusClient.MENU_HELPER.applyMenu(entry.getMenu()));
+            Minecraft.getInstance().getMusicManager().stopPlaying();
+        }
+    }
+
+    @Override
+    public void tick() {
+        if (!this.setup) {
+            this.menuList.refreshList();
+            this.launchButton.active = this.selected != null;
+            this.setup = true;
+        }
+    }
+
+    @Override
+    public void extractRenderState(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTick) {
+        this.extractListFrame(guiGraphics);
+        this.menuList.extractRenderState(guiGraphics, mouseX, mouseY, partialTick);
+        super.extractRenderState(guiGraphics, mouseX, mouseY, partialTick);
+    }
+
+    private void extractListFrame(GuiGraphicsExtractor guiGraphics) {
+        guiGraphics.blit(RenderPipelines.GUI_TEXTURED, LIST_FRAME, (this.width / 2) - (this.frameWidth / 2), this.height / 2 - (this.frameHeight / 2), 0.0F, 0.0F, 141, 168, 256, 256);
+        guiGraphics.centeredText(this.getFontRenderer(), Component.translatable("gui.cumulus_menus.title.menu_selection"), this.width / 2, ((this.height / 2) - (this.frameHeight / 2)) + 11, 0xFFFFFFFF);
+    }
+
+    public <T extends ObjectSelectionList.Entry<T>> void buildMenuList(Consumer<T> menuListViewConsumer, Function<Menu, T> newEntry) {
+        this.menus.forEach((menu) -> menuListViewConsumer.accept(newEntry.apply(menu)));
+    }
+
+    public Font getFontRenderer() {
+        return this.font;
+    }
+
+    public void setSelected(MenuSelectionList.MenuEntry entry) {
+        this.selected = entry == this.selected ? null : entry;
+        this.launchButton.active = this.selected != null;
+    }
+
+    @Override
+    public void onClose() {
+        this.minecraft.gui.setScreen(this.parentScreen);
+    }
+}

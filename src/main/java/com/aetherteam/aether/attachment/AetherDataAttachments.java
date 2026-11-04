@@ -3,7 +3,7 @@ package com.aetherteam.aether.attachment;
 import com.aetherteam.aether.Aether;
 import net.fabricmc.fabric.api.attachment.v1.AttachmentRegistry;
 import net.fabricmc.fabric.api.attachment.v1.AttachmentType;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 import java.util.function.Consumer;
 
@@ -20,7 +20,7 @@ public class AetherDataAttachments {
 
         builderConsumer.accept(builder);
 
-        return builder.buildAndRegister(ResourceLocation.fromNamespaceAndPath(Aether.MODID, path));
+        return builder.buildAndRegister(Identifier.fromNamespaceAndPath(Aether.MODID, path));
     }
 
     public static void init() {}

@@ -1,5 +1,7 @@
 package com.aetherteam.aether.world.placementmodifier;
 
+import java.util.function.Consumer;
+import net.minecraft.util.valueproviders.IntProviders;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -11,7 +13,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.placement.PlacementContext;
 import net.minecraft.world.level.levelgen.placement.PlacementModifier;
-import net.minecraft.world.level.levelgen.placement.PlacementModifierType;
 
 import org.jetbrains.annotations.Nullable;
 import java.util.stream.Stream;
@@ -20,10 +21,10 @@ import java.util.stream.Stream;
  * [CODE COPY] - {@link net.minecraft.world.level.levelgen.placement.CountOnEveryLayerPlacement}.<br><br>
  * Improved to support custom parameters for the heightmap type and the vertical space necessary for the feature to place.
  */
-public class ImprovedLayerPlacementModifier extends PlacementModifier {
+public class ImprovedLayerPlacementModifier implements PlacementModifier {
     public static final MapCodec<ImprovedLayerPlacementModifier> CODEC = RecordCodecBuilder.mapCodec((codec) -> codec.group(
             Heightmap.Types.CODEC.fieldOf("heightmap").forGetter((modifier) -> modifier.heightmap),
-            IntProvider.codec(0, 256).fieldOf("count").forGetter((modifier) -> modifier.count),
+            IntProviders.codec(0, 256).fieldOf("count").forGetter((modifier) -> modifier.count),
             Codec.INT.optionalFieldOf("verticalBounds", Integer.MIN_VALUE).forGetter((modifier) -> modifier.verticalBounds)
     ).apply(codec, ImprovedLayerPlacementModifier::new));
     private final Heightmap.Types heightmap;
@@ -41,8 +42,7 @@ public class ImprovedLayerPlacementModifier extends PlacementModifier {
     }
 
     @Override
-    public Stream<BlockPos> getPositions(PlacementContext context, RandomSource random, BlockPos pos) {
-        Stream.Builder<BlockPos> builder = Stream.builder();
+    public void modify(PlacementContext context, RandomSource random, BlockPos pos, Consumer<BlockPos> output) {
         int i = 0;
         boolean flag;
         do {
@@ -53,18 +53,17 @@ public class ImprovedLayerPlacementModifier extends PlacementModifier {
                 int height = context.getHeight(this.heightmap, x, z);
                 BlockPos blockPos = this.findOnGroundPosition(context, new BlockPos(x, height, z), i);
                 if (blockPos != null) {
-                    builder.add(blockPos);
+                    output.accept(blockPos);
                     flag = true;
                 }
             }
             ++i;
         } while (flag);
-        return builder.build();
     }
 
     @Override
-    public PlacementModifierType<?> type() {
-        return AetherPlacementModifiers.IMPROVED_LAYER_PLACEMENT.get();
+    public MapCodec<ImprovedLayerPlacementModifier> codec() {
+        return CODEC;
     }
 
     @Nullable
@@ -73,7 +72,7 @@ public class ImprovedLayerPlacementModifier extends PlacementModifier {
         int x = pos.getX();
         int z = pos.getZ();
         int y = pos.getY();
-        for (int j = y; j >= context.getMinBuildHeight() + 1; --j) {
+        for (int j = y; j >= context.getMinY() + 1; --j) {
             BlockPos blockPos = new BlockPos(x, j, z);
             BlockState blockState = context.getBlockState(blockPos);
             BlockState belowState = context.getBlockState(blockPos.below());

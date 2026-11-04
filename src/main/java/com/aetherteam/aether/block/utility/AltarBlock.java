@@ -4,9 +4,9 @@ import com.aetherteam.aether.blockentity.AbstractAetherFurnaceBlockEntity;
 import com.aetherteam.aether.blockentity.AetherBlockEntityTypes;
 import com.aetherteam.aether.blockentity.AltarBlockEntity;
 import com.aetherteam.aether.client.AetherSoundEvents;
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.player.Player;
@@ -19,15 +19,8 @@ import net.minecraft.world.level.block.state.BlockState;
 
 public class AltarBlock extends AbstractFurnaceBlock {
 
-    public static final MapCodec<AltarBlock> CODEC = simpleCodec(AltarBlock::new);
-
     public AltarBlock(Properties properties) {
         super(properties);
-    }
-
-    @Override
-    protected MapCodec<? extends AbstractFurnaceBlock> codec() {
-        return CODEC;
     }
 
     @Override
@@ -37,7 +30,7 @@ public class AltarBlock extends AbstractFurnaceBlock {
 
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> blockEntityType) {
-        return level.isClientSide() ? null : createTickerHelper(blockEntityType, AetherBlockEntityTypes.ALTAR.get(), AbstractAetherFurnaceBlockEntity::serverTick);
+        return level instanceof ServerLevel serverLevel ? createTickerHelper(blockEntityType, AetherBlockEntityTypes.ALTAR.get(), (blockEntityLevel, pos, blockEntityState, blockEntity) -> AbstractAetherFurnaceBlockEntity.serverTick(serverLevel, pos, blockEntityState, blockEntity)) : null;
     }
 
     @Override

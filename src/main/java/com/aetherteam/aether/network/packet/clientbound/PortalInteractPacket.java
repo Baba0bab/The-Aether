@@ -1,5 +1,6 @@
 package com.aetherteam.aether.network.packet.clientbound;
 
+import net.minecraft.world.item.component.SwingAnimation;
 import com.aetherteam.aether.Aether;
 import com.aetherteam.nitrogen.fabric.network.handling.IPayloadContext;
 import net.minecraft.client.Minecraft;
@@ -7,14 +8,14 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 
 public record PortalInteractPacket(int playerID, boolean mainHand) implements CustomPacketPayload {
-    public static final Type<PortalInteractPacket> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Aether.MODID, "interact_with_portal"));
+    public static final CustomPacketPayload.Type<PortalInteractPacket> TYPE = new CustomPacketPayload.Type<>(Identifier.fromNamespaceAndPath(Aether.MODID, "interact_with_portal"));
 
     public static final StreamCodec<RegistryFriendlyByteBuf, PortalInteractPacket> STREAM_CODEC = StreamCodec.composite(
         ByteBufCodecs.INT,
@@ -32,7 +33,7 @@ public record PortalInteractPacket(int playerID, boolean mainHand) implements Cu
         if (Minecraft.getInstance().player != null && Minecraft.getInstance().level != null) {
             Entity entity = Minecraft.getInstance().player.level().getEntity(payload.playerID());
             if (entity instanceof Player player) {
-                player.swing(payload.mainHand() ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND);
+                player.swing(payload.mainHand() ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND, SwingAnimation.DEFAULT, true);
                 player.playSound(SoundEvents.BUCKET_EMPTY, 1.0F, 1.0F);
             }
         }

@@ -5,7 +5,7 @@ import com.aetherteam.aether.block.AetherBlocks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.goal.Goal;
-import net.minecraft.world.level.GameRules;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
@@ -69,16 +69,14 @@ public class EatAetherGrassGoal extends Goal {
         if (this.eatAnimationTick == this.adjustedTickDelay(4)) {
             BlockPos blockPos = this.mob.blockPosition();
             if (IS_TALL_GRASS.test(this.mob.level().getBlockState(blockPos))) {
-                // TODO: [Fabric Porting] Protection API?
-                if (this.mob.level().getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
+                if (getServerLevel(this.mob.level()).getGameRules().get(GameRules.MOB_GRIEFING)) {
                     this.mob.level().destroyBlock(blockPos, false);
                 }
                 this.mob.ate();
             } else {
                 BlockPos blockPos1 = blockPos.below();
                 if (this.mob.level().getBlockState(blockPos1).is(AetherBlocks.AETHER_GRASS_BLOCK.get())) {
-                    // TODO: [Fabric Porting] Protection API?
-                    if (this.mob.level().getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
+                    if (getServerLevel(this.mob.level()).getGameRules().get(GameRules.MOB_GRIEFING)) {
                         this.mob.level().levelEvent(2001, blockPos1, Block.getId(AetherBlocks.AETHER_GRASS_BLOCK.get().defaultBlockState()));
                         this.mob.level().setBlock(blockPos1, AetherBlocks.AETHER_DIRT.get().defaultBlockState().setValue(AetherBlockStateProperties.DOUBLE_DROPS, this.mob.level().getBlockState(blockPos1).getValue(AetherBlockStateProperties.DOUBLE_DROPS)), 2);
                     }

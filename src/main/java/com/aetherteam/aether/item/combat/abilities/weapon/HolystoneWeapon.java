@@ -3,6 +3,7 @@ package com.aetherteam.aether.item.combat.abilities.weapon;
 import com.aetherteam.aether.AetherTags;
 import com.aetherteam.aether.item.AetherItems;
 import com.aetherteam.aether.item.EquipmentUtil;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
 
 public interface HolystoneWeapon {
@@ -13,10 +14,10 @@ public interface HolystoneWeapon {
      * @param attacker The attacking {@link LivingEntity}.
      * @see com.aetherteam.aether.item.combat.HolystoneSwordItem
      */
-    default void dropAmbrosium(LivingEntity target, LivingEntity attacker) {
+    default void dropAmbrosium(ServerLevel level, LivingEntity target, LivingEntity attacker) {
         if (EquipmentUtil.isFullStrength(attacker)) {
-            if (!target.getType().is(AetherTags.Entities.NO_AMBROSIUM_DROPS) && target.level().getRandom().nextInt(25) == 0) {
-                target.spawnAtLocation(AetherItems.AMBROSIUM_SHARD.get());
+            if (!target.is(AetherTags.Entities.NO_AMBROSIUM_DROPS) && target.level().getRandom().nextInt(25) == 0) {
+                target.spawnAtLocation(level, AetherItems.AMBROSIUM_SHARD.get());
             }
         }
     }

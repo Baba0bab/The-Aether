@@ -8,14 +8,12 @@
 //import net.minecraft.data.tags.BiomeTagsProvider;
 //import net.minecraft.tags.BiomeTags;
 //import net.minecraft.world.level.biome.Biomes;
-//import net.neoforged.neoforge.common.data.ExistingFileHelper;
 //
-//import org.jetbrains.annotations.Nullable;
 //import java.util.concurrent.CompletableFuture;
 //
 //public class AetherBiomeTagData extends BiomeTagsProvider {
-//    public AetherBiomeTagData(PackOutput output, CompletableFuture<HolderLookup.Provider> registries, @Nullable ExistingFileHelper helper) {
-//        super(output, registries, Aether.MODID, helper);
+//    public AetherBiomeTagData(PackOutput output, CompletableFuture<HolderLookup.Provider> registries) {
+//        super(output, registries, Aether.MODID);
 //    }
 //
 //    @Override

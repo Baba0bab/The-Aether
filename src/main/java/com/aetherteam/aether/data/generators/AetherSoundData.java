@@ -3,12 +3,11 @@
 //import com.aetherteam.aether.Aether;
 //import com.aetherteam.aether.client.AetherSoundEvents;
 //import net.minecraft.data.PackOutput;
-//import net.neoforged.neoforge.common.data.ExistingFileHelper;
 //import net.neoforged.neoforge.common.data.SoundDefinitionsProvider;
 //
 //public class AetherSoundData extends SoundDefinitionsProvider {
-//    public AetherSoundData(PackOutput output, ExistingFileHelper helper) {
-//        super(output, Aether.MODID, helper);
+//    public AetherSoundData(PackOutput output) {
+//        super(output, Aether.MODID);
 //    }
 //
 //    @Override

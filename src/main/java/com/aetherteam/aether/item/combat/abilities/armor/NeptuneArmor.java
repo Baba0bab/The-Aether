@@ -19,7 +19,7 @@ public interface NeptuneArmor {
      */
     static void boostWaterSwimming(LivingEntity entity) {
         if (EquipmentUtil.hasFullNeptuneSet(entity)) {
-            if (entity.isInWaterOrBubble()) {
+            if (entity.isInWater()) {
                 if (entity instanceof Player player) {
                     var data = player.getAttachedOrCreate(AetherDataAttachments.AETHER_PLAYER);
                     float defaultBoost = boostWithDepthStrider(player);
@@ -38,7 +38,7 @@ public interface NeptuneArmor {
                 }
             }
         }
-        if (!EquipmentUtil.hasFullNeptuneSet(entity) || !entity.isInWaterOrBubble()) {
+        if (!EquipmentUtil.hasFullNeptuneSet(entity) || !entity.isInWater()) {
             if (entity instanceof Player player) {
                 player.getAttachedOrCreate(AetherDataAttachments.AETHER_PLAYER).setNeptuneSubmergeLength(0.0);
             }

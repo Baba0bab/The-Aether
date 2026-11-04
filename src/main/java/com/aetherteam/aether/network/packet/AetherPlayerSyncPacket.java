@@ -10,7 +10,7 @@ import net.fabricmc.fabric.api.attachment.v1.AttachmentType;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import oshi.util.tuples.Quartet;
 
 import java.util.function.Supplier;
@@ -19,7 +19,7 @@ import java.util.function.Supplier;
  * Sync packet for values in the {@link AetherPlayerAttachment} class.
  */
 public class AetherPlayerSyncPacket extends SyncEntityPacket<AetherPlayerAttachment> {
-    public static final Type<AetherPlayerSyncPacket> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Aether.MODID, "sync_aether_player_attachment"));
+    public static final Type<AetherPlayerSyncPacket> TYPE = new Type<>(Identifier.fromNamespaceAndPath(Aether.MODID, "sync_aether_player_attachment"));
 
     public static final StreamCodec<RegistryFriendlyByteBuf, AetherPlayerSyncPacket> STREAM_CODEC = CustomPacketPayload.codec(
         AetherPlayerSyncPacket::write,

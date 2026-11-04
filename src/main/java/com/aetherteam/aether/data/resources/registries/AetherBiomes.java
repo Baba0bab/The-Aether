@@ -6,9 +6,9 @@ import net.minecraft.core.HolderGetter;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.biome.Biome;
-import net.minecraft.world.level.levelgen.carver.ConfiguredWorldCarver;
+import net.minecraft.world.level.levelgen.carver.WorldCarver;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 
 public class AetherBiomes {
@@ -18,12 +18,12 @@ public class AetherBiomes {
     public static final ResourceKey<Biome> SKYROOT_FOREST = createKey("skyroot_forest");
 
     private static ResourceKey<Biome> createKey(String name) {
-        return ResourceKey.create(Registries.BIOME, ResourceLocation.fromNamespaceAndPath(Aether.MODID, name));
+        return ResourceKey.create(Registries.BIOME, Identifier.fromNamespaceAndPath(Aether.MODID, name));
     }
 
     public static void bootstrap(BootstrapContext<Biome> context) {
         HolderGetter<PlacedFeature> placedFeatures = context.lookup(Registries.PLACED_FEATURE);
-        HolderGetter<ConfiguredWorldCarver<?>> vanillaConfiguredCarvers = context.lookup(Registries.CONFIGURED_CARVER);
+        HolderGetter<WorldCarver> vanillaConfiguredCarvers = context.lookup(Registries.CARVER);
         context.register(SKYROOT_MEADOW, AetherBiomeBuilders.skyrootMeadowBiome(placedFeatures, vanillaConfiguredCarvers));
         context.register(SKYROOT_GROVE, AetherBiomeBuilders.skyrootGroveBiome(placedFeatures, vanillaConfiguredCarvers));
         context.register(SKYROOT_WOODLAND, AetherBiomeBuilders.skyrootWoodlandBiome(placedFeatures, vanillaConfiguredCarvers));
