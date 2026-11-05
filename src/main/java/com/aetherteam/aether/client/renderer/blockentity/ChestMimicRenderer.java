@@ -32,7 +32,7 @@ import org.jetbrains.annotations.Nullable;
  * Stripped down to only use what is necessary, as the mimic chest never opens.
  */
 public class ChestMimicRenderer implements BlockEntityRenderer<ChestMimicBlockEntity, ChestRenderState> {
-    private static final SpriteId LOOTR_MATERIAL = new SpriteId(Sheets.CHEST_SHEET, Identifier.fromNamespaceAndPath("lootr", "chest"));
+    private static final SpriteId LOOTR_MATERIAL = new SpriteId(Sheets.CHEST_SHEET, Identifier.fromNamespaceAndPath("lootr", "entity/chest/normal"));
     private final SpriteGetter sprites;
     private final ChestModel model;
     private final boolean xmasTextures;

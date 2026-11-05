@@ -18,7 +18,7 @@ import net.minecraft.util.Mth;
 public class PhygRenderer extends AgeableMobRenderer<Phyg, PhygRenderState, PigModel> {
     private static final Identifier PHYG_TEXTURE = Identifier.fromNamespaceAndPath(Aether.MODID, "textures/entity/mobs/phyg/phyg.png");
     private static final Identifier PHYG_WINGS_TEXTURE = Identifier.fromNamespaceAndPath(Aether.MODID, "textures/entity/mobs/phyg/phyg_wings.png");
-    private static final Identifier PHYG_SADDLE_TEXTURE = Identifier.withDefaultNamespace("textures/entity/pig/pig_saddle.png");
+    private static final Identifier PHYG_SADDLE_TEXTURE = Identifier.withDefaultNamespace("textures/entity/equipment/pig_saddle/saddle.png");
 
     public PhygRenderer(EntityRendererProvider.Context context) {
         super(context, new PigModel(context.bakeLayer(AetherModelLayers.PHYG)), new PigModel(context.bakeLayer(AetherModelLayers.PHYG_BABY)), 0.7F);

@@ -115,17 +115,17 @@ public class AetherRenderers {
     public static void registerLayerDefinitions() {
         ModelLayerRegistry.registerModelLayer(AetherModelLayers.CHEST_MIMIC, ChestModel::createSingleBodyLayer);
 
-        ModelLayerRegistry.registerModelLayer(AetherModelLayers.PHYG, () -> PigModel.createBodyLayer(CubeDeformation.NONE));
+        ModelLayerRegistry.registerModelLayer(AetherModelLayers.PHYG, () -> LegacyQuadrupedModels.createPigLayer(CubeDeformation.NONE));
         ModelLayerRegistry.registerModelLayer(AetherModelLayers.PHYG_WINGS, () -> QuadrupedWingsModel.createMainLayer(10.0F));
         ModelLayerRegistry.registerModelLayer(AetherModelLayers.PHYG_SADDLE, () -> PigModel.createBodyLayer(new CubeDeformation(0.5F)));
-        ModelLayerRegistry.registerModelLayer(AetherModelLayers.PHYG_BABY, () -> PigModel.createBodyLayer(CubeDeformation.NONE).apply(PigModel.BABY_TRANSFORMER));
+        ModelLayerRegistry.registerModelLayer(AetherModelLayers.PHYG_BABY, () -> LegacyQuadrupedModels.createPigLayer(CubeDeformation.NONE).apply(PigModel.BABY_TRANSFORMER));
         ModelLayerRegistry.registerModelLayer(AetherModelLayers.PHYG_BABY_SADDLE, () -> PigModel.createBodyLayer(new CubeDeformation(0.5F)).apply(PigModel.BABY_TRANSFORMER));
         ModelLayerRegistry.registerModelLayer(AetherModelLayers.PHYG_HALO, () -> HaloModel.createLayer(3.0F, -4.0F, 12.0F, -6.0F));
-        ModelLayerRegistry.registerModelLayer(AetherModelLayers.FLYING_COW, CowModel::createBodyLayer);
+        ModelLayerRegistry.registerModelLayer(AetherModelLayers.FLYING_COW, LegacyQuadrupedModels::createCowLayer);
         ModelLayerRegistry.registerModelLayer(AetherModelLayers.FLYING_COW_WINGS, () -> QuadrupedWingsModel.createMainLayer(0.0F));
-        ModelLayerRegistry.registerModelLayer(AetherModelLayers.FLYING_COW_SADDLE, CowModel::createBodyLayer);
-        ModelLayerRegistry.registerModelLayer(AetherModelLayers.FLYING_COW_BABY, () -> CowModel.createBodyLayer().apply(CowModel.BABY_TRANSFORMER));
-        ModelLayerRegistry.registerModelLayer(AetherModelLayers.FLYING_COW_BABY_SADDLE, () -> CowModel.createBodyLayer().apply(CowModel.BABY_TRANSFORMER));
+        ModelLayerRegistry.registerModelLayer(AetherModelLayers.FLYING_COW_SADDLE, LegacyQuadrupedModels::createCowLayer);
+        ModelLayerRegistry.registerModelLayer(AetherModelLayers.FLYING_COW_BABY, () -> LegacyQuadrupedModels.createCowLayer().apply(CowModel.BABY_TRANSFORMER));
+        ModelLayerRegistry.registerModelLayer(AetherModelLayers.FLYING_COW_BABY_SADDLE, () -> LegacyQuadrupedModels.createCowLayer().apply(CowModel.BABY_TRANSFORMER));
         ModelLayerRegistry.registerModelLayer(AetherModelLayers.SHEEPUFF, SheepuffModel::createBodyLayer);
         ModelLayerRegistry.registerModelLayer(AetherModelLayers.SHEEPUFF_WOOL, () -> SheepuffWoolModel.createFurLayer(new CubeDeformation(1.75F), 0.0F));
         ModelLayerRegistry.registerModelLayer(AetherModelLayers.SHEEPUFF_WOOL_PUFFED, () -> SheepuffWoolModel.createFurLayer(new CubeDeformation(3.75F), 2.0F));
