@@ -1,9 +1,10 @@
 package com.aetherteam.aether.world.processor;
 
+import com.aetherteam.nitrogen.fabric.level.ExtendedStructureProcessor;
+
 import com.aetherteam.aether.AetherTags;
 import com.aetherteam.aether.block.AetherBlocks;
 import com.aetherteam.aether.world.BlockLogicUtil;
-import com.aetherteam.nitrogen.fabric.level.ExtendedStructureProcessor;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.WorldGenRegion;
@@ -11,7 +12,6 @@ import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
-import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessorType;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessor;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 import org.jetbrains.annotations.Nullable;
@@ -22,7 +22,7 @@ import java.util.function.Function;
 /**
  * This processor is used to replace grass blocks in the Aether with blocks determined by the biome's surface rules.
  */
-public class SurfaceRuleProcessor implements StructureProcessor {
+public class SurfaceRuleProcessor implements ExtendedStructureProcessor {
     public static final SurfaceRuleProcessor INSTANCE = new SurfaceRuleProcessor();
 
     public static final MapCodec<SurfaceRuleProcessor> CODEC = MapCodec.unit(SurfaceRuleProcessor.INSTANCE);

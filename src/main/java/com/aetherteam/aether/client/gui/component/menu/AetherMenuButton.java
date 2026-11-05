@@ -1,5 +1,6 @@
 package com.aetherteam.aether.client.gui.component.menu;
 
+import com.aetherteam.nitrogen.fabric.BuilderMadeButton;
 import org.jetbrains.annotations.Nullable;
 import net.minecraft.util.ARGB;
 import net.minecraft.client.input.InputWithModifiers;
@@ -8,19 +9,15 @@ import org.joml.Matrix3x2fStack;
 import com.aetherteam.aether.Aether;
 import com.aetherteam.aether.client.gui.screen.menu.AetherTitleScreen;
 import com.aetherteam.aether.mixin.mixins.client.accessor.ButtonAccessor;
-import com.aetherteam.nitrogen.fabric.BuilderMadeButton;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.WidgetSprites;
-import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 
-public class AetherMenuButton extends Button {
+public class AetherMenuButton extends BuilderMadeButton {
     private static final WidgetSprites AETHER_WIDGETS = new WidgetSprites(Identifier.fromNamespaceAndPath(Aether.MODID, "title/button"), Identifier.fromNamespaceAndPath(Aether.MODID, "title/button_highlighted"));
     private static final WidgetSprites AETHER_WIDGETS_SMALL = new WidgetSprites(Identifier.fromNamespaceAndPath(Aether.MODID, "title/button"), Identifier.fromNamespaceAndPath(Aether.MODID, "title/button_highlighted_small"));
     public final int originalX;

@@ -4,12 +4,7 @@ import com.aetherteam.aether.block.dungeon.ChestMimicBlock;
 import com.aetherteam.aether.blockentity.ChestMimicBlockEntity;
 import com.aetherteam.aether.client.renderer.AetherModelLayers;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.math.Axis;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.client.model.geom.ModelPart;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.model.object.chest.ChestModel;
 import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.SubmitNodeCollector;
@@ -27,7 +22,6 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.ChestBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.ChestType;
-import noobanidus.mods.lootr.fabric.config.ConfigManager;
 import net.minecraft.world.phys.Vec3;
 import noobanidus.mods.lootr.common.api.LootrAPI;
 
@@ -61,14 +55,13 @@ public class ChestMimicRenderer implements BlockEntityRenderer<ChestMimicBlockEn
         state.type = ChestType.SINGLE;
         state.facing = blockState != null && blockState.getBlock() instanceof ChestMimicBlock ? blockState.getValue(ChestBlock.FACING) : Direction.SOUTH;
         state.material = this.xmasTextures ? ChestRenderState.ChestMaterialType.CHRISTMAS : ChestRenderState.ChestMaterialType.REGULAR;
-        state.customSprite = FabricLoader.getInstance().isModLoaded("lootr") && !LootrAPI.isVanillaTextures() ? LOOTR_MATERIAL : null;
     }
 
     @Override
     public void submit(ChestRenderState state, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, CameraRenderState camera) {
         poseStack.pushPose();
         poseStack.mulPose(ChestRenderer.modelTransformation(state.facing));
-        SpriteId spriteId = state.customSprite != null ? state.customSprite : Sheets.chooseSprite(state.material, state.type);
+        SpriteId spriteId = FabricLoader.getInstance().isModLoaded("lootr") && !LootrAPI.isVanillaTextures() ? LOOTR_MATERIAL : Sheets.chooseSprite(state.material, state.type);
         submitNodeCollector.submitModel(this.model, 0.0F, poseStack, state.lightCoords, OverlayTexture.NO_OVERLAY, -1, spriteId, this.sprites, 0);
         if (state.breakProgress != null) {
             submitNodeCollector.order(1).submitCrumblingOverlay(this.model, 0.0F, poseStack, spriteId.renderType(this.model.renderType()), state.lightCoords, OverlayTexture.NO_OVERLAY, -1, state.breakProgress);

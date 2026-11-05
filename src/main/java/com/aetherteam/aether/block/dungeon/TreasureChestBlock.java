@@ -189,7 +189,7 @@ public class TreasureChestBlock extends AbstractChestBlock<TreasureChestBlockEnt
                 return 0.0F;
             } else {
                 int i = player.hasCorrectToolForDrops(state) ? 30 : 100;
-                return player.getDestroySpeed(state, pos) / f / (float) i;
+                return player.getDestroySpeed(state) / f / (float) i;
             }
         }
         return super.getDestroyProgress(state, player, level, pos);

@@ -3,11 +3,8 @@
   "category": "enchanting_misc",
   "cookingtime": 750,
   "experience": 1.0,
-  "ingredient": {
-    "item": "aether:golden_dart_shooter"
-  },
+  "ingredient": "aether:golden_dart_shooter",
   "result": {
-    "count": 1,
     "id": "aether:enchanted_dart_shooter"
   }
 }

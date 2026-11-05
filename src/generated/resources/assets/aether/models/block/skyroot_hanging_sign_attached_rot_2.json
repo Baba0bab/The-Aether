@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/template_attached_hanging_sign_rot_2",
+  "textures": {
+    "all": "aether:block/construction/skyroot_hanging_sign",
+    "particle": "aether:block/natural/stripped_skyroot_log"
+  }
+}

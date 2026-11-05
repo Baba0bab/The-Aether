@@ -3,11 +3,8 @@
   "category": "freezable_blocks",
   "cookingtime": 200,
   "experience": 0.1,
-  "ingredient": {
-    "tag": "c:buckets/lava"
-  },
+  "ingredient": "#c:buckets/lava",
   "result": {
-    "count": 1,
     "id": "minecraft:obsidian"
   }
 }

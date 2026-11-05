@@ -15,7 +15,6 @@
       "translate": "advancement.aether.incubate_moa.desc"
     },
     "icon": {
-      "count": 1,
       "id": "aether:incubator"
     },
     "title": {

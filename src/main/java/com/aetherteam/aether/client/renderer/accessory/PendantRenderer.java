@@ -7,8 +7,6 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.renderer.SubmitNodeCollector;
-import net.minecraft.client.renderer.entity.EntityRendererProvider;
-import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.state.HumanoidRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
@@ -17,9 +15,6 @@ import net.minecraft.world.item.ItemStack;
 import com.aetherteam.aetherfabric.accessories.SlotContext;
 import eu.pb4.trinkets.api.TrinketSlotAccess;
 import eu.pb4.trinkets.api.client.TrinketRenderer;
-import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.client.model.geom.ModelPart;
-import com.aetherteam.aetherfabric.accessories.SlotContext;
 
 public class PendantRenderer implements TrinketRenderer {
     private final PendantModel pendant;

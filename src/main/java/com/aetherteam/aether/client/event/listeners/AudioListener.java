@@ -4,9 +4,7 @@ import com.aetherteam.aether.client.AetherClient;
 import com.aetherteam.aether.client.event.hooks.AudioHooks;
 import com.aetherteam.nitrogen.fabric.client.events.ClientPlayerEvents;
 import com.aetherteam.nitrogen.fabric.events.CancellableCallback;
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientEntityEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.fabricmc.fabric.mixin.client.sound.SoundInstanceMixin;
 import net.minecraft.client.resources.sounds.SoundInstance;
 import net.minecraft.client.sounds.SoundEngine;
 

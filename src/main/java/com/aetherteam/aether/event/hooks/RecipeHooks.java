@@ -1,5 +1,6 @@
 package com.aetherteam.aether.event.hooks;
 
+import com.aetherteam.aether.mixin.mixins.common.accessor.RecipeManagerAccessor;
 import net.minecraft.world.item.component.SwingAnimation;
 import com.aetherteam.aether.AetherConfig;
 import com.aetherteam.aether.AetherGameEvents;
@@ -57,7 +58,7 @@ public class RecipeHooks {
     public static InteractionResult checkInteractionBanned(Player player, Level level, BlockPos pos, Direction face, ItemStack stack, BlockState state, boolean spawnParticles) {
         if (isItemPlacementBanned(level, pos, face, stack, spawnParticles)) {
             player.sendOverlayMessage(Component.translatable("aether.banned_item", stack.getItem().getName(stack)));
-            return true;
+            return InteractionResult.FAIL;
         }
         if (level.getBiome(pos).is(AetherTags.Biomes.ULTRACOLD) && AetherConfig.SERVER.enable_bed_explosions.get()) { // Explodes beds in the Aether if the config for it is enabled.
             if (state.is(BlockTags.BEDS) && state.getBlock() != AetherBlocks.SKYROOT_BED.get()) {
@@ -74,7 +75,7 @@ public class RecipeHooks {
                     level.explode(null, level.damageSources().badRespawnPointExplosion(vec3), null, (double) pos.getX() + 0.5, (double) pos.getY() + 0.5, (double) pos.getZ() + 0.5, 5.0F, true, Level.ExplosionInteraction.BLOCK);
                 }
                 player.swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT, true);
-                return true;
+                return InteractionResult.FAIL;
             }
         }
         return InteractionResult.PASS;
@@ -92,7 +93,7 @@ public class RecipeHooks {
      */
     public static boolean isItemPlacementBanned(Level level, BlockPos pos, Direction face, ItemStack stack, boolean spawnParticles) {
         if (level instanceof ServerLevel serverLevel) {
-            for (RecipeHolder<ItemBanRecipe> recipe : serverLevel.recipeAccess().recipeMap().byType(AetherRecipeTypes.ITEM_PLACEMENT_BAN.get())) {
+            for (RecipeHolder<ItemBanRecipe> recipe : ((RecipeManagerAccessor) serverLevel.recipeAccess()).aether$getRecipes().byType(AetherRecipeTypes.ITEM_PLACEMENT_BAN.get())) {
                 if (recipe.value().banItem(level, pos, face, stack, spawnParticles)) {
                     return true;
                 }
@@ -132,7 +133,7 @@ public class RecipeHooks {
      */
     private static boolean isBlockPlacementBanned(Level level, BlockPos pos, BlockState state) {
         if (level instanceof ServerLevel serverLevel) {
-            for (RecipeHolder<BlockBanRecipe> recipe : serverLevel.recipeAccess().recipeMap().byType(AetherRecipeTypes.BLOCK_PLACEMENT_BAN.get())) {
+            for (RecipeHolder<BlockBanRecipe> recipe : ((RecipeManagerAccessor) serverLevel.recipeAccess()).aether$getRecipes().byType(AetherRecipeTypes.BLOCK_PLACEMENT_BAN.get())) {
                 if (recipe.value().banBlock(level, pos, state)) {
                     return true;
                 }
@@ -150,7 +151,7 @@ public class RecipeHooks {
      */
     private static void isBlockPlacementConvertable(Level level, BlockPos pos, BlockState state) {
         if (level instanceof ServerLevel serverLevel) {
-            for (RecipeHolder<PlacementConversionRecipe> recipe : serverLevel.recipeAccess().recipeMap().byType(AetherRecipeTypes.PLACEMENT_CONVERSION.get())) {
+            for (RecipeHolder<PlacementConversionRecipe> recipe : ((RecipeManagerAccessor) serverLevel.recipeAccess()).aether$getRecipes().byType(AetherRecipeTypes.PLACEMENT_CONVERSION.get())) {
                 if (recipe.value().convert(level, pos, state)) {
                     return;
                 }

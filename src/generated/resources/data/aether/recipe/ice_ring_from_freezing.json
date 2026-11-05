@@ -3,11 +3,8 @@
   "category": "freezable_misc",
   "cookingtime": 800,
   "experience": 1.0,
-  "ingredient": {
-    "tag": "aether:freezable_rings"
-  },
+  "ingredient": "#aether:freezable_rings",
   "result": {
-    "count": 1,
     "id": "aether:ice_ring"
   }
 }

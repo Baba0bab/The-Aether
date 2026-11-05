@@ -8,7 +8,6 @@ import com.aetherteam.aether.client.renderer.entity.state.ZephyrRenderState;
 import com.aetherteam.aether.entity.monster.Zephyr;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.model.EntityModel;
-import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;

@@ -1,36 +1,38 @@
 package com.aetherteam.aether.client;
 
-import net.minecraft.world.item.crafting.RecipeMap;
-import net.neoforged.bus.api.EventPriority;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
-import net.neoforged.neoforge.client.event.RecipesReceivedEvent;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
+import net.fabricmc.fabric.api.client.recipe.v1.sync.ClientRecipeSynchronizedEvent;
+import net.fabricmc.fabric.api.recipe.v1.sync.SynchronizedRecipes;
+import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.crafting.RecipeType;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.Collection;
+import java.util.List;
 
 /**
- * Keeps the Aether's recipes that are synced from the server, for use in recipe viewers.
- *
- * @see com.aetherteam.aether.event.listeners.RecipeListener#syncRecipes(net.neoforged.neoforge.event.OnDatapackSyncEvent)
+ * Keeps the Aether's recipes that are synced from the server, for use in recipe viewers.<br><br>
+ * The Aether's recipe serializers are registered for synchronization with Fabric's recipe API in {@link com.aetherteam.aether.Aether#onInitialize()}.
  */
 public final class AetherClientRecipes {
-    private static RecipeMap recipes = RecipeMap.EMPTY;
+    private static final AetherClientRecipes INSTANCE = new AetherClientRecipes();
+    @Nullable
+    private SynchronizedRecipes recipes = null;
 
     private AetherClientRecipes() {
     }
 
-    public static RecipeMap getRecipes() {
-        return recipes;
+    public static AetherClientRecipes getRecipes() {
+        return INSTANCE;
     }
 
-    public static void listen(IEventBus bus) {
-        bus.addListener(EventPriority.HIGHEST, AetherClientRecipes::onRecipesReceived);
-        bus.addListener(AetherClientRecipes::onLoggingOut);
+    public <T extends Recipe<?>> Collection<RecipeHolder<T>> byType(RecipeType<T> type) {
+        return this.recipes != null ? this.recipes.getAllOfType((RecipeType) type) : List.of();
     }
 
-    private static void onRecipesReceived(RecipesReceivedEvent event) {
-        recipes = event.getRecipeMap();
-    }
-
-    private static void onLoggingOut(ClientPlayerNetworkEvent.LoggingOut event) {
-        recipes = RecipeMap.EMPTY;
+    public static void listen() {
+        ClientRecipeSynchronizedEvent.EVENT.register((minecraft, synchronizedRecipes) -> INSTANCE.recipes = synchronizedRecipes);
+        ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> INSTANCE.recipes = null);
     }
 }

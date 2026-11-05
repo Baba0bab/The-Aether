@@ -6,7 +6,6 @@ import com.aetherteam.aether.client.renderer.entity.state.CrystalRenderState;
 import com.aetherteam.aether.entity.projectile.crystal.AbstractCrystal;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
-import net.minecraft.client.renderer.entity.state.EntityRenderState;
 
 public class IceCrystalRenderer<T extends AbstractCrystal> extends CloudCrystalRenderer<T> {
     public IceCrystalRenderer(EntityRendererProvider.Context context) {

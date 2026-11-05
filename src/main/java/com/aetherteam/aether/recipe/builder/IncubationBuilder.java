@@ -1,27 +1,18 @@
 package com.aetherteam.aether.recipe.builder;
 
+import net.minecraft.data.recipes.RecipeCategory;
 import net.minecraft.data.recipes.RecipeUnlockAdvancementBuilder;
 import com.aetherteam.aether.recipe.recipes.item.IncubationRecipe;
-import net.minecraft.advancements.Advancement;
-import net.minecraft.advancements.AdvancementRequirements;
-import net.minecraft.advancements.AdvancementRewards;
 import net.minecraft.advancements.triggers.Criterion;
-import net.minecraft.advancements.triggers.RecipeUnlockedTrigger;
 import net.minecraft.data.recipes.RecipeBuilder;
 import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
 import org.jetbrains.annotations.Nullable;
 import net.minecraft.world.item.crafting.Recipe;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 
 public class IncubationBuilder implements RecipeBuilder {
@@ -64,6 +55,6 @@ public class IncubationBuilder implements RecipeBuilder {
 
     @Override
     public void save(RecipeOutput recipeOutput, ResourceKey<Recipe<?>> id) {
-        recipeOutput.accept(id, new IncubationRecipe(this.group == null ? "" : this.group, this.ingredient, this.entity, Optional.ofNullable(this.tag), this.incubationTime), this.advancementBuilder.build(recipeOutput, id, "incubation"));
+        recipeOutput.accept(id, new IncubationRecipe(this.group == null ? "" : this.group, this.ingredient, this.entity, Optional.ofNullable(this.tag), this.incubationTime), this.advancementBuilder.build(recipeOutput, id, RecipeCategory.MISC));
     }
 }

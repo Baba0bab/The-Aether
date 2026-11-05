@@ -4,7 +4,6 @@ import com.aetherteam.aether.Aether;
 import com.aetherteam.nitrogen.fabric.registries.DeferredHolder;
 import com.aetherteam.nitrogen.fabric.registries.DeferredRegister;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessorType;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessor;
 

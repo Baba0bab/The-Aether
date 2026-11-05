@@ -1,6 +1,7 @@
 package com.aetherteam.aether.world.processor;
 
 import com.aetherteam.nitrogen.fabric.level.ExtendedStructureProcessor;
+
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
@@ -10,7 +11,6 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
-import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessorType;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessor;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 import org.jetbrains.annotations.Nullable;
@@ -19,7 +19,7 @@ import org.jetbrains.annotations.Nullable;
  * Use this processor for structure pieces that shouldn't replace certain blocks in the world.
  * An example of this being used is the Bronze Dungeon's tunnel not replacing air to blend in with the landscape.
  */
-public class NoReplaceProcessor implements StructureProcessor {
+public class NoReplaceProcessor implements ExtendedStructureProcessor {
     public static final NoReplaceProcessor AIR = new NoReplaceProcessor(Blocks.AIR);
 
     public static final MapCodec<NoReplaceProcessor> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(

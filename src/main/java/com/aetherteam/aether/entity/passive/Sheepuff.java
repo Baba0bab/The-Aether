@@ -20,7 +20,6 @@ import com.google.common.collect.Maps;
 import net.fabricmc.fabric.api.tag.convention.v2.ConventionalItemTags;
 import net.minecraft.util.Util;
 import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -44,10 +43,8 @@ import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DyeColor;
-import net.minecraft.world.item.DyeItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingInput;
-import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.Level;
@@ -55,7 +52,6 @@ import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
-import net.minecraft.world.level.storage.loot.LootTable;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
@@ -245,13 +241,13 @@ public class Sheepuff extends AetherAnimal implements Shearable {
 
             }
         } else if ((itemstack.is(Items.SHEARS) || itemstack.is(ConventionalItemTags.SHEAR_TOOLS)) && this.readyForShearing()) {
-            this.shear(SoundSource.PLAYERS);
-            this.gameEvent(GameEvent.SHEAR, player);
-            if (!this.level().isClientSide()) {
-                itemstack.hurtAndBreak(1, player, getSlotForHand(hand));
+            if (this.level() instanceof ServerLevel serverLevel) {
+                this.shear(serverLevel, SoundSource.PLAYERS, itemstack);
+                this.gameEvent(GameEvent.SHEAR, player);
+                itemstack.hurtAndBreak(1, player, hand.asEquipmentSlot());
             }
 
-            return InteractionResult.sidedSuccess(this.level().isClientSide());
+            return InteractionResult.SUCCESS;
         }
         return super.mobInteract(player, hand);
     }

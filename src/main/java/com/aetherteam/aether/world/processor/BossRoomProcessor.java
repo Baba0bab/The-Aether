@@ -1,6 +1,7 @@
 package com.aetherteam.aether.world.processor;
 
 import com.aetherteam.nitrogen.fabric.level.EntityStructureProcessor;
+
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.nbt.NbtOps;
 import com.aetherteam.nitrogen.entity.BossRoomTracker;
@@ -11,14 +12,13 @@ import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessor;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
-import net.minecraft.world.phys.AABB;
 
 import java.util.ArrayList;
 
 /**
  * This processor will give every boss mob in the template the bounding box of the room to use for its dungeon tracker.
  */
-public class BossRoomProcessor implements StructureProcessor {
+public class BossRoomProcessor implements StructureProcessor, EntityStructureProcessor {
     public static final BossRoomProcessor INSTANCE = new BossRoomProcessor();
 
     public static final MapCodec<BossRoomProcessor> CODEC = MapCodec.unit(BossRoomProcessor.INSTANCE);
@@ -32,7 +32,7 @@ public class BossRoomProcessor implements StructureProcessor {
                 new Vec3(boundingBox.maxX() + 1, boundingBox.maxY() + 1, boundingBox.maxZ() + 1),
                 new ArrayList<>());
         entityInfo.nbt.put("Dungeon", BossRoomTracker.CODEC.encodeStart(NbtOps.INSTANCE, tracker).getOrThrow());
-        return StructureProcessor.super.processEntity(level, seedPos, rawEntityInfo, entityInfo, placementSettings, template);
+        return entityInfo;
     }
 
     @Override

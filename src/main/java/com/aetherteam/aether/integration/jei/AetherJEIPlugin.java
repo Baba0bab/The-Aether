@@ -27,7 +27,6 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
-import net.minecraft.world.item.crafting.RecipeMap;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.block.Blocks;
 
@@ -66,7 +65,7 @@ public class AetherJEIPlugin implements IModPlugin {
 
     @Override
     public void registerRecipes(IRecipeRegistration registration) {
-        RecipeMap recipes = AetherClientRecipes.getRecipes();
+        AetherClientRecipes recipes = AetherClientRecipes.getRecipes();
 
         // Item
         List<? extends Recipe<?>> altarRecipes = values(recipes, AetherRecipeTypes.ENCHANTING.get());
@@ -89,7 +88,7 @@ public class AetherJEIPlugin implements IModPlugin {
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-    private static <T extends Recipe<?>> List<T> values(RecipeMap recipes, RecipeType<? extends T> type) {
+    private static <T extends Recipe<?>> List<T> values(AetherClientRecipes recipes, RecipeType<? extends T> type) {
         return ((java.util.Collection<RecipeHolder<T>>) (java.util.Collection) recipes.byType((RecipeType) type)).stream().map(RecipeHolder::value).toList();
     }
 

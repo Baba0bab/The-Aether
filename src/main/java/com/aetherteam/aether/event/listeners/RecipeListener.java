@@ -1,9 +1,5 @@
 package com.aetherteam.aether.event.listeners;
 
-import com.aetherteam.nitrogen.fabric.registries.DeferredHolder;
-import net.minecraft.world.item.crafting.RecipeType;
-import com.aetherteam.aether.recipe.AetherRecipeTypes;
-import net.neoforged.neoforge.event.OnDatapackSyncEvent;
 import com.aetherteam.aether.Aether;
 import com.aetherteam.aether.event.FreezeEvent;
 import com.aetherteam.aether.event.PlacementBanEvent;
@@ -92,14 +88,5 @@ public class RecipeListener {
         if (!event.isCanceled()) {
             RecipeHooks.banOrConvert(levelAccessor, blockPos);
         }
-    }
-
-    /**
-     * Sends the Aether's recipes to clients, so that they can be displayed by recipe viewers.
-     *
-     * @see com.aetherteam.aether.client.AetherClientRecipes
-     */
-    public static void syncRecipes(OnDatapackSyncEvent event) {
-        event.sendRecipes(AetherRecipeTypes.RECIPE_TYPES.getEntries().stream().<RecipeType<?>>map(DeferredHolder::get).toList());
     }
 }

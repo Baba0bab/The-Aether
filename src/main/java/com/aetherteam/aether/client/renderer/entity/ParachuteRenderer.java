@@ -15,7 +15,6 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.function.Supplier;
 
@@ -62,7 +61,7 @@ public class ParachuteRenderer extends EntityRenderer<Parachute, ParachuteRender
         poseStack.pushPose();
         poseStack.rotate(Axis.YP.rotationDegrees(-renderState.yRot));
         poseStack.translate(-0.5, 0.0, -0.5);
-        renderState.blockState.submitMultiLayer(poseStack, submitNodeCollector, renderState.lightCoords, OverlayTexture.NO_OVERLAY, renderState.outlineColor);
+        renderState.blockState.submit(poseStack, submitNodeCollector, renderState.lightCoords, OverlayTexture.NO_OVERLAY, renderState.outlineColor);
         poseStack.popPose();
         super.submit(renderState, poseStack, submitNodeCollector, camera);
     }

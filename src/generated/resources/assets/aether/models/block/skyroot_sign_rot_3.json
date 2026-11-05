@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/template_sign_rot_3",
+  "textures": {
+    "all": "aether:block/construction/skyroot_sign",
+    "particle": "aether:block/construction/skyroot_planks"
+  }
+}

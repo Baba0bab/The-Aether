@@ -45,7 +45,7 @@ public class PerkSavedData extends SavedData {
         Codec.unboundedMap(UUIDUtil.STRING_CODEC, DEVELOPER_GLOW_CODEC).optionalFieldOf("StoredDeveloperGlowData", Map.of()).forGetter((data) -> data.storedDeveloperGlowData)
     ).apply(instance, PerkSavedData::new));
 
-    public static final SavedDataType<PerkSavedData> TYPE = new SavedDataType<>(Identifier.fromNamespaceAndPath(Aether.MODID, FILE_NAME), PerkSavedData::new, CODEC);
+    public static final SavedDataType<PerkSavedData> TYPE = new SavedDataType<>(Identifier.fromNamespaceAndPath(Aether.MODID, FILE_NAME), PerkSavedData::new, CODEC, null);
 
     public PerkSavedData() { }
 

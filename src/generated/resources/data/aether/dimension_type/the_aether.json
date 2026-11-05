@@ -1,10 +1,31 @@
 {
   "ambient_light": 0.0,
-  "bed_works": true,
+  "attributes": {
+    "minecraft:gameplay/bed_rule": {
+      "can_set_spawn": "always",
+      "can_sleep": "when_dark",
+      "error_message": {
+        "translate": "block.minecraft.bed.no_sleep"
+      }
+    },
+    "minecraft:gameplay/can_start_raid": false,
+    "minecraft:gameplay/respawn_anchor_works": false,
+    "minecraft:gameplay/straw_bed_rule": {
+      "can_set_spawn": "never",
+      "can_sleep": "when_dark",
+      "destroy_on_leave": true,
+      "error_message": {
+        "translate": "block.minecraft.bed.no_sleep"
+      }
+    },
+    "minecraft:visual/ambient_light_color": "#0a0a0a",
+    "minecraft:visual/cloud_color": "#ccffffff",
+    "minecraft:visual/cloud_height": 9.5
+  },
   "coordinate_scale": 1.0,
-  "effects": "aether:the_aether",
+  "default_clock": "aether:the_aether",
   "has_ceiling": false,
-  "has_raids": false,
+  "has_ender_dragon_fight": false,
   "has_skylight": true,
   "height": 256,
   "infiniburn": "#minecraft:infiniburn_overworld",
@@ -16,8 +37,5 @@
     "max_inclusive": 7,
     "min_inclusive": 0
   },
-  "natural": true,
-  "piglin_safe": false,
-  "respawn_anchor_works": false,
-  "ultrawarm": false
+  "timelines": "#aether:in_aether"
 }

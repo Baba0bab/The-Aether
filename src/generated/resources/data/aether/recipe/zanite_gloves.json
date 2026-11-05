@@ -2,15 +2,12 @@
   "type": "minecraft:crafting_shaped",
   "category": "equipment",
   "key": {
-    "#": {
-      "tag": "aether:gems/zanite"
-    }
+    "#": "#aether:gems/zanite"
   },
   "pattern": [
     "# #"
   ],
   "result": {
-    "count": 1,
     "id": "aether:zanite_gloves"
   }
 }

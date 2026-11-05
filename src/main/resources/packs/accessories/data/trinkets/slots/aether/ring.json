@@ -1,0 +1,9 @@
+{
+  "icon": "aether:slot/ring",
+  "order": 301,
+  "amount": 2,
+  "validator_predicates": [
+    "trinkets:tag"
+  ],
+  "is_hidden": true
+}

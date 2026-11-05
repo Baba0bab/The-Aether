@@ -2,10 +2,8 @@ package com.aetherteam.aether.client.gui.screen.menu.logo;
 
 import net.minecraft.client.renderer.RenderPipelines;
 import com.aetherteam.aether.Aether;
-import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.LogoRenderer;
-import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
 

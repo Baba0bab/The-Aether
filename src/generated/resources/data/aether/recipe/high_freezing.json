@@ -3,11 +3,8 @@
   "category": "freezable_misc",
   "cookingtime": 500,
   "experience": 1.0,
-  "ingredient": {
-    "item": "aether:music_disc_chinchilla"
-  },
+  "ingredient": "aether:music_disc_chinchilla",
   "result": {
-    "count": 1,
     "id": "aether:music_disc_high"
   }
 }

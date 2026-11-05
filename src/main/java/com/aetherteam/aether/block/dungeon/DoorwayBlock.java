@@ -2,7 +2,7 @@ package com.aetherteam.aether.block.dungeon;
 
 import com.aetherteam.aether.client.particle.AetherParticleTypes;
 import com.aetherteam.aether.entity.EntityUtil;
-import net.fabricmc.fabric.api.registry.LandPathNodeTypesRegistry;
+import net.fabricmc.fabric.api.registry.LandPathTypeRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
@@ -42,7 +42,7 @@ public class DoorwayBlock extends Block {
         this.registerDefaultState(this.getStateDefinition().any().setValue(INVISIBLE, false));
         this.blockedEntityTypeSupplier = blockedEntityTypeSupplier;
 
-        LandPathNodeTypesRegistry.register(this, (state, neighbor) -> PathType.BLOCKED);
+        LandPathTypeRegistry.register(this, PathType.BLOCKED, PathType.BLOCKED);
     }
 
     @Override

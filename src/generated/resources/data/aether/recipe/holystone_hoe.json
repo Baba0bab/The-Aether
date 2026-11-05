@@ -2,12 +2,8 @@
   "type": "minecraft:crafting_shaped",
   "category": "equipment",
   "key": {
-    "#": {
-      "item": "aether:holystone"
-    },
-    "/": {
-      "tag": "aether:skyroot_stick"
-    }
+    "#": "aether:holystone",
+    "/": "#aether:skyroot_stick"
   },
   "pattern": [
     "##",
@@ -15,7 +11,6 @@
     " /"
   ],
   "result": {
-    "count": 1,
     "id": "aether:holystone_hoe"
   }
 }

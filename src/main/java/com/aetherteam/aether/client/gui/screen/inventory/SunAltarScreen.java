@@ -7,7 +7,6 @@ import com.aetherteam.aether.Aether;
 import com.aetherteam.aether.client.gui.component.inventory.SunAltarSlider;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.FormattedCharSequence;

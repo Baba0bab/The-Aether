@@ -1,0 +1,55 @@
+{
+  "type": "minecraft:sequence",
+  "sequence": [
+    {
+      "type": "minecraft:condition",
+      "if_true": "minecraft:on_floor",
+      "then_run": {
+        "type": "minecraft:sequence",
+        "sequence": [
+          {
+            "type": "minecraft:condition",
+            "if_true": {
+              "type": "minecraft:water",
+              "add_stone_depth": false,
+              "offset": -1,
+              "surface_depth_multiplier": 0
+            },
+            "then_run": {
+              "type": "minecraft:block",
+              "result_state": {
+                "id": "aether:aether_grass_block",
+                "properties": {
+                  "double_drops": "true",
+                  "snowy": "false"
+                }
+              }
+            }
+          },
+          {
+            "type": "minecraft:block",
+            "result_state": {
+              "id": "aether:aether_dirt",
+              "properties": {
+                "double_drops": "true"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "minecraft:condition",
+      "if_true": "minecraft:under_floor",
+      "then_run": {
+        "type": "minecraft:block",
+        "result_state": {
+          "id": "aether:aether_dirt",
+          "properties": {
+            "double_drops": "true"
+          }
+        }
+      }
+    }
+  ]
+}

@@ -6,7 +6,6 @@ import com.aetherteam.aether.Aether;
 import com.aetherteam.aether.client.gui.screen.perks.AetherCustomizationsScreen;
 import com.aetherteam.aether.client.renderer.AetherModelLayers;
 import com.aetherteam.aether.client.renderer.AetherRenderStateModifiers;
-import com.aetherteam.aether.client.renderer.AetherRenderers;
 import com.aetherteam.aether.client.renderer.entity.model.HaloModel;
 import com.aetherteam.aether.perk.PerkUtil;
 import com.aetherteam.aether.perk.data.ClientHaloPerkData;
@@ -17,7 +16,6 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.player.PlayerModel;
 import net.minecraft.client.model.geom.EntityModelSet;
-import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
 import net.minecraft.client.renderer.entity.state.AvatarRenderState;
@@ -53,7 +51,7 @@ public class PlayerHaloLayer<T extends AvatarRenderState, M extends PlayerModel>
     public void submit(PoseStack poseStack, SubmitNodeCollector submitNodeCollector, int packedLight, T entity, float netHeadYaw, float headPitch) {
         if (!entity.isInvisible) {
             User user = UserData.Client.getClientUser();
-            UUID playerUUID = entity.getRenderData(AetherRenderStateModifiers.UUID);
+            UUID playerUUID = entity.getData(AetherRenderStateModifiers.UUID);
             Map<UUID, Halo> halos = ClientHaloPerkData.INSTANCE.getClientPerkData();
             if (playerUUID != null && (Minecraft.getInstance().gui.screen() instanceof AetherCustomizationsScreen aetherCustomizationsScreen && aetherCustomizationsScreen.haloEnabled && Minecraft.getInstance().player != null && playerUUID.equals(Minecraft.getInstance().player.getUUID()) && user != null && PerkUtil.hasHalo().test(user))
                 || (!(Minecraft.getInstance().gui.screen() instanceof AetherCustomizationsScreen) && halos.containsKey(playerUUID))) {

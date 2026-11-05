@@ -1,5 +1,7 @@
 package com.aetherteam.aether.item.combat.loot;
 
+import org.apache.commons.lang3.mutable.MutableFloat;
+
 import com.aetherteam.aether.Aether;
 import com.aetherteam.aether.AetherTags;
 import com.aetherteam.aether.item.AetherItems;
@@ -14,8 +16,6 @@ import net.minecraft.world.entity.monster.zombie.ZombifiedPiglin;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
 
 public class PigSlayerItem extends Item {
     public PigSlayerItem(Properties properties) {

@@ -2,12 +2,10 @@ package com.aetherteam.aether.client;
 
 import com.aetherteam.aether.AetherConfig;
 import com.aetherteam.aether.AetherTags;
-import com.aetherteam.aether.api.AetherMenus;
 import com.aetherteam.aether.client.event.hooks.GuiHooks;
 import com.aetherteam.aether.client.sound.MusicSoundInstance;
 import com.aetherteam.aether.entity.AetherBossMob;
 import com.aetherteam.aether.mixin.mixins.client.accessor.BossHealthOverlayAccessor;
-import com.aetherteam.cumulus.api.Menus;
 import com.aetherteam.cumulus.client.WorldDisplayHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.LerpingBossEvent;
@@ -226,6 +224,6 @@ public class AetherMusicManager {
     public static boolean isCreative(Holder<Biome> holder, Player player) {
         return player.level().dimension() != Level.END && player.level().dimension() != Level.NETHER && holder.is(AetherTags.Biomes.AETHER_MUSIC)
                 && !musicManager.isPlayingMusic(Musics.UNDER_WATER)
-                && player.getAbilities().instabuild && player.mayFly();
+                && player.getAbilities().instabuild && player.getAbilities().mayfly;
     }
 }

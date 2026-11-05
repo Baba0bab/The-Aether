@@ -2,15 +2,12 @@
   "type": "minecraft:crafting_shaped",
   "category": "equipment",
   "key": {
-    "#": {
-      "tag": "aether:processed/gravitite"
-    }
+    "#": "#aether:processed/gravitite"
   },
   "pattern": [
     "# #"
   ],
   "result": {
-    "count": 1,
     "id": "aether:gravitite_gloves"
   }
 }

@@ -8,7 +8,6 @@ import com.aetherteam.aether.client.renderer.entity.state.HammerRenderState;
 import com.aetherteam.aether.entity.projectile.weapon.HammerProjectile;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.texture.OverlayTexture;

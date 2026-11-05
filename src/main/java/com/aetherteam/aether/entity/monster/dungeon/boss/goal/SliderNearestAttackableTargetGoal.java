@@ -8,7 +8,6 @@ import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.function.Predicate;
 import net.minecraft.world.entity.player.Player;
 
 

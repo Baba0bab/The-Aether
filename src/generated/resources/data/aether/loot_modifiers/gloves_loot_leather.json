@@ -1,9 +1,7 @@
 {
   "type": "aether:gloves_loot",
-  "armor_material": "minecraft:leather",
-  "conditions": [],
+  "armor_tag": "aether:armors/leather",
   "gloves": {
-    "count": 1,
     "id": "aether:leather_gloves"
   }
 }

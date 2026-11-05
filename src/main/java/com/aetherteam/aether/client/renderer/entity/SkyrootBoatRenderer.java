@@ -1,11 +1,7 @@
 package com.aetherteam.aether.client.renderer.entity;
 
 import com.aetherteam.aether.Aether;
-import com.aetherteam.aether.client.renderer.AetherModelLayers;
-import com.mojang.datafixers.util.Pair;
 import net.minecraft.client.model.object.boat.BoatModel;
-import net.minecraft.client.model.ChestBoatModel;
-import net.minecraft.client.model.ListModel;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.Model;

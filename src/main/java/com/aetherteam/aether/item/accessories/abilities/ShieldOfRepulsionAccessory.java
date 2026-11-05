@@ -11,7 +11,6 @@ import com.aetherteam.nitrogen.ConstantsUtil;
 import com.aetherteam.aetherfabric.accessories.SlotResult;
 import net.minecraft.world.entity.EntityReference;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
@@ -68,13 +67,12 @@ public interface ShieldOfRepulsionAccessory {
      * @param impactedLiving The impacted {@link LivingEntity}.
      * @param slotResult     The {@link SlotResult} of the Shield of Repulsion.
      */
-    private static void handleDeflection(ProjectileImpactEvent event, Projectile projectile, LivingEntity impactedLiving, SlotResult slotResult) {
-        event.setCanceled(true);
+    private static boolean handleDeflection(Projectile projectile, LivingEntity impactedLiving, SlotResult slotResult) {
         if (!impactedLiving.equals(projectile.getOwner())) {
             projectile.deflect(ProjectileDeflection.REVERSE, impactedLiving, EntityReference.of(projectile.getOwner()), false, 1.0);
             projectile.setDeltaMovement(projectile.getDeltaMovement().scale(0.25));
             if (impactedLiving.level() instanceof ServerLevel serverLevel) {
-                slotResult.stack().hurtAndBreak(1, serverLevel, impactedLiving, (item) -> AccessoryApi.onBroken(slotResult.slotContext(), slotResult.stack()));
+                AccessoryApi.hurtAndBreak(slotResult.slotContext(), slotResult.stack(), 1);
             }
         }
 

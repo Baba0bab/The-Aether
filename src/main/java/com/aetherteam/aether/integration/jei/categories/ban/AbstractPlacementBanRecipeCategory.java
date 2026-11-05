@@ -70,7 +70,7 @@ public abstract class AbstractPlacementBanRecipeCategory<T, S extends Predicate<
                             state = BlockStateRecipeUtil.setHelper(propertyEntry, state);
                         }
                     }
-                    ItemStack stack = pair.block().getCloneItemStack(Minecraft.getInstance().level, BlockPos.ZERO, state, true, Minecraft.getInstance().player);
+                    ItemStack stack = state.getCloneItemStack(Minecraft.getInstance().level, BlockPos.ZERO, true);
                     ingredients.add(stack.isEmpty() ? new ItemStack(Blocks.STONE) : stack);
                 }
             }

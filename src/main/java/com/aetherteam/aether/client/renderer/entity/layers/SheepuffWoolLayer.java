@@ -11,13 +11,10 @@ import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.color.ColorLerper;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.geom.EntityModelSet;
-import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
 import net.minecraft.resources.Identifier;
-import net.minecraft.util.Mth;
-import net.minecraft.world.item.DyeColor;
 
 /**
  * [CODE COPY] - {@link net.minecraft.client.renderer.entity.layers.SheepWoolLayer}.

@@ -1,5 +1,7 @@
 package com.aetherteam.aether.client.gui.screen.perks;
 
+import net.minecraft.world.item.ItemStack;
+
 import com.mojang.blaze3d.Blaze3D;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
@@ -22,12 +24,10 @@ import com.aetherteam.aether.perk.CustomizationsOptions;
 import com.aetherteam.aether.perk.data.ClientMoaSkinPerkData;
 import com.aetherteam.aether.perk.types.MoaData;
 import com.aetherteam.aether.perk.types.MoaSkins;
-import com.aetherteam.nitrogen.fabric.network.PacketDistributor;
 import com.aetherteam.nitrogen.api.users.User;
 import com.aetherteam.nitrogen.api.users.UserData;
 import com.aetherteam.nitrogen.network.packet.serverbound.TriggerUpdateInfoPacket;
 import net.minecraft.ChatFormatting;
-import net.minecraft.util.Util;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
@@ -36,8 +36,6 @@ import net.minecraft.client.gui.components.WidgetSprites;
 import net.minecraft.client.gui.screens.ConfirmLinkScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
-import net.minecraft.locale.Language;
-import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.MutableComponent;
@@ -383,10 +381,10 @@ public class MoaSkinsScreen extends Screen {
      * @param mouseY      The {@link Integer} for the mouse's y-position.
      */
     private void renderTooltip(MutableComponent title, Component description, GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY) {
-        List<FormattedText> formattedTextList = new ArrayList<>();
-        formattedTextList.add(title.withStyle(ChatFormatting.GOLD));
-        formattedTextList.addAll(Minecraft.getInstance().font.getSplitter().splitLines(description, this.width / 3, Style.EMPTY));
-        guiGraphics.setComponentTooltipForNextFrame(Minecraft.getInstance().font, formattedTextList, mouseX, mouseY, ItemStack.EMPTY);
+        List<FormattedCharSequence> lines = new ArrayList<>();
+        lines.add(title.withStyle(ChatFormatting.GOLD).getVisualOrderText());
+        lines.addAll(Minecraft.getInstance().font.split(description, this.width / 3));
+        guiGraphics.setTooltipForNextFrame(Minecraft.getInstance().font, lines, mouseX, mouseY);
     }
 
     /**

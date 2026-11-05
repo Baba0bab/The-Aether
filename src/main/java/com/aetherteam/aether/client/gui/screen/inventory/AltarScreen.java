@@ -7,12 +7,10 @@ import com.aetherteam.aether.inventory.menu.AltarMenu;
 import com.aetherteam.aether.item.AetherItems;
 import com.aetherteam.aether.recipe.book.AetherRecipeBookCategories;
 import net.minecraft.client.gui.screens.recipebook.RecipeBookComponent;
-import net.minecraft.client.gui.screens.recipebook.SearchRecipeBookCategory;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.crafting.RecipeBookCategories;
 
 import java.util.List;
 

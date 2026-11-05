@@ -3,7 +3,6 @@ package com.aetherteam.aether.item.accessories.ring;
 import com.aetherteam.aether.AetherTags;
 import com.aetherteam.aether.client.AetherSoundEvents;
 import com.aetherteam.aether.item.accessories.abilities.ZaniteAccessory;
-import net.minecraft.world.item.ItemStack;
 
 public class ZaniteRingItem extends RingItem implements ZaniteAccessory {
     public ZaniteRingItem(Properties properties) {

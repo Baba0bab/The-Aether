@@ -2,7 +2,6 @@ package com.aetherteam.aether.blockentity;
 
 import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.core.component.DataComponentGetter;
-import com.mojang.serialization.Codec;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.level.storage.ValueInput;
 import com.aetherteam.aether.Aether;
@@ -71,7 +70,7 @@ public class SunAltarBlockEntity extends BlockEntity implements Nameable {
         return this.saveWithoutMetadata(lookupProvider);
     }
 
-    @Override
+    
     public void handleUpdateTag(ValueInput tag) {
         this.loadAdditional(tag);
     }
@@ -93,7 +92,7 @@ public class SunAltarBlockEntity extends BlockEntity implements Nameable {
         return ClientboundBlockEntityDataPacket.create(this);
     }
 
-    @Override
+    
     public void onDataPacket(Connection connection, ValueInput valueInput) {
         this.handleUpdateTag(valueInput);
     }

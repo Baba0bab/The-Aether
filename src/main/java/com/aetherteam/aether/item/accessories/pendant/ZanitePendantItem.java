@@ -3,7 +3,6 @@ package com.aetherteam.aether.item.accessories.pendant;
 import com.aetherteam.aether.AetherTags;
 import com.aetherteam.aether.client.AetherSoundEvents;
 import com.aetherteam.aether.item.accessories.abilities.ZaniteAccessory;
-import net.minecraft.world.item.ItemStack;
 
 public class ZanitePendantItem extends PendantItem implements ZaniteAccessory {
     public ZanitePendantItem(Properties properties) {

@@ -1,5 +1,9 @@
 package com.aetherteam.aether.mixin;
 
+import java.util.function.Predicate;
+
+import java.util.Map;
+
 import com.aetherteam.aether.Aether;
 import com.aetherteam.aether.item.EquipmentUtil;
 import net.minecraft.world.entity.EntityTypes;
@@ -8,18 +12,15 @@ import com.aetherteam.aether.item.accessories.cape.CapeItem;
 import com.aetherteam.aether.item.accessories.gloves.GlovesItem;
 import com.aetherteam.aether.item.accessories.pendant.PendantItem;
 import com.aetherteam.aether.mixin.mixins.common.accessor.MinecraftServerAccessor;
-import com.mojang.datafixers.util.Pair;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.worldselection.SelectWorldScreen;
 import net.minecraft.resources.Identifier;
-import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 
 import java.nio.file.Path;
-import java.util.stream.StreamSupport;
 
 public class AetherMixinHooks {
     private static final Identifier SWUFF_CAPE_LOCATION = Identifier.fromNamespaceAndPath(Aether.MODID, "textures/models/accessory/capes/swuff_accessory.png");

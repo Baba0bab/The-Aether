@@ -1,5 +1,6 @@
 package com.aetherteam.aether;
 
+import com.aetherteam.aetherfabric.AetherBlockTransformers;
 import com.aetherteam.aether.entity.AetherEntityDataSerializers;
 import net.minecraft.core.cauldron.CauldronInteractions;
 import java.util.stream.Stream;
@@ -12,7 +13,6 @@ import com.aetherteam.aether.api.registers.MoaType;
 import com.aetherteam.aether.attachment.AetherDataAttachments;
 import com.aetherteam.aether.block.AetherBlocks;
 import com.aetherteam.aether.block.AetherCauldronInteractions;
-import com.aetherteam.aether.block.AetherWoodTypes;
 import com.aetherteam.aether.block.dispenser.AetherDispenseBehaviors;
 import com.aetherteam.aether.block.dispenser.DispenseUsableItemBehavior;
 import com.aetherteam.aether.blockentity.AetherBlockEntityTypes;
@@ -30,7 +30,6 @@ import com.aetherteam.aether.data.resources.registries.AetherMoaTypes;
 import com.aetherteam.aether.effect.AetherEffects;
 import com.aetherteam.aether.entity.AetherEntityTypes;
 import com.aetherteam.aether.entity.ai.attribute.AetherAttributes;
-import com.aetherteam.aether.event.hooks.AbilityHooks;
 import com.aetherteam.aether.event.listeners.DimensionListener;
 import com.aetherteam.aether.event.listeners.EntityListener;
 import com.aetherteam.aether.event.listeners.PerkListener;
@@ -41,7 +40,6 @@ import com.aetherteam.aether.event.listeners.abilities.ToolAbilityListener;
 import com.aetherteam.aether.event.listeners.abilities.WeaponAbilityListener;
 import com.aetherteam.aether.event.listeners.capability.AetherPlayerListener;
 import com.aetherteam.aether.event.listeners.capability.AetherTimeListener;
-import com.aetherteam.aether.inventory.AetherAccessorySlots;
 import com.aetherteam.aether.inventory.AetherRecipeBookTypes;
 import com.aetherteam.aether.inventory.menu.AetherMenuTypes;
 import com.aetherteam.aether.item.AetherCreativeTabs;
@@ -51,8 +49,6 @@ import com.aetherteam.aether.item.combat.loot.FlamingSwordItem;
 import com.aetherteam.aether.item.combat.loot.HolySwordItem;
 import com.aetherteam.aether.item.combat.loot.PigSlayerItem;
 import com.aetherteam.aether.item.components.AetherDataComponents;
-import com.aetherteam.aether.item.miscellaneous.bucket.SkyrootBucketItem;
-import com.aetherteam.aether.item.miscellaneous.bucket.SkyrootBucketResourceHandler;
 import com.aetherteam.aether.loot.conditions.AetherLootConditions;
 import com.aetherteam.aether.loot.functions.AetherLootFunctions;
 import com.aetherteam.aether.loot.modifiers.AetherLootModifiers;
@@ -93,14 +89,11 @@ import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
 import net.fabricmc.fabric.api.event.registry.DynamicRegistries;
 import net.fabricmc.fabric.api.creativetab.v1.CreativeModeTabEvents;
-import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
-import net.fabricmc.fabric.api.transfer.v1.item.ContainerStorage;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemStorage;
 import net.fabricmc.loader.api.FabricLoader;
+import net.fabricmc.fabric.api.recipe.v1.sync.RecipeSynchronization;
 import net.fabricmc.loader.api.ModContainer;
 import net.minecraft.ChatFormatting;
-import net.minecraft.SharedConstants;
-import net.minecraft.core.cauldron.CauldronInteraction;
 import net.minecraft.core.dispenser.BoatDispenseItemBehavior;
 import net.minecraft.core.dispenser.ProjectileDispenseBehavior;
 import net.minecraft.network.chat.Component;
@@ -108,15 +101,10 @@ import net.minecraft.server.packs.PackLocationInfo;
 import net.minecraft.server.packs.PackSelectionConfig;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.PathPackResources;
-import net.minecraft.server.packs.metadata.pack.PackMetadataSection;
 import net.minecraft.server.packs.repository.Pack;
 import net.minecraft.server.packs.repository.PackCompatibility;
 import net.minecraft.server.packs.repository.PackSource;
-import net.minecraft.world.Container;
 import net.minecraft.world.flag.FeatureFlagSet;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.block.ChestBlock;
 import net.minecraft.world.level.block.DispenserBlock;
 import net.neoforged.fml.config.ModConfig;
 import org.slf4j.Logger;
@@ -171,13 +159,14 @@ public class Aether implements ModInitializer {
                 AetherCreativeTabs.CREATIVE_MODE_TABS,
                 AetherAdvancementSoundOverrides.ADVANCEMENT_SOUND_OVERRIDES,
                 AetherAdvancementTriggers.TRIGGERS,
-                AetherEntityDataSerializers.ENTITY_DATA_SERIALIZERS
         };
 
         for (DeferredRegister<?> register : registers) {
             register.addEntriesToRegistry();
         }
 
+        AetherEntityDataSerializers.init();
+        AetherBlockTransformers.init();
         AetherDataAttachments.init();
 
         AetherPoi.init();
@@ -203,6 +192,7 @@ public class Aether implements ModInitializer {
         AetherItems.setupBucketReplacements();
 
         AetherRecipePropertySets.addToMap();
+        AetherRecipeSerializers.RECIPE_SERIALIZERS.getEntries().forEach((serializer) -> RecipeSynchronization.synchronizeRecipeSerializer(serializer.get()));
 
         this.registerDispenserBehaviors();
         this.registerCauldronInteractions();
@@ -257,9 +247,9 @@ public class Aether implements ModInitializer {
         registrar.playToServer(SunAltarUpdatePacket.TYPE, SunAltarUpdatePacket.STREAM_CODEC, SunAltarUpdatePacket::execute);
 
         // BOTH
-        registrar.playBidirectional(AetherPlayerSyncPacket.TYPE, AetherPlayerSyncPacket.STREAM_CODEC, AetherPlayerSyncPacket::execute, AetherPlayerSyncPacket::execute);
-        registrar.playBidirectional(AetherTimeSyncPacket.TYPE, AetherTimeSyncPacket.STREAM_CODEC, AetherTimeSyncPacket::execute, AetherTimeSyncPacket::execute);
-        registrar.playBidirectional(PhoenixArrowSyncPacket.TYPE, PhoenixArrowSyncPacket.STREAM_CODEC, PhoenixArrowSyncPacket::execute, PhoenixArrowSyncPacket::execute);
+        registrar.playBidirectional(AetherPlayerSyncPacket.TYPE, AetherPlayerSyncPacket.STREAM_CODEC, AetherPlayerSyncPacket::execute);
+        registrar.playBidirectional(AetherTimeSyncPacket.TYPE, AetherTimeSyncPacket.STREAM_CODEC, AetherTimeSyncPacket::execute);
+        registrar.playBidirectional(PhoenixArrowSyncPacket.TYPE, PhoenixArrowSyncPacket.STREAM_CODEC, PhoenixArrowSyncPacket::execute);
     }
 
     public void registerCapabilities() {
@@ -334,7 +324,7 @@ public class Aether implements ModInitializer {
      */
     private void createCombinedPack(AddPackFindersEvent event, String sourcePath, String name, String title, String description) {
         PackLocationInfo locationInfo = new PackLocationInfo(name, Component.translatable(title), PackSource.BUILT_IN, Optional.empty());
-        Pack.Metadata metadata = new Pack.Metadata(Component.translatable(description), PackCompatibility.COMPATIBLE, FeatureFlagSet.of(), List.of(), false);
+        Pack.Metadata metadata = new Pack.Metadata(Component.translatable(description), PackCompatibility.COMPATIBLE, FeatureFlagSet.of(), List.of());
         event.addRepositorySource((source) ->
             source.accept(new Pack(
                     locationInfo,
@@ -379,7 +369,7 @@ public class Aether implements ModInitializer {
                     source.accept(new Pack(
                             new PackLocationInfo("builtin/aether_ctm_fix", Component.translatable("pack.aether.ctm.title"), PackSource.BUILT_IN, Optional.empty()),
                             packSupplier("packs/ctm_fix"),
-                            new Pack.Metadata(Component.translatable("pack.aether.ctm.description"), PackCompatibility.COMPATIBLE, FeatureFlagSet.of(), List.of(), true),
+                            new Pack.Metadata(Component.translatable("pack.aether.ctm.description"), PackCompatibility.COMPATIBLE, FeatureFlagSet.of(), List.of()),
                             new PackSelectionConfig(true, Pack.Position.TOP, false)
                         )
                     )
@@ -397,7 +387,7 @@ public class Aether implements ModInitializer {
                     source.accept(new Pack(
                             new PackLocationInfo("builtin/aether_tips", Component.translatable("pack.aether.tips.title"), PackSource.BUILT_IN, Optional.empty()),
                             packSupplier("packs/tips"),
-                            new Pack.Metadata(Component.translatable("pack.aether.tips.description"), PackCompatibility.COMPATIBLE, FeatureFlagSet.of(), List.of(), false),
+                            new Pack.Metadata(Component.translatable("pack.aether.tips.description"), PackCompatibility.COMPATIBLE, FeatureFlagSet.of(), List.of()),
                             new PackSelectionConfig(false, Pack.Position.TOP, false)
                         )
                     )
@@ -414,7 +404,7 @@ public class Aether implements ModInitializer {
                     source.accept(new Pack(
                             new PackLocationInfo("builtin/aether_colorblind", Component.translatable("pack.aether.colorblind.title"), PackSource.BUILT_IN, Optional.empty()),
                             packSupplier("packs/colorblind"),
-                            new Pack.Metadata(Component.translatable("pack.aether.colorblind.description"), PackCompatibility.COMPATIBLE, FeatureFlagSet.of(), List.of(), false),
+                            new Pack.Metadata(Component.translatable("pack.aether.colorblind.description"), PackCompatibility.COMPATIBLE, FeatureFlagSet.of(), List.of()),
                             new PackSelectionConfig(false, Pack.Position.TOP, false)
                         )
                     )
@@ -431,7 +421,7 @@ public class Aether implements ModInitializer {
                     source.accept(new Pack(
                             new PackLocationInfo("builtin/aether_tooltips", Component.translatable("pack.aether.tooltips.title"), PackSource.BUILT_IN, Optional.empty()),
                             packSupplier("packs/tooltips"),
-                            new Pack.Metadata(Component.translatable("pack.aether.tooltips.description"), PackCompatibility.COMPATIBLE, FeatureFlagSet.of(), List.of(), false),
+                            new Pack.Metadata(Component.translatable("pack.aether.tooltips.description"), PackCompatibility.COMPATIBLE, FeatureFlagSet.of(), List.of()),
                             new PackSelectionConfig(false, Pack.Position.TOP, false)
                         )
                     )
@@ -449,7 +439,7 @@ public class Aether implements ModInitializer {
                 source.accept(new Pack(
                         new PackLocationInfo("builtin/aether_imm_ptl_compat", Component.translatable("pack.aether.imm_ptl_compat.title"), PackSource.BUILT_IN, Optional.empty()),
                         packSupplier("packs/imm_ptl_compat"),
-                        new Pack.Metadata(Component.translatable("pack.aether.imm_ptl_compat.description"), PackCompatibility.COMPATIBLE, FeatureFlagSet.of(), List.of(), true),
+                        new Pack.Metadata(Component.translatable("pack.aether.imm_ptl_compat.description"), PackCompatibility.COMPATIBLE, FeatureFlagSet.of(), List.of()),
                         new PackSelectionConfig(true, Pack.Position.TOP, false)
                     )
                 )
@@ -467,7 +457,7 @@ public class Aether implements ModInitializer {
                     source.accept(new Pack(
                             new PackLocationInfo("builtin/aether_accessories", Component.translatable("pack.aether.aether_accessories.title"), PackSource.BUILT_IN, Optional.empty()),
                             packSupplier("packs/accessories"),
-                            new Pack.Metadata(Component.translatable("pack.aether.aether_accessories.description"), PackCompatibility.COMPATIBLE, FeatureFlagSet.of(), List.of(), true),
+                            new Pack.Metadata(Component.translatable("pack.aether.aether_accessories.description"), PackCompatibility.COMPATIBLE, FeatureFlagSet.of(), List.of()),
                             new PackSelectionConfig(true, Pack.Position.TOP, false)
                         )
                     )
@@ -485,7 +475,7 @@ public class Aether implements ModInitializer {
                     source.accept(new Pack(
                             new PackLocationInfo("builtin/aether_accessories_override", Component.translatable("pack.aether.default_accessories.title"), PackSource.BUILT_IN, Optional.empty()),
                             packSupplier("packs/accessories_override"),
-                            new Pack.Metadata(Component.translatable("pack.aether.default_accessories.description"), PackCompatibility.COMPATIBLE, FeatureFlagSet.of(), List.of(), true),
+                            new Pack.Metadata(Component.translatable("pack.aether.default_accessories.description"), PackCompatibility.COMPATIBLE, FeatureFlagSet.of(), List.of()),
                             new PackSelectionConfig(true, Pack.Position.TOP, false)
                         )
                     )
@@ -502,7 +492,7 @@ public class Aether implements ModInitializer {
                     source.accept(new Pack(
                             new PackLocationInfo("builtin/aether_temporary_freezing", Component.translatable("pack.aether.freezing.title"), create(decorateWithSource("pack.source.builtin"), AetherConfig.COMMON.add_temporary_freezing_automatically.get()), Optional.empty()),
                             packSupplier("packs/temporary_freezing"),
-                            new Pack.Metadata(Component.translatable("pack.aether.freezing.description"), PackCompatibility.COMPATIBLE, FeatureFlagSet.of(), List.of(), false),
+                            new Pack.Metadata(Component.translatable("pack.aether.freezing.description"), PackCompatibility.COMPATIBLE, FeatureFlagSet.of(), List.of()),
                             new PackSelectionConfig(false, Pack.Position.TOP, false)
                         )
                     )
@@ -519,7 +509,7 @@ public class Aether implements ModInitializer {
                     source.accept(new Pack(
                             new PackLocationInfo("builtin/aether_ruined_portal", Component.translatable("pack.aether.ruined_portal.title"), create(decorateWithSource("pack.source.builtin"), AetherConfig.COMMON.add_ruined_portal_automatically.get()), Optional.empty()),
                             packSupplier("packs/ruined_portal"),
-                            new Pack.Metadata(Component.translatable("pack.aether.ruined_portal.description"), PackCompatibility.COMPATIBLE, FeatureFlagSet.of(), List.of(), false),
+                            new Pack.Metadata(Component.translatable("pack.aether.ruined_portal.description"), PackCompatibility.COMPATIBLE, FeatureFlagSet.of(), List.of()),
                             new PackSelectionConfig(false, Pack.Position.TOP, false)
                         )
                     )

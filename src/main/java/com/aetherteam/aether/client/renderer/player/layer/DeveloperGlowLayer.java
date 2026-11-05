@@ -4,7 +4,6 @@ import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import com.aetherteam.aether.client.gui.screen.perks.AetherCustomizationsScreen;
 import com.aetherteam.aether.client.renderer.AetherRenderStateModifiers;
-import com.aetherteam.aether.client.renderer.AetherRenderers;
 import com.aetherteam.aether.perk.PerkUtil;
 import com.aetherteam.aether.perk.data.ClientDeveloperGlowPerkData;
 import com.aetherteam.aether.perk.types.DeveloperGlow;
@@ -13,7 +12,6 @@ import com.aetherteam.nitrogen.api.users.UserData;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.player.PlayerModel;
-import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
 import net.minecraft.client.renderer.entity.state.AvatarRenderState;
@@ -43,7 +41,7 @@ public class DeveloperGlowLayer<T extends AvatarRenderState, M extends PlayerMod
     public void submit(PoseStack poseStack, SubmitNodeCollector submitNodeCollector, int packedLight, T entity, float netHeadYaw, float headPitch) {
         if (!entity.isInvisible) {
             User user = UserData.Client.getClientUser();
-            UUID playerUUID = entity.getRenderData(AetherRenderStateModifiers.UUID);
+            UUID playerUUID = entity.getData(AetherRenderStateModifiers.UUID);
             Map<UUID, DeveloperGlow> developerGlows = ClientDeveloperGlowPerkData.INSTANCE.getClientPerkData();
             if (playerUUID != null && (Minecraft.getInstance().gui.screen() instanceof AetherCustomizationsScreen aetherCustomizationsScreen && aetherCustomizationsScreen.developerGlowEnabled && Minecraft.getInstance().player != null && playerUUID.equals(Minecraft.getInstance().player.getUUID()) && user != null && PerkUtil.hasDeveloperGlow().test(user))
                     || (!(Minecraft.getInstance().gui.screen() instanceof AetherCustomizationsScreen) && developerGlows.containsKey(playerUUID))) {

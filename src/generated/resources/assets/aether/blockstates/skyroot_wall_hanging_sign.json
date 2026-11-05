@@ -1,7 +1,19 @@
 {
   "variants": {
-    "": {
-      "model": "aether:block/skyroot_hanging_sign"
+    "facing=east": {
+      "model": "aether:block/skyroot_wall_hanging_sign",
+      "y": 90
+    },
+    "facing=north": {
+      "model": "aether:block/skyroot_wall_hanging_sign"
+    },
+    "facing=south": {
+      "model": "aether:block/skyroot_wall_hanging_sign",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "aether:block/skyroot_wall_hanging_sign",
+      "y": 270
     }
   }
 }

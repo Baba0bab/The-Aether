@@ -1,5 +1,9 @@
 package com.aetherteam.aether.client.gui.screen.menu;
 
+import net.minecraft.client.gui.components.PlainTextButton;
+
+import net.minecraft.client.gui.Font;
+
 import com.aetherteam.aether.AetherConfig;
 import com.aetherteam.aether.client.AetherSoundEvents;
 import com.aetherteam.aether.client.gui.component.menu.AetherMenuButton;
@@ -9,7 +13,6 @@ import com.aetherteam.aether.mixin.mixins.client.accessor.TitleScreenAccessor;
 import com.aetherteam.cumulus.CumulusConfig;
 import com.aetherteam.cumulus.client.gui.screen.DynamicMenuButton;
 import com.aetherteam.cumulus.mixin.mixins.client.accessor.SplashRendererAccessor;
-import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.*;
 import net.minecraft.client.gui.components.AbstractWidget;
@@ -117,24 +120,23 @@ public class AetherTitleScreen extends TitleScreen implements TitleScreenBehavio
     }
 
     @Override
-    public boolean forEachLineBranding(boolean includeMC, boolean reverse, BiConsumer<Integer, String> lineConsumer, GuiGraphicsExtractor guiGraphics, int i) {
+    public int getBrandingTextX(Font font, String text, int x) {
         if (this.alignedLeft) {
-            BrandingControl.forEachLine(true, true, (brandingLine, branding) ->
-                guiGraphics.text(font, branding, this.width - font.width(branding) - 1, this.height - (10 + (brandingLine + 1) * (font.lineHeight + 1)), 16777215 | i)
-            );
-            return true;
+            return this.width - font.width(text) - 2;
         } else {
             return x;
         }
     }
 
     @Override
-    public boolean forEachAboveCopyrightLineBranding(BiConsumer<Integer, String> lineConsumer, GuiGraphicsExtractor guiGraphics, int i) {
+    public int getBrandingTextY(Font font, String text, int y) {
         if (this.alignedLeft) {
-            BrandingControl.forEachAboveCopyrightLine((brandingLine, branding) ->
-                guiGraphics.text(font, branding, 1, this.height - (brandingLine + 1) * (font.lineHeight + 1), 16777215 | i)
-            );
-            return true;
+            int creditsY = this.renderables.stream()
+                .filter(renderable -> renderable instanceof PlainTextButton btn && btn.getMessage().equals(Component.translatable("title.credits")))
+                .findFirst()
+                .map(renderable -> ((PlainTextButton) renderable).getY())
+                .orElse(0);
+            return creditsY - font.lineHeight - 2;
         } else {
             return y;
         }

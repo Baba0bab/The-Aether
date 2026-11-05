@@ -2,8 +2,6 @@ package com.aetherteam.aether.client.event.listeners.capability;
 
 import com.aetherteam.aether.client.AetherClient;
 import com.aetherteam.aether.client.event.hooks.CapabilityClientHooks;
-import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
-import net.minecraft.client.player.Input;
 import net.minecraft.client.player.ClientInput;
 import net.minecraft.world.entity.player.Player;
 
@@ -18,11 +16,9 @@ public class AetherPlayerClientListener {
     }
 
     /**
-     * @see CapabilityClientHooks.AetherPlayerHooks#movementInput(Player, ClientInput)
+     * @see CapabilityClientHooks.AetherPlayerHooks#movementInput(Player, Input)
      */
-    public static void onMove(MovementInputUpdateEvent event) {
-        Player player = event.getEntity();
-        ClientInput input = event.getInput();
+    public static void onMove(Player player, ClientInput input) {
         CapabilityClientHooks.AetherPlayerHooks.movementInput(player, input);
     }
 

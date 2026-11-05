@@ -11,8 +11,6 @@ import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.renderer.SubmitNodeCollector;
-import net.minecraft.client.renderer.entity.EntityRendererProvider;
-import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.state.AvatarRenderState;
 import net.minecraft.client.renderer.entity.state.HumanoidRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
@@ -28,9 +26,6 @@ import net.minecraft.world.phys.Vec3;
 import com.aetherteam.aetherfabric.accessories.SlotContext;
 import eu.pb4.trinkets.api.TrinketSlotAccess;
 import eu.pb4.trinkets.api.client.TrinketRenderer;
-import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.client.model.geom.ModelPart;
-import com.aetherteam.aetherfabric.accessories.SlotContext;
 
 public class ShieldOfRepulsionRenderer implements TrinketRenderer {
     private final HumanoidModel<HumanoidRenderState> shieldModel;

@@ -5,24 +5,21 @@ import com.aetherteam.aether.client.event.hooks.DimensionClientHooks;
 import com.aetherteam.nitrogen.fabric.client.events.FogAdjustmentHelper;
 import com.aetherteam.nitrogen.fabric.client.events.FogColorHelper;
 import com.aetherteam.nitrogen.fabric.client.events.FogEvents;
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.client.Camera;
 import net.minecraft.client.renderer.fog.FogRenderer;
-import net.minecraft.client.renderer.fog.environment.FogEnvironment;
-import net.minecraft.world.level.material.FogType;
 import org.apache.commons.lang3.tuple.Triple;
 
 public class DimensionClientListener {
     /**
      * @see AetherClient#eventSetup()
      */
-    public static void listen(IEventBus bus) {
-        bus.addListener(DimensionClientListener::onRenderFog);
-        bus.addListener(DimensionClientListener::onRenderFogColor);
+    public static void listen() {
+        FogEvents.ON_FOG_RENDER.register(DimensionClientListener::onRenderFog);
+        FogEvents.ON_FOG_COLORING.register(DimensionClientListener::onRenderFogColor);
     }
 
     /**
-     * @see DimensionClientHooks#renderNearFog(Camera, FogEnvironment, FogType, float)
+     * @see DimensionClientHooks#renderNearFog(Camera, FogRenderer.FogMode, float)
      * @see DimensionClientHooks#reduceLavaFog(Camera, float)
      */
     public static void onRenderFog(FogAdjustmentHelper event) {

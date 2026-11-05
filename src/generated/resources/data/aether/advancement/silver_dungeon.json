@@ -3,15 +3,13 @@
   "criteria": {
     "kill_valkyrie_queen": {
       "conditions": {
-        "entity": [
-          {
-            "condition": "minecraft:entity_properties",
-            "entity": "this",
-            "predicate": {
-              "type": "aether:valkyrie_queen"
-            }
+        "entity": {
+          "type": "minecraft:entity_properties",
+          "entity": "this",
+          "predicate": {
+            "minecraft:entity_type": "aether:valkyrie_queen"
           }
-        ]
+        }
       },
       "trigger": "minecraft:player_killed_entity"
     }
@@ -22,7 +20,6 @@
     },
     "frame": "goal",
     "icon": {
-      "count": 1,
       "id": "aether:silver_dungeon_key"
     },
     "title": {

@@ -3,6 +3,7 @@ package com.aetherteam.aether.mixin.mixins.client.aether_fabric;
 import com.aetherteam.aether.client.event.listeners.capability.AetherPlayerClientListener;
 import net.minecraft.client.KeyboardHandler;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.input.KeyEvent;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -16,14 +17,10 @@ public abstract class KeyboardHandlerMixin {
     @Final
     private Minecraft minecraft;
 
-    // TODO: DUE TO FUTURE CHANGES MOST LIKELY WON'T NEED SUCH AS KEYMAPPINGS ARE BETTER IN HIGHER VERSIONS
-    @Inject(method = "keyPress", at = {
-        @At(value = "RETURN", ordinal = 4),
-        @At(value = "RETURN", ordinal = 5)
-    })
-    private void aetherFabric$onPostKeyPress(long windowPointer, int key, int scanCode, int action, int modifiers, CallbackInfo ci) {
-        if (windowPointer != this.minecraft.getWindow().getWindow()) return;
+    @Inject(method = "keyPress", at = @At("TAIL"))
+    private void aetherFabric$onPostKeyPress(long windowPointer, int action, KeyEvent event, CallbackInfo ci) {
+        if (windowPointer != this.minecraft.getWindow().handle()) return;
 
-        AetherPlayerClientListener.onPress(key);
+        AetherPlayerClientListener.onPress(event.key());
     }
 }

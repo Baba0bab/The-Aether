@@ -369,7 +369,6 @@
       ]
     }
   ],
-  "render_type": "minecraft:cutout",
   "textures": {
     "bush": "aether:block/natural/potted_berry_bush",
     "dirt": "minecraft:block/dirt",

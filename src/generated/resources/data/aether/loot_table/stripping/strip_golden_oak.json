@@ -1,31 +1,35 @@
 {
-  "type": "minecraft:aether_stripping",
+  "type": "minecraft:block_interact",
   "pools": [
     {
-      "bonus_rolls": 0.0,
+      "condition": {
+        "type": "minecraft:match_tool",
+        "predicate": {
+          "items": "#aether:golden_amber_harvesters"
+        }
+      },
       "entries": [
         {
           "type": "minecraft:item",
-          "functions": [
+          "modifier": [
             {
-              "add": false,
+              "type": "minecraft:set_count",
               "count": {
                 "type": "minecraft:uniform",
-                "max": 2.0,
-                "min": 1.0
-              },
-              "function": "minecraft:set_count"
+                "max": 2,
+                "min": 1
+              }
             },
             {
+              "type": "minecraft:apply_bonus",
               "enchantment": "minecraft:fortune",
-              "formula": "minecraft:ore_drops",
-              "function": "minecraft:apply_bonus"
+              "formula": "minecraft:ore_drops"
             }
           ],
           "name": "aether:golden_amber"
         }
       ],
-      "rolls": 1.0
+      "rolls": 1
     }
   ],
   "random_sequence": "aether:stripping/strip_golden_oak"

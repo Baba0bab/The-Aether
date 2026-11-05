@@ -1,5 +1,7 @@
 package com.aetherteam.aether.client.renderer.player.layer;
 
+import net.minecraft.client.Minecraft;
+
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import com.aetherteam.aether.Aether;
@@ -9,7 +11,6 @@ import com.aetherteam.aether.client.renderer.entity.model.ValkyrieWingsModel;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.model.player.PlayerModel;
 import net.minecraft.client.model.geom.EntityModelSet;
-import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
 import net.minecraft.client.renderer.entity.state.AvatarRenderState;
@@ -17,7 +18,6 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 
-import java.util.Objects;
 
 public class PlayerWingsLayer<T extends AvatarRenderState, M extends PlayerModel> extends RenderLayer<T, M> {
     private static final Identifier VALKYRIE_TEXTURE = Identifier.fromNamespaceAndPath(Aether.MODID, "textures/entity/mobs/valkyrie/valkyrie.png");
@@ -40,11 +40,11 @@ public class PlayerWingsLayer<T extends AvatarRenderState, M extends PlayerModel
      */
     @Override
     public void submit(PoseStack poseStack, SubmitNodeCollector submitNodeCollector, int packedLight, T entity, float netHeadYaw, float headPitch) {
-        boolean hasFullValkyrieSet = entity.getRenderDataOrDefault(AetherRenderStateModifiers.HAS_FULL_VALKYRIE_ARMOR, false);
-        int wingRotationO = entity.getRenderDataOrDefault(AetherRenderStateModifiers.VALKYRIE_WING_ROTATION_OLD, 0);
-        int wingRotation = entity.getRenderDataOrDefault(AetherRenderStateModifiers.VALKYRIE_WING_ROTATION, 0);
+        boolean hasFullValkyrieSet = entity.getDataOrDefault(AetherRenderStateModifiers.HAS_FULL_VALKYRIE_ARMOR, false);
+        int wingRotationO = entity.getDataOrDefault(AetherRenderStateModifiers.VALKYRIE_WING_ROTATION_OLD, 0);
+        int wingRotation = entity.getDataOrDefault(AetherRenderStateModifiers.VALKYRIE_WING_ROTATION, 0);
         if (hasFullValkyrieSet) {
-            this.setupWingRotation(entity, Mth.lerp(entity.partialTick, wingRotationO, wingRotation));
+            this.setupWingRotation(entity, Mth.lerp(Minecraft.getInstance().getDeltaTracker().getGameTimeDeltaPartialTick(false), wingRotationO, wingRotation));
             submitNodeCollector.submitModel(this.wings, entity, poseStack, RenderTypes.entityCutout(VALKYRIE_TEXTURE), packedLight, OverlayTexture.NO_OVERLAY, -1, null, entity.outlineColor);
         }
     }
@@ -56,10 +56,10 @@ public class PlayerWingsLayer<T extends AvatarRenderState, M extends PlayerModel
      * @param sinage The {@link Float} for the rotation value.
      */
     public void setupWingRotation(T entity, float sinage) {
-        boolean onGround = entity.getRenderDataOrDefault(AetherRenderStateModifiers.ON_GROUND, false);
-        boolean isInFluidType = entity.getRenderDataOrDefault(AetherRenderStateModifiers.IN_FLUID_TYPE, false);
-        boolean hasVehicle = entity.getRenderDataOrDefault(AetherRenderStateModifiers.HAS_VEHICLE, false);
-        boolean hasVehicleOnGround = entity.getRenderDataOrDefault(AetherRenderStateModifiers.HAS_VEHICLE_ON_GROUND, false);
+        boolean onGround = entity.getDataOrDefault(AetherRenderStateModifiers.ON_GROUND, false);
+        boolean isInFluidType = entity.getDataOrDefault(AetherRenderStateModifiers.IN_FLUID_TYPE, false);
+        boolean hasVehicle = entity.getDataOrDefault(AetherRenderStateModifiers.HAS_VEHICLE, false);
+        boolean hasVehicleOnGround = entity.getDataOrDefault(AetherRenderStateModifiers.HAS_VEHICLE_ON_GROUND, false);
 
         if (!onGround && !isInFluidType && (hasVehicle && !hasVehicleOnGround)) {
             sinage *= 1.5F;

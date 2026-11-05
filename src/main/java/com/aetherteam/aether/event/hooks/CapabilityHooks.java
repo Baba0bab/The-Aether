@@ -3,7 +3,6 @@ package com.aetherteam.aether.event.hooks;
 import com.aetherteam.aether.world.LevelUtil;
 import com.aetherteam.aether.attachment.AetherDataAttachments;
 import com.aetherteam.aether.attachment.AetherPlayerAttachment;
-import com.aetherteam.aether.data.resources.registries.AetherDimensions;
 import com.aetherteam.nitrogen.attachment.INBTSynchable;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;

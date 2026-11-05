@@ -1,5 +1,7 @@
 package com.aetherteam.aether.client.event.hooks;
 
+import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
+
 import net.minecraft.client.renderer.RenderPipelines;
 import com.aetherteam.nitrogen.fabric.network.PacketDistributor;
 import com.aetherteam.aether.Aether;
@@ -15,7 +17,6 @@ import com.aetherteam.aether.event.hooks.DimensionHooks;
 import com.aetherteam.aether.inventory.menu.AetherAccessoriesMenu;
 import com.aetherteam.aether.network.packet.serverbound.OpenAccessoriesPacket;
 import com.aetherteam.aether.perk.PerkUtil;
-import com.aetherteam.nitrogen.fabric.network.PacketDistributor;
 import com.aetherteam.nitrogen.api.users.User;
 import com.aetherteam.nitrogen.api.users.UserData;
 import com.mojang.blaze3d.platform.InputConstants;
@@ -32,7 +33,6 @@ import net.minecraft.client.gui.screens.*;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
-import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.FormattedCharSequence;
 import com.mojang.datafixers.util.Pair;
@@ -287,7 +287,7 @@ public class GuiHooks {
     public static void closeContainerMenu(int key, int action) {
         Minecraft minecraft = Minecraft.getInstance();
         if (minecraft.gui.screen() instanceof AbstractContainerScreen<?> abstractContainerScreen) {
-            if (!AetherConfig.CLIENT.disable_accessory_button.get() && AetherKeys.OPEN_ACCESSORY_INVENTORY.getKey().getValue() == key && (action == InputConstants.PRESS || action == InputConstants.REPEAT)) {
+            if (!AetherConfig.CLIENT.disable_accessory_button.get() && KeyMappingHelper.getBoundKeyOf(AetherKeys.OPEN_ACCESSORY_INVENTORY).getValue() == key && (action == InputConstants.PRESS || action == InputConstants.REPEAT)) {
                 abstractContainerScreen.onClose();
             }
         }

@@ -9,12 +9,11 @@
   },
   "display": {
     "announce_to_chat": false,
-    "background": "aether:textures/block/dungeon/carved_stone.png",
+    "background": "aether:block/dungeon/carved_stone",
     "description": {
       "translate": "advancement.aether.the_aether.desc"
     },
     "icon": {
-      "count": 1,
       "id": "aether:aether_portal_frame"
     },
     "show_toast": false,

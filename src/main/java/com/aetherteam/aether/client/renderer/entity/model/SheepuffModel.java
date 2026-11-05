@@ -2,7 +2,6 @@ package com.aetherteam.aether.client.renderer.entity.model;
 
 import net.minecraft.client.model.geom.builders.MeshTransformer;
 import com.aetherteam.aether.client.renderer.entity.state.SheepuffRenderState;
-import com.aetherteam.aether.entity.passive.Sheepuff;
 import net.minecraft.client.model.BabyModelTransform;
 import net.minecraft.client.model.QuadrupedModel;
 import net.minecraft.client.model.geom.ModelPart;

@@ -1,5 +1,8 @@
 package com.aetherteam.aether.event.hooks;
 
+import eu.pb4.trinkets.api.TrinketDropRule;
+import eu.pb4.trinkets.api.TrinketSlotAccess;
+
 import net.minecraft.world.item.component.SwingAnimation;
 import net.minecraft.tags.ItemTags;
 import com.aetherteam.aether.item.EquipmentUtil;
@@ -26,7 +29,6 @@ import com.aetherteam.aether.item.accessories.gloves.GlovesItem;
 import com.aetherteam.aether.item.accessories.miscellaneous.ShieldOfRepulsionItem;
 import com.aetherteam.aether.item.accessories.pendant.PendantItem;
 import com.aetherteam.aether.item.miscellaneous.bucket.SkyrootBucketItem;
-import com.aetherteam.aetherfabric.accessories.SlotResult;
 import net.minecraft.advancements.triggers.CriteriaTriggers;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
@@ -53,7 +55,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.FishingHook;
 import net.minecraft.world.item.*;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
-import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.item.equipment.ArmorMaterial;
 import net.minecraft.world.item.equipment.ArmorMaterials;
 import net.minecraft.world.level.Level;
@@ -63,8 +64,6 @@ import net.minecraft.world.phys.Vec3;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Collection;
-import java.util.List;
 import java.util.Optional;
 
 public class EntityHooks {
@@ -327,7 +326,7 @@ public class EntityHooks {
                         SlotContext slotContext = new SlotContext(identifier, armorStand, 0, false, true);
                         EquipmentUtil.setStackInSlot(armorStand, identifier, 0, stack.copy());
                         if (accessoryItem instanceof GlovesItem || accessoryItem instanceof PendantItem) {
-                            armorStand.level().playSound(null, armorStand.blockPosition(), accessoryItem.getEquipSound(slotContext, stack).soundEvent(), armorStand.getSoundSource(), 1, 1);
+                            armorStand.level().playSound(null, armorStand.blockPosition(), accessoryItem.getEquipSound(stack, slotContext.access().orElse(null), armorStand).value(), armorStand.getSoundSource(), 1, 1);
                         } else {
                             armorStand.level().playSound(null, armorStand.blockPosition(), SoundEvents.ARMOR_EQUIP_GENERIC.value(), armorStand.getSoundSource(), 1, 1);
                         }
@@ -469,37 +468,30 @@ public class EntityHooks {
     }
 
     /**
-     * Damages certain accessory items dropped from entities if they're not guaranteed drops.
+     * Handles the drop chances of accessories dropped by mobs, like the drop chances of vanilla equipment.
      *
-     * @param entity      The {@link LivingEntity} dropping the accessories.
-     * @param itemStacks   The {@link List} of {@link ItemStack} drops.
-     * @param recentlyHit Whether the entity was recently hit, as a {@link Boolean}.
-     * @param looting     The {@link Integer} for the looting enchantment value.
-     * @return The new {@link Collection} of {@link ItemEntity} drops.
+     * @param rule   The current {@link TrinketDropRule}.
+     * @param stack  The dropped accessory {@link ItemStack}.
+     * @param slot   The {@link TrinketSlotAccess} the accessory is in.
+     * @param entity The {@link LivingEntity} that died.
+     * @return The {@link TrinketDropRule} to use.
      * @see com.aetherteam.aether.event.listeners.EntityListener#listen()
      */
-    public static List<ItemStack> handleEntityAccessoryDrops(LivingEntity entity, List<ItemStack> itemStacks, boolean recentlyHit, int looting) {
-        if (entity instanceof Mob mob) {
-            String[] allSlots = { GlovesItem.getStaticIdentifier(), PendantItem.getStaticIdentifier() };
-            for (String identifier : allSlots) {
-                if (!itemStacks.isEmpty()) {
-                    ItemStack itemStack = itemStacks.getFirst();
-                    float f = mob.getAttachedOrCreate(AetherDataAttachments.MOB_ACCESSORY).getEquipmentDropChance(identifier);
-                    boolean flag = f > 1.0F;
-                    if (!itemStack.isEmpty()) {
-                        itemStacks.removeIf((stack) -> ItemStack.isSameItemSameComponents(stack, itemStack));
-                    }
-                    if (!itemStack.isEmpty() && itemStack.nitrogen_fabric$getEnchantmentLevel(entity.level().registryAccess().nitrogen_fabric$holderOrThrow(Enchantments.VANISHING_CURSE)) == 0 && recentlyHit && Math.max(mob.getRandom().nextFloat() - (float) looting * 0.01F, 0.0F) < f) {
-                        if (!flag && itemStack.isDamageableItem()) {
-                            itemStack.setDamageValue(itemStack.getMaxDamage() - mob.getRandom().nextInt(1 + mob.getRandom().nextInt(Math.max(itemStack.getMaxDamage() - 3, 1))));
-                        }
-                        itemStacks.add(itemStack);
-                    }
+    public static TrinketDropRule handleEntityAccessoryDrop(TrinketDropRule rule, ItemStack stack, TrinketSlotAccess slot, LivingEntity entity) {
+        if (entity instanceof Mob mob && !(entity instanceof Player)) {
+            String identifier = slot.slotType().getId();
+            float f = mob.getAttachedOrCreate(AetherDataAttachments.MOB_ACCESSORY).getEquipmentDropChance(identifier);
+            boolean guaranteed = f > 1.0F;
+            boolean recentlyHit = mob.getKillCredit() instanceof Player;
+            if (!stack.isEmpty() && recentlyHit && mob.getRandom().nextFloat() < f) {
+                if (!guaranteed && stack.isDamageableItem()) {
+                    stack.setDamageValue(stack.getMaxDamage() - mob.getRandom().nextInt(1 + mob.getRandom().nextInt(Math.max(stack.getMaxDamage() - 3, 1))));
                 }
+                return TrinketDropRule.DROP;
             }
-
+            return TrinketDropRule.DESTROY;
         }
-        return itemStacks;
+        return rule;
     }
 
     /**

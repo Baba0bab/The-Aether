@@ -10,12 +10,12 @@ import net.minecraft.client.renderer.entity.MobRenderer;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.Identifier;
-import net.minecraft.util.context.ContextKey;
+import net.fabricmc.fabric.api.client.rendering.v1.RenderStateDataKey;
 
 public class FireMinionRenderer extends MobRenderer<FireMinion, LivingEntityRenderState, FireMinionModel<LivingEntityRenderState>> {
     private static final Identifier SUN_SPIRIT_TEXTURE = Identifier.fromNamespaceAndPath(Aether.MODID, "textures/entity/mobs/sun_spirit/sun_spirit.png");
     private static final Identifier FROZEN_SPIRIT_TEXTURE = Identifier.fromNamespaceAndPath(Aether.MODID, "textures/entity/mobs/sun_spirit/frozen_sun_spirit.png");
-    private static final ContextKey<Boolean> FROZEN = new ContextKey<>(Identifier.fromNamespaceAndPath(Aether.MODID, "frozen_fire_minion"));
+    private static final RenderStateDataKey<Boolean> FROZEN = RenderStateDataKey.create(() -> "aether:frozen_fire_minion");
 
     public FireMinionRenderer(EntityRendererProvider.Context context) {
         super(context, new FireMinionModel<>(context.bakeLayer(AetherModelLayers.FIRE_MINION)), 0.8F);
@@ -30,7 +30,7 @@ public class FireMinionRenderer extends MobRenderer<FireMinion, LivingEntityRend
     public void extractRenderState(FireMinion entity, LivingEntityRenderState reusedState, float partialTick) {
         super.extractRenderState(entity, reusedState, partialTick);
         String name = entity.getCustomName() != null ? entity.getCustomName().getString() : "";
-        reusedState.setRenderData(FROZEN, name.equals("JorgeQ") || name.equals("Jorge_SunSpirit"));
+        reusedState.setData(FROZEN, name.equals("JorgeQ") || name.equals("Jorge_SunSpirit"));
     }
 
     @Override
@@ -47,7 +47,7 @@ public class FireMinionRenderer extends MobRenderer<FireMinion, LivingEntityRend
      */
     @Override
     public Identifier getTextureLocation(LivingEntityRenderState renderState) {
-        return renderState.getRenderDataOrDefault(FROZEN, false) ? FROZEN_SPIRIT_TEXTURE : SUN_SPIRIT_TEXTURE;
+        return renderState.getDataOrDefault(FROZEN, false) ? FROZEN_SPIRIT_TEXTURE : SUN_SPIRIT_TEXTURE;
     }
 
     @Override

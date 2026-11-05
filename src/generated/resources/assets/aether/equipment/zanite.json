@@ -1,0 +1,19 @@
+{
+  "layers": {
+    "humanoid": [
+      {
+        "texture": "aether:zanite"
+      }
+    ],
+    "humanoid_baby": [
+      {
+        "texture": "aether:zanite"
+      }
+    ],
+    "humanoid_leggings": [
+      {
+        "texture": "aether:zanite"
+      }
+    ]
+  }
+}

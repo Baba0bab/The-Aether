@@ -14,7 +14,6 @@ import net.minecraft.world.level.storage.loot.functions.LootItemConditionalFunct
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
-import java.util.List;
 
 public class DoubleDrops extends LootItemConditionalFunction {
     public static final MapCodec<DoubleDrops> CODEC = RecordCodecBuilder.mapCodec(instance -> commonFields(instance).apply(instance, DoubleDrops::new));

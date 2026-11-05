@@ -17,7 +17,6 @@
       "translate": "advancement.aether.craft_altar.desc"
     },
     "icon": {
-      "count": 1,
       "id": "aether:altar"
     },
     "title": {

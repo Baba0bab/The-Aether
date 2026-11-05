@@ -4,7 +4,7 @@ import com.aetherteam.aether.Aether;
 import com.aetherteam.aether.client.AetherClient;
 import com.aetherteam.nitrogen.fabric.registries.DeferredHolder;
 import com.aetherteam.nitrogen.fabric.registries.DeferredRegister;
-import net.fabricmc.fabric.api.client.particle.v1.ParticleFactoryRegistry;
+import net.fabricmc.fabric.api.client.particle.v1.ParticleProviderRegistry;
 import net.fabricmc.fabric.api.particle.v1.FabricParticleTypes;
 import net.minecraft.client.particle.SnowflakeParticle;
 import net.minecraft.core.particles.ParticleType;
@@ -28,7 +28,7 @@ public class AetherParticleTypes {
      * @see AetherClient#eventSetup()
      */
     public static void registerParticleFactories() {
-        var registry = ParticleFactoryRegistry.getInstance();
+        var registry = ParticleProviderRegistry.getInstance();
         registry.register(AETHER_PORTAL.get(), AetherPortalParticle.Factory::new);
         registry.register(CRYSTAL_LEAVES.get(), CrystalLeavesParticle.Factory::new);
         registry.register(BOSS_DOORWAY_BLOCK.get(), DungeonBlockOverlayParticle.Factory::new);

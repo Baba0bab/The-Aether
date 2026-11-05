@@ -11,7 +11,6 @@ import com.aetherteam.aether.perk.PerkUtil;
 import com.aetherteam.nitrogen.fabric.network.PacketDistributor;
 import com.aetherteam.nitrogen.api.users.User;
 import com.aetherteam.nitrogen.api.users.UserData;
-import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.datafixers.util.Pair;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -40,8 +39,6 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -215,7 +212,7 @@ public class AetherAccessoriesScreen extends AbstractRecipeBookScreen<AetherAcce
     public boolean keyPressed(KeyEvent event) {
         if (super.keyPressed(event)) {
             return true;
-        } else if (AetherKeys.OPEN_ACCESSORY_INVENTORY.isActiveAndMatches(InputConstants.getKey(event))) {
+        } else if (AetherKeys.OPEN_ACCESSORY_INVENTORY.matches(event)) {
             LocalPlayer playerEntity = Minecraft.getInstance().player;
             if (playerEntity != null) {
                 playerEntity.closeContainer();

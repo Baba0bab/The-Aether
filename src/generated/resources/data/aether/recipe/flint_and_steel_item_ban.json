@@ -4,7 +4,5 @@
   "bypass": {
     "tag": "aether:allowed_flammables"
   },
-  "ingredient": {
-    "item": "minecraft:flint_and_steel"
-  }
+  "ingredient": "minecraft:flint_and_steel"
 }

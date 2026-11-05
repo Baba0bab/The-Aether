@@ -1,12 +1,10 @@
 package com.aetherteam.aether.event.listeners;
 
-import net.minecraft.world.attribute.BedRule;
 import com.aetherteam.aether.Aether;
 import com.aetherteam.aether.event.hooks.DimensionHooks;
 import com.aetherteam.nitrogen.fabric.events.*;
 import net.fabricmc.fabric.api.entity.event.v1.EntitySleepEvents;
-import net.fabricmc.fabric.api.entity.event.v1.ServerEntityWorldChangeEvents;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
+import net.fabricmc.fabric.api.entity.event.v1.ServerEntityLevelChangeEvents;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.core.BlockPos;
@@ -22,10 +20,8 @@ import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.BlockHitResult;
-import org.apache.commons.lang3.mutable.MutableLong;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.function.Function;
 
 public class DimensionListener {
     /**
@@ -37,9 +33,8 @@ public class DimensionListener {
         BlockEvents.NEIGHBOR_UPDATE.register((level, pos, state, notifiedSides, forceRedstoneUpdate, isCancelled) -> onWaterExistsInsidePortalFrame(level, pos, isCancelled));
         LevelEvents.AFTER.register(DimensionListener::onWorldTick);
         EntityEvents.BEFORE_DIMENSION_CHANGE.register(DimensionListener::onEntityTravelToDimension);
-        ServerEntityWorldChangeEvents.AFTER_PLAYER_CHANGE_WORLD.register((player, origin, destination) -> DimensionListener.onPlayerChangedDimension(player));
+        ServerEntityLevelChangeEvents.AFTER_PLAYER_CHANGE_LEVEL.register((player, origin, destination) -> DimensionListener.onPlayerChangedDimension(player));
         PlayerTickEvents.AFTER.register(DimensionListener::onPlayerTraveling);
-        // ServerLevelMixin.nitrogen_fabric$adjustSleepTime -> DimensionListener::onSleepFinish
         EntitySleepEvents.ALLOW_SLEEPING.register((player, sleepingPos) -> DimensionListener.onTriedToSleep(player));
 //        bus.addListener(DimensionListener::onAlterGround);
     }
@@ -106,13 +101,15 @@ public class DimensionListener {
         DimensionHooks.travelling(player);
     }
 
+
+
     /**
      * @see DimensionHooks#isEternalDay(Player)
      */
     @Nullable
     public static Player.BedSleepingProblem onTriedToSleep(Player player) {
         if (DimensionHooks.isEternalDay(player)) {
-            event.setProblem(BedRule.CAN_SLEEP_WHEN_DARK.asProblem());
+            return Player.BedSleepingProblem.OTHER_PROBLEM;
         }
 
         return null;

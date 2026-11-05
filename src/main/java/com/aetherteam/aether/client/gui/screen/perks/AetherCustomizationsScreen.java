@@ -10,7 +10,6 @@ import com.aetherteam.aether.perk.CustomizationsOptions;
 import com.aetherteam.aether.perk.PerkUtil;
 import com.aetherteam.aether.perk.types.DeveloperGlow;
 import com.aetherteam.aether.perk.types.Halo;
-import com.aetherteam.nitrogen.fabric.network.PacketDistributor;
 import com.aetherteam.nitrogen.api.users.User;
 import com.aetherteam.nitrogen.api.users.UserData;
 import net.minecraft.client.gui.GuiGraphicsExtractor;

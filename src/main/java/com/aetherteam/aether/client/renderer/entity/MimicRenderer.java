@@ -8,7 +8,6 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.MobRenderer;
 import net.minecraft.resources.Identifier;
-import noobanidus.mods.lootr.fabric.config.ConfigManager;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import noobanidus.mods.lootr.common.api.LootrAPI;
 

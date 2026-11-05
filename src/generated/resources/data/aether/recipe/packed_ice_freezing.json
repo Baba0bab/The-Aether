@@ -3,11 +3,8 @@
   "category": "freezable_blocks",
   "cookingtime": 300,
   "experience": 0.1,
-  "ingredient": {
-    "item": "minecraft:ice"
-  },
+  "ingredient": "minecraft:ice",
   "result": {
-    "count": 1,
     "id": "minecraft:packed_ice"
   }
 }

@@ -66,7 +66,7 @@ public class SliderRenderer extends MobRenderer<Slider, SliderRenderState, Slide
                 poseStack.rotate(Axis.of(new Vector3f(renderState.hurtAngleX, 0.0F, -renderState.hurtAngleZ)).rotationDegrees(renderState.hurtAngle * -15.0F));
             }
             if (renderState.hurtAngle > 0.0) {
-                renderState.hurtAngle = (Mth.lerp(renderState.partialTick, renderState.hurtAngle, renderState.hurtAngle * 0.78F));
+                renderState.hurtAngle = (Mth.lerp(Minecraft.getInstance().getDeltaTracker().getGameTimeDeltaPartialTick(false), renderState.hurtAngle, renderState.hurtAngle * 0.78F));
             }
             if (renderState.isUpsideDown) {
                 poseStack.translate(0.0, renderState.boundingBoxHeight + 0.1F, 0.0);

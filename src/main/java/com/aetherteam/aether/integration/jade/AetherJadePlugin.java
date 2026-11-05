@@ -13,7 +13,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.HitResult;
-import noobanidus.mods.lootr.fabric.init.ModBlocks;
 import org.jetbrains.annotations.Nullable;
 import snownee.jade.api.*;
 

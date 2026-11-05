@@ -1,11 +1,8 @@
 {
   "type": "minecraft:crafting_shaped",
-  "category": "misc",
   "group": "minecraft:chest",
   "key": {
-    "P": {
-      "tag": "aether:planks_crafting"
-    }
+    "P": "#aether:planks_crafting"
   },
   "pattern": [
     "PPP",
@@ -13,7 +10,6 @@
     "PPP"
   ],
   "result": {
-    "count": 1,
     "id": "minecraft:chest"
   }
 }

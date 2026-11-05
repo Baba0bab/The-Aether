@@ -1,5 +1,7 @@
 package com.aetherteam.aether.client.renderer.blockentity;
 
+import net.minecraft.world.level.block.state.properties.ChestType;
+
 import com.aetherteam.aether.blockentity.TreasureChestBlockEntity;
 import com.aetherteam.aether.client.AetherAtlases;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
@@ -12,9 +14,11 @@ public class TreasureChestRenderer extends ChestRenderer<TreasureChestBlockEntit
         super(context);
     }
 
-    @Override
-    protected SpriteId getCustomSprite(TreasureChestBlockEntity blockEntity, ChestRenderState renderState) {
-        return switch (renderState.type) {
+    /**
+     * @see com.aetherteam.aether.mixin.mixins.client.aether_fabric.ChestRendererMixin
+     */
+    public static SpriteId getTreasureChestSprite(ChestType type) {
+        return switch (type) {
             case LEFT -> AetherAtlases.TREASURE_CHEST_LEFT_MATERIAL;
             case RIGHT -> AetherAtlases.TREASURE_CHEST_RIGHT_MATERIAL;
             case SINGLE -> AetherAtlases.TREASURE_CHEST_MATERIAL;

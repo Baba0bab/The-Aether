@@ -4,31 +4,26 @@ import com.aetherteam.aether.attachment.AetherDataAttachments;
 import com.aetherteam.aether.client.AetherClient;
 import com.aetherteam.nitrogen.fabric.client.events.PlayerRenderEvents;
 import com.aetherteam.nitrogen.fabric.events.CancellableCallback;
-import com.aetherteam.aether.client.renderer.AetherRenderStateModifiers;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.client.renderer.entity.state.AvatarRenderState;
 import net.minecraft.world.entity.player.Player;
-
-import java.util.Objects;
+import net.minecraft.client.renderer.entity.state.AvatarRenderState;
+import com.aetherteam.aether.client.renderer.AetherRenderStateModifiers;
 
 public class AccessoryAbilityClientListener {
     /**
-     * @see AetherClient#eventSetup(IEventBus)
+     * @see AetherClient#eventSetup()
      */
     public static void listen() {
-        PlayerRenderEvents.BEFORE_RENDER.register((player, renderer, partialTick, poseStack, multiBufferSource, packedLight, callback) -> onRenderPlayer(player, callback));
-        PlayerRenderEvents.BEFORE_ARM_RENDER.register((player, renderer, partialTick, poseStack, multiBufferSource, packedLight, arm, callback) -> onRenderHand(player, callback));
+        PlayerRenderEvents.BEFORE_RENDER.register((renderer, state, poseStack, collector, cameraState, callback) -> onRenderPlayer(state, callback));
+        PlayerRenderEvents.BEFORE_ARM_RENDER.register((renderer, player, poseStack, collector, packedLight, arm, callback) -> onRenderHand(player, callback));
     }
 
     /**
      * Disables the player's rendering completely if wearing an Invisibility Cloak.
      */
-    public static void onRenderPlayer(RenderPlayerEvent.Pre<?> event) {
-        AvatarRenderState playerRenderState = event.getRenderState();
-        if (!event.isCanceled()) {
-            if (playerRenderState.getRenderDataOrDefault(AetherRenderStateModifiers.HAS_INVISIBILITY_CLOAK, false)) {
-                event.setCanceled(true);
+    public static void onRenderPlayer(AvatarRenderState state, CancellableCallback callback) {
+        if (!callback.isCanceled()) {
+            if (state.getDataOrDefault(AetherRenderStateModifiers.HAS_INVISIBILITY_CLOAK, false)) {
+                callback.setCanceled(true);
             }
         }
     }

@@ -1,5 +1,6 @@
 package com.aetherteam.aether.block;
 
+import com.aetherteam.aether.mixin.mixins.common.accessor.RecipeManagerAccessor;
 import java.util.Optional;
 import com.aetherteam.aether.event.AetherEventDispatch;
 import com.aetherteam.aether.event.FreezeEvent;
@@ -93,7 +94,7 @@ public interface FreezingBlock extends FreezingBehavior<BlockState> {
     static void cacheRecipes(Level level) {
         if (level instanceof ServerLevel serverLevel) {
             if (FreezingBlock.cachedBlocks.isEmpty()) {
-                for (RecipeHolder<IcestoneFreezableRecipe> recipe : serverLevel.recipeAccess().recipeMap().byType(AetherRecipeTypes.ICESTONE_FREEZABLE.get())) {
+                for (RecipeHolder<IcestoneFreezableRecipe> recipe : ((RecipeManagerAccessor) serverLevel.recipeAccess()).aether$getRecipes().byType(AetherRecipeTypes.ICESTONE_FREEZABLE.get())) {
                     IcestoneFreezableRecipe freezableRecipe = recipe.value();
                     BlockPropertyPair[] pairs = freezableRecipe.getIngredient().getPairs();
                     if (pairs != null) {

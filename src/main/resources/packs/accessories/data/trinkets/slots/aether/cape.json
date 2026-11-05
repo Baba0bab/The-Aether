@@ -1,0 +1,9 @@
+{
+  "icon": "aether:slot/cape",
+  "order": 303,
+  "amount": 1,
+  "validator_predicates": [
+    "trinkets:tag"
+  ],
+  "is_hidden": true
+}

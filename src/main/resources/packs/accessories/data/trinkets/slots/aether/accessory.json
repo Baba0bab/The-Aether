@@ -1,0 +1,9 @@
+{
+  "icon": "aether:slot/misc",
+  "order": 305,
+  "amount": 2,
+  "validator_predicates": [
+    "trinkets:tag"
+  ],
+  "is_hidden": true
+}

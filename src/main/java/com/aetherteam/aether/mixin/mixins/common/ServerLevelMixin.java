@@ -1,7 +1,6 @@
 package com.aetherteam.aether.mixin.mixins.common;
 
 import com.aetherteam.aether.world.LevelUtil;
-import com.aetherteam.aether.data.resources.registries.AetherDimensions;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;

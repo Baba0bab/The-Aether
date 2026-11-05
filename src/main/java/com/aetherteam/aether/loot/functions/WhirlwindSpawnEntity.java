@@ -19,7 +19,6 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.List;
 
 public class WhirlwindSpawnEntity extends LootItemConditionalFunction {
     public static final MapCodec<WhirlwindSpawnEntity> CODEC = RecordCodecBuilder.mapCodec(instance -> commonFields(instance)

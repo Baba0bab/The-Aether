@@ -1,6 +1,5 @@
 package com.aetherteam.aether.event.listeners.abilities;
 
-import net.neoforged.neoforge.event.level.block.BreakBlockEvent;
 import com.aetherteam.aether.Aether;
 import com.aetherteam.aether.event.hooks.AbilityHooks;
 import com.aetherteam.nitrogen.fabric.events.CancellableCallback;
@@ -12,6 +11,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.state.BlockState;
 import org.apache.commons.lang3.mutable.MutableFloat;
 
@@ -44,15 +44,8 @@ public class ToolAbilityListener {
     /**
      * @see AbilityHooks.ToolHooks#handleHolystoneToolAbility(Player, Level, BlockPos, ItemStack, BlockState)
      */
-    public static void doHolystoneAbility(BreakBlockEvent event) {
-        Player player = event.getPlayer();
-        Level level = player.level();
-        BlockPos blockPos = event.getPos();
-        ItemStack itemStack = player.getMainHandItem();
-        BlockState blockState = event.getState();
-        if (!event.isCanceled()) {
-            AbilityHooks.ToolHooks.handleHolystoneToolAbility(player, level, blockPos, itemStack, blockState);
-        }
+    public static void doHolystoneAbility(Player player, Level level, BlockPos blockPos, ItemStack itemStack, BlockState blockState) {
+        AbilityHooks.ToolHooks.handleHolystoneToolAbility(player, level, blockPos, itemStack, blockState);
     }
 
     /**
@@ -70,5 +63,4 @@ public class ToolAbilityListener {
     public static void setupDebuffToolState(ServerPlayer player) {
         AbilityHooks.ToolHooks.setDebuffToolsState(player);
     }
-
 }

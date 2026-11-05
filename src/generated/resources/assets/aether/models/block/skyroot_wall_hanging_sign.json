@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/template_wall_hanging_sign",
+  "textures": {
+    "all": "aether:block/construction/skyroot_hanging_sign",
+    "particle": "aether:block/natural/stripped_skyroot_log"
+  }
+}

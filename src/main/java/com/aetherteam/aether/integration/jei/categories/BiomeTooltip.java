@@ -10,8 +10,6 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.biome.Biome;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.List;
-import org.jspecify.annotations.Nullable;
 
 public interface BiomeTooltip {
     /**

@@ -9,7 +9,6 @@ import com.aetherteam.aether.entity.passive.Phyg;
 import com.aetherteam.aether.mixin.mixins.client.accessor.QuadrupedModelAccessor;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.model.animal.pig.PigModel;
-import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
 import net.minecraft.client.renderer.texture.OverlayTexture;

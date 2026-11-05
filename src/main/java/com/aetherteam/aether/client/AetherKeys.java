@@ -1,8 +1,8 @@
 package com.aetherteam.aether.client;
 
-import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
+import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
+
 import net.minecraft.client.KeyMapping;
-import org.lwjgl.glfw.GLFW;
 import com.aetherteam.aether.Aether;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.resources.Identifier;
@@ -17,10 +17,9 @@ public class AetherKeys {
     /**
      * @see AetherClient#eventSetup()
      */
-    public static void registerKeyMappings(RegisterKeyMappingsEvent event) {
-        event.registerCategory(CATEGORY);
-        event.register(OPEN_ACCESSORY_INVENTORY);
-        event.register(GRAVITITE_JUMP_ABILITY);
-        event.register(INVISIBILITY_TOGGLE);
+    public static void registerKeyMappings() {
+        KeyMappingHelper.registerKeyMapping(OPEN_ACCESSORY_INVENTORY);
+        KeyMappingHelper.registerKeyMapping(GRAVITITE_JUMP_ABILITY);
+        KeyMappingHelper.registerKeyMapping(INVISIBILITY_TOGGLE);
     }
 }

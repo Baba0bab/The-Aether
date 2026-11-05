@@ -1,11 +1,8 @@
 {
   "type": "minecraft:crafting_shaped",
-  "category": "misc",
   "group": "sticks",
   "key": {
-    "#": {
-      "tag": "aether:skyroot_stick_crafting"
-    }
+    "#": "#aether:skyroot_stick_crafting"
   },
   "pattern": [
     "#",

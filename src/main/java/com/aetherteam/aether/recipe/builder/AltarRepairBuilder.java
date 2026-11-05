@@ -2,23 +2,15 @@ package com.aetherteam.aether.recipe.builder;
 
 import net.minecraft.data.recipes.RecipeUnlockAdvancementBuilder;
 import com.aetherteam.aether.recipe.recipes.item.AltarRepairRecipe;
-import net.minecraft.advancements.Advancement;
-import net.minecraft.advancements.AdvancementRequirements;
-import net.minecraft.advancements.AdvancementRewards;
 import net.minecraft.advancements.triggers.Criterion;
-import net.minecraft.advancements.triggers.RecipeUnlockedTrigger;
 import net.minecraft.data.recipes.RecipeBuilder;
 import net.minecraft.data.recipes.RecipeCategory;
 import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.crafting.Ingredient;
 import org.jetbrains.annotations.Nullable;
 import net.minecraft.world.item.crafting.Recipe;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Objects;
 
 public class AltarRepairBuilder implements RecipeBuilder {
     private final RecipeCategory category;

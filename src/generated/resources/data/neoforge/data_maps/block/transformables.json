@@ -1,0 +1,397 @@
+{
+  "values": {
+    "aether:aether_dirt": {
+      "transformers": {
+        "minecraft:hoe": {
+          "block_state_provider": {
+            "type": "minecraft:rule_based",
+            "rules": [
+              {
+                "if_true": {
+                  "type": "minecraft:all_of",
+                  "predicates": [
+                    {
+                      "type": "minecraft:matching_blocks",
+                      "blocks": "aether:aether_dirt"
+                    },
+                    {
+                      "type": "minecraft:matching_block_tag",
+                      "offset": [
+                        0,
+                        1,
+                        0
+                      ],
+                      "tag": "minecraft:air"
+                    }
+                  ]
+                },
+                "then": {
+                  "type": "minecraft:copy_properties",
+                  "source": {
+                    "id": "aether:aether_farmland",
+                    "properties": {
+                      "moisture": "0"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "item_damage_per_use": 1,
+          "sound": "minecraft:item.hoe.till"
+        },
+        "minecraft:shovel": {
+          "block_state_provider": {
+            "type": "minecraft:rule_based",
+            "rules": [
+              {
+                "if_true": {
+                  "type": "minecraft:all_of",
+                  "predicates": [
+                    {
+                      "type": "minecraft:matching_blocks",
+                      "blocks": "aether:aether_dirt"
+                    },
+                    {
+                      "type": "minecraft:matching_block_tag",
+                      "offset": [
+                        0,
+                        1,
+                        0
+                      ],
+                      "tag": "minecraft:air"
+                    }
+                  ]
+                },
+                "then": {
+                  "type": "minecraft:copy_properties",
+                  "source": {
+                    "id": "aether:aether_dirt_path"
+                  }
+                }
+              }
+            ]
+          },
+          "disallowed_faces": [
+            "down"
+          ],
+          "item_damage_per_use": 1,
+          "sound": "minecraft:item.shovel.flatten"
+        }
+      }
+    },
+    "aether:aether_dirt_path": {
+      "transform_data": {
+        "block_state_provider": {
+          "type": "minecraft:rule_based",
+          "rules": [
+            {
+              "if_true": {
+                "type": "minecraft:all_of",
+                "predicates": [
+                  {
+                    "type": "minecraft:matching_blocks",
+                    "blocks": "aether:aether_dirt_path"
+                  },
+                  {
+                    "type": "minecraft:matching_block_tag",
+                    "offset": [
+                      0,
+                      1,
+                      0
+                    ],
+                    "tag": "minecraft:air"
+                  }
+                ]
+              },
+              "then": {
+                "type": "minecraft:copy_properties",
+                "source": {
+                  "id": "aether:aether_farmland",
+                  "properties": {
+                    "moisture": "0"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "item_damage_per_use": 1,
+        "sound": "minecraft:item.hoe.till"
+      },
+      "transformer": "minecraft:hoe"
+    },
+    "aether:aether_grass_block": {
+      "transformers": {
+        "minecraft:hoe": {
+          "block_state_provider": {
+            "type": "minecraft:rule_based",
+            "rules": [
+              {
+                "if_true": {
+                  "type": "minecraft:all_of",
+                  "predicates": [
+                    {
+                      "type": "minecraft:matching_blocks",
+                      "blocks": "aether:aether_grass_block"
+                    },
+                    {
+                      "type": "minecraft:matching_block_tag",
+                      "offset": [
+                        0,
+                        1,
+                        0
+                      ],
+                      "tag": "minecraft:air"
+                    }
+                  ]
+                },
+                "then": {
+                  "type": "minecraft:copy_properties",
+                  "source": {
+                    "id": "aether:aether_farmland",
+                    "properties": {
+                      "moisture": "0"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "item_damage_per_use": 1,
+          "sound": "minecraft:item.hoe.till"
+        },
+        "minecraft:shovel": {
+          "block_state_provider": {
+            "type": "minecraft:rule_based",
+            "rules": [
+              {
+                "if_true": {
+                  "type": "minecraft:all_of",
+                  "predicates": [
+                    {
+                      "type": "minecraft:matching_blocks",
+                      "blocks": "aether:aether_grass_block"
+                    },
+                    {
+                      "type": "minecraft:matching_block_tag",
+                      "offset": [
+                        0,
+                        1,
+                        0
+                      ],
+                      "tag": "minecraft:air"
+                    }
+                  ]
+                },
+                "then": {
+                  "type": "minecraft:copy_properties",
+                  "source": {
+                    "id": "aether:aether_dirt_path"
+                  }
+                }
+              }
+            ]
+          },
+          "disallowed_faces": [
+            "down"
+          ],
+          "item_damage_per_use": 1,
+          "sound": "minecraft:item.shovel.flatten"
+        }
+      }
+    },
+    "aether:enchanted_aether_grass_block": {
+      "transformers": {
+        "minecraft:hoe": {
+          "block_state_provider": {
+            "type": "minecraft:rule_based",
+            "rules": [
+              {
+                "if_true": {
+                  "type": "minecraft:all_of",
+                  "predicates": [
+                    {
+                      "type": "minecraft:matching_blocks",
+                      "blocks": "aether:enchanted_aether_grass_block"
+                    },
+                    {
+                      "type": "minecraft:matching_block_tag",
+                      "offset": [
+                        0,
+                        1,
+                        0
+                      ],
+                      "tag": "minecraft:air"
+                    }
+                  ]
+                },
+                "then": {
+                  "type": "minecraft:copy_properties",
+                  "source": {
+                    "id": "aether:aether_farmland",
+                    "properties": {
+                      "moisture": "0"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "item_damage_per_use": 1,
+          "sound": "minecraft:item.hoe.till"
+        },
+        "minecraft:shovel": {
+          "block_state_provider": {
+            "type": "minecraft:rule_based",
+            "rules": [
+              {
+                "if_true": {
+                  "type": "minecraft:all_of",
+                  "predicates": [
+                    {
+                      "type": "minecraft:matching_blocks",
+                      "blocks": "aether:enchanted_aether_grass_block"
+                    },
+                    {
+                      "type": "minecraft:matching_block_tag",
+                      "offset": [
+                        0,
+                        1,
+                        0
+                      ],
+                      "tag": "minecraft:air"
+                    }
+                  ]
+                },
+                "then": {
+                  "type": "minecraft:copy_properties",
+                  "source": {
+                    "id": "aether:aether_dirt_path"
+                  }
+                }
+              }
+            ]
+          },
+          "disallowed_faces": [
+            "down"
+          ],
+          "item_damage_per_use": 1,
+          "sound": "minecraft:item.shovel.flatten"
+        }
+      }
+    },
+    "aether:golden_oak_log": {
+      "transform_data": {
+        "block_state_provider": {
+          "type": "minecraft:rule_based",
+          "rules": [
+            {
+              "if_true": {
+                "type": "minecraft:matching_blocks",
+                "blocks": "aether:golden_oak_log"
+              },
+              "then": {
+                "type": "minecraft:copy_properties",
+                "source": {
+                  "id": "aether:stripped_skyroot_log",
+                  "properties": {
+                    "axis": "y"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "drop_strategy": "clicked_face",
+        "item_damage_per_use": 1,
+        "loot": "aether:stripping/strip_golden_oak",
+        "sound": "minecraft:item.axe.strip"
+      },
+      "transformer": "minecraft:axe"
+    },
+    "aether:golden_oak_wood": {
+      "transform_data": {
+        "block_state_provider": {
+          "type": "minecraft:rule_based",
+          "rules": [
+            {
+              "if_true": {
+                "type": "minecraft:matching_blocks",
+                "blocks": "aether:golden_oak_wood"
+              },
+              "then": {
+                "type": "minecraft:copy_properties",
+                "source": {
+                  "id": "aether:stripped_skyroot_wood",
+                  "properties": {
+                    "axis": "y"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "drop_strategy": "clicked_face",
+        "item_damage_per_use": 1,
+        "loot": "aether:stripping/strip_golden_oak",
+        "sound": "minecraft:item.axe.strip"
+      },
+      "transformer": "minecraft:axe"
+    },
+    "aether:skyroot_log": {
+      "transform_data": {
+        "block_state_provider": {
+          "type": "minecraft:rule_based",
+          "rules": [
+            {
+              "if_true": {
+                "type": "minecraft:matching_blocks",
+                "blocks": "aether:skyroot_log"
+              },
+              "then": {
+                "type": "minecraft:copy_properties",
+                "source": {
+                  "id": "aether:stripped_skyroot_log",
+                  "properties": {
+                    "axis": "y"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "item_damage_per_use": 1,
+        "sound": "minecraft:item.axe.strip"
+      },
+      "transformer": "minecraft:axe"
+    },
+    "aether:skyroot_wood": {
+      "transform_data": {
+        "block_state_provider": {
+          "type": "minecraft:rule_based",
+          "rules": [
+            {
+              "if_true": {
+                "type": "minecraft:matching_blocks",
+                "blocks": "aether:skyroot_wood"
+              },
+              "then": {
+                "type": "minecraft:copy_properties",
+                "source": {
+                  "id": "aether:stripped_skyroot_wood",
+                  "properties": {
+                    "axis": "y"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "item_damage_per_use": 1,
+        "sound": "minecraft:item.axe.strip"
+      },
+      "transformer": "minecraft:axe"
+    }
+  }
+}

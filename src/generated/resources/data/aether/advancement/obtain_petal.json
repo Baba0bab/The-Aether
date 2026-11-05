@@ -17,7 +17,6 @@
       "translate": "advancement.aether.obtain_petal.desc"
     },
     "icon": {
-      "count": 1,
       "id": "aether:aechor_petal"
     },
     "title": {

@@ -4,8 +4,6 @@ import net.minecraft.world.level.levelgen.placement.PlacementModifier;
 import net.minecraft.core.registries.Registries;
 import com.mojang.serialization.MapCodec;
 import com.aetherteam.aether.Aether;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.world.level.levelgen.placement.PlacementModifierType;
 import com.aetherteam.nitrogen.fabric.registries.DeferredHolder;
 import com.aetherteam.nitrogen.fabric.registries.DeferredRegister;
 

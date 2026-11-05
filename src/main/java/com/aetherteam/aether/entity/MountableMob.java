@@ -5,7 +5,6 @@ import com.aetherteam.aether.Aether;
 import com.aetherteam.aether.attachment.AetherDataAttachments;
 import com.aetherteam.aether.mixin.mixins.common.accessor.ServerGamePacketListenerImplAccessor;
 import com.aetherteam.aether.network.packet.serverbound.StepHeightPacket;
-import com.aetherteam.nitrogen.fabric.network.PacketDistributor;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -99,7 +98,7 @@ public interface MountableMob {
                 vehicle.needsSync = true;
                 vehicle.onJump(vehicle);
             } else if (vehicle.getPlayerJumped() && vehicle.isMountJumping() && vehicle.canJump() && EntityUtil.shouldSwim(vehicle)) {
-                vehicle.jumpInFluid(vehicle.level().getFluidState(vehicle.getOnPos()).getFluidType());
+                vehicle.setDeltaMovement(vehicle.getDeltaMovement().add(0.0F, 0.04F, 0.0F));
                 vehicle.needsSync = true;
                 vehicle.onJump(vehicle);
             }

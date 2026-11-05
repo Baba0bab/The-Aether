@@ -1,13 +1,10 @@
 {
   "type": "aether:enchanted_grass",
-  "conditions": [
-    {
-      "block": "aether:berry_bush",
-      "condition": "minecraft:block_state_property"
-    }
-  ],
+  "condition": {
+    "type": "minecraft:match_block",
+    "blocks": "aether:berry_bush"
+  },
   "item": {
-    "count": 1,
     "id": "aether:blue_berry"
   }
 }

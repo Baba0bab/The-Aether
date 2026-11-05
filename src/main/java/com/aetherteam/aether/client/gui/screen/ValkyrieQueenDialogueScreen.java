@@ -6,7 +6,6 @@ import com.aetherteam.aether.client.gui.component.dialogue.DialogueChoiceCompone
 import com.aetherteam.aether.entity.monster.dungeon.boss.ValkyrieQueen;
 import com.aetherteam.aether.item.AetherItems;
 import com.aetherteam.aether.network.packet.serverbound.NpcPlayerInteractPacket;
-import com.aetherteam.nitrogen.fabric.network.PacketDistributor;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;

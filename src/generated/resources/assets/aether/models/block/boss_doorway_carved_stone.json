@@ -1,1 +1,5 @@
-{}
+{
+  "textures": {
+    "particle": "aether:block/dungeon/carved_stone"
+  }
+}

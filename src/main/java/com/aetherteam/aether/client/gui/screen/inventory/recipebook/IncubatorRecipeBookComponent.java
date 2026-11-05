@@ -1,19 +1,16 @@
 package com.aetherteam.aether.client.gui.screen.inventory.recipebook;
 
 import com.aetherteam.aether.Aether;
-import com.aetherteam.aether.data.resources.registries.AetherDataMaps;
 import com.aetherteam.aether.inventory.menu.IncubatorMenu;
 import net.minecraft.client.gui.components.WidgetSprites;
 import net.minecraft.client.gui.screens.recipebook.GhostSlots;
 import net.minecraft.client.gui.screens.recipebook.RecipeBookComponent;
 import net.minecraft.client.gui.screens.recipebook.RecipeCollection;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.context.ContextMap;
 import net.minecraft.world.entity.player.StackedItemContents;
 import net.minecraft.world.inventory.Slot;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeHolder;
@@ -21,8 +18,6 @@ import org.jetbrains.annotations.Nullable;
 import net.minecraft.world.item.crafting.display.RecipeDisplay;
 
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 public class IncubatorRecipeBookComponent extends RecipeBookComponent<IncubatorMenu> { //todo
     private static final WidgetSprites FILTER_SPRITES = new WidgetSprites(

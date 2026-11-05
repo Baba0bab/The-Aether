@@ -1,7 +1,6 @@
 package com.aetherteam.aether.mixin.mixins.client;
 
 import com.aetherteam.aether.Aether;
-import com.aetherteam.aether.attachment.AetherDataAttachments;
 import com.aetherteam.aether.attachment.PhoenixArrowAttachment;
 import com.aetherteam.aether.client.renderer.AetherRenderStateModifiers;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
@@ -29,7 +28,7 @@ public class TippableArrowRendererMixin {
      */
     @ModifyReturnValue(at = @At("RETURN"), method = "getTextureLocation(Lnet/minecraft/client/renderer/entity/state/TippableArrowRenderState;)Lnet/minecraft/resources/Identifier;")
     private Identifier getTextureLocation(Identifier original, @Local(ordinal = 0, argsOnly = true) TippableArrowRenderState renderState) {
-        if (renderState.getRenderDataOrDefault(AetherRenderStateModifiers.IS_PHOENIX_ARROW, false) && !renderState.isTipped)
+        if (renderState.getDataOrDefault(AetherRenderStateModifiers.IS_PHOENIX_ARROW, false) && !renderState.isTipped)
             return FLAMING_ARROW_LOCATION;
         return original;
     }

@@ -1,16 +1,14 @@
 package com.aetherteam.aether.client.gui.component.skins;
 
+import com.aetherteam.nitrogen.fabric.BuilderMadeButton;
 import net.minecraft.client.renderer.RenderPipelines;
 import com.aetherteam.aether.Aether;
-import com.aetherteam.nitrogen.fabric.BuilderMadeButton;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.WidgetSprites;
-import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.resources.Identifier;
 
-public class PatreonButton extends Button {
+public class PatreonButton extends BuilderMadeButton {
     public static final WidgetSprites LARGE_WIDGET = new WidgetSprites(Identifier.fromNamespaceAndPath(Aether.MODID, "skins/large_button"), Identifier.fromNamespaceAndPath(Aether.MODID, "skins/large_button_highlighted"), Identifier.fromNamespaceAndPath(Aether.MODID, "skins/large_button_highlighted"));
     public static final WidgetSprites SMALL_WIDGET = new WidgetSprites(Identifier.fromNamespaceAndPath(Aether.MODID, "skins/small_button"), Identifier.fromNamespaceAndPath(Aether.MODID, "skins/small_button_highlighted"), Identifier.fromNamespaceAndPath(Aether.MODID, "skins/small_button_highlighted"));
 

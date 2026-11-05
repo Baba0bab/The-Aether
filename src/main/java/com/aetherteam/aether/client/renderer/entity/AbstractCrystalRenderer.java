@@ -1,5 +1,6 @@
 package com.aetherteam.aether.client.renderer.entity;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
@@ -44,7 +45,7 @@ public abstract class AbstractCrystalRenderer<T extends AbstractCrystal, R exten
         poseStack.pushPose();
         poseStack.translate(0.0, 0.4, 0.0);
         RenderType renderType = RenderTypes.entityTranslucent(this.getTextureLocation(renderState));
-        float f = renderState.ageInTicks + renderState.partialTick;
+        float f = renderState.ageInTicks + Minecraft.getInstance().getDeltaTracker().getGameTimeDeltaPartialTick(false);
         poseStack.rotate(Axis.XP.rotationDegrees(f * 0.1F * 360.0F));
         submitNodeCollector.submitModelPart(this.crystal.crystal1, poseStack, renderType, packedLight, OverlayTexture.NO_OVERLAY, null);
         poseStack.rotate(Axis.YP.rotationDegrees(f * 0.1F * 360.0F));

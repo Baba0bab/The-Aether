@@ -2,7 +2,6 @@ package com.aetherteam.aether.client.renderer.entity;
 
 import com.aetherteam.aether.client.renderer.AetherModelLayers;
 import com.aetherteam.aether.client.renderer.entity.state.SwetRenderState;
-import com.aetherteam.aether.entity.monster.AechorPlant;
 import com.aetherteam.aether.entity.monster.Swet;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.model.monster.slime.SlimeModel;

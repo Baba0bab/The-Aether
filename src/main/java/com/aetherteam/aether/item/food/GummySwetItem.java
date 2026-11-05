@@ -4,7 +4,6 @@ import com.aetherteam.aether.AetherConfig;
 import com.aetherteam.aether.item.AetherConsumables;
 import com.aetherteam.aether.item.AetherItems;
 import com.aetherteam.aether.item.miscellaneous.ConsumableItem;
-import net.minecraft.util.Util;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;

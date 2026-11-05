@@ -11,7 +11,7 @@ import net.minecraft.world.entity.Entity;
  * BossFightEvent is fired when an event for a boss fight occurs.<br>
  * If a method utilizes this EntityEvent as its parameter, the method will receive every child event of this class.<br>
  */
-public abstract class BossFightEvent extends EntityEvent {
+public abstract class BossFightEvent {
     private final BossRoomTracker dungeon;
 
     private final Entity entity;
@@ -21,7 +21,7 @@ public abstract class BossFightEvent extends EntityEvent {
      * @param dungeon The {@link BossRoomTracker} representing the boss's dungeon.
      */
     public BossFightEvent(Entity entity, BossRoomTracker dungeon) {
-        super(entity);
+        this.entity = entity;
         this.dungeon = dungeon;
     }
 

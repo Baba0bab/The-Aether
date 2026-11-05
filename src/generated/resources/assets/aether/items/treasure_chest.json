@@ -1,0 +1,10 @@
+{
+  "model": {
+    "type": "minecraft:special",
+    "base": "aether:item/treasure_chest",
+    "model": {
+      "type": "minecraft:chest",
+      "texture": "aether:treasure_chest"
+    }
+  }
+}

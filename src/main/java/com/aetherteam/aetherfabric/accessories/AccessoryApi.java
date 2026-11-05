@@ -49,6 +49,13 @@ public final class AccessoryApi {
         slotContext.access().ifPresent((access) -> TrinketsApi.onTrinketBroken(stack, access, slotContext.entity()));
     }
 
+    /**
+     * Damages an equipped accessory, breaking it with the Trinkets break callbacks if it runs out of durability.
+     */
+    public static void hurtAndBreak(SlotContext slotContext, ItemStack stack, int amount) {
+        slotContext.access().ifPresent((access) -> TrinketsApi.hurtAndBreakItemStack(stack, amount, slotContext.entity(), access));
+    }
+
     public static boolean isStackValid(SlotContext slotContext, ItemStack stack) {
         return slotContext.access().map((access) -> TrinketSlotUtils.isEquipable(access, stack)).orElse(false);
     }

@@ -2,15 +2,12 @@
   "type": "minecraft:crafting_shaped",
   "category": "equipment",
   "key": {
-    "#": {
-      "tag": "c:leathers"
-    }
+    "#": "#c:leathers"
   },
   "pattern": [
     "# #"
   ],
   "result": {
-    "count": 1,
     "id": "aether:leather_gloves"
   }
 }

@@ -10,8 +10,6 @@ import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.renderer.SubmitNodeCollector;
-import net.minecraft.client.renderer.entity.EntityRendererProvider;
-import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.state.AvatarRenderState;
 import net.minecraft.client.renderer.entity.state.HumanoidRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
@@ -30,9 +28,6 @@ import net.minecraft.world.item.component.DyedItemColor;
 import com.aetherteam.aetherfabric.accessories.SlotContext;
 import eu.pb4.trinkets.api.TrinketSlotAccess;
 import eu.pb4.trinkets.api.client.TrinketRenderer;
-import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.client.model.geom.ModelPart;
-import com.aetherteam.aetherfabric.accessories.SlotContext;
 
 public class GlovesRenderer implements TrinketRenderer {
     private final GlovesModel glovesModel;
@@ -62,7 +57,7 @@ public class GlovesRenderer implements TrinketRenderer {
         GlovesModel model = isSlim ? this.glovesModelSlim : this.glovesModel;
         GlovesModel trimModel = isSlim ? this.glovesTrimModelSlim : this.glovesTrimModel;
 
-        int color = (stack.is(net.minecraft.tags.ItemTags.DYEABLE) ? net.minecraft.world.item.component.DyedItemColor.getOrDefault(stack, net.minecraft.world.item.component.DyedItemColor.LEATHER_COLOR) : -1);
+        int color = (stack.is(com.aetherteam.aether.item.AetherItems.LEATHER_GLOVES.get()) ? net.minecraft.world.item.component.DyedItemColor.getOrDefault(stack, net.minecraft.world.item.component.DyedItemColor.LEATHER_COLOR) : -1);
         submitNodeCollector.order(1).submitModel(model, humanoidRenderState, poseStack, RenderTypes.armorCutoutNoCull(glovesItem.getGlovesTexture()), packedLight, OverlayTexture.NO_OVERLAY, color, null, renderState.outlineColor);
 
         ArmorTrim trim = stack.get(DataComponents.TRIM);
@@ -82,7 +77,7 @@ public class GlovesRenderer implements TrinketRenderer {
         if (!(stack.getItem() instanceof GlovesItem glovesItem) || (slotContext.entity() instanceof Player player && player.getAttachedOrCreate(AetherDataAttachments.AETHER_PLAYER).isWearingInvisibilityCloak())) {
             return;
         }
-        int color = (stack.is(net.minecraft.tags.ItemTags.DYEABLE) ? net.minecraft.world.item.component.DyedItemColor.getOrDefault(stack, net.minecraft.world.item.component.DyedItemColor.LEATHER_COLOR) : -1);
+        int color = (stack.is(com.aetherteam.aether.item.AetherItems.LEATHER_GLOVES.get()) ? net.minecraft.world.item.component.DyedItemColor.getOrDefault(stack, net.minecraft.world.item.component.DyedItemColor.LEATHER_COLOR) : -1);
 
         boolean isSlim = clientPlayer.getSkin().model() == PlayerModelType.SLIM;
         float side = arm != HumanoidArm.LEFT ? 1.0F : -1.0F;

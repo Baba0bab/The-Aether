@@ -14,7 +14,6 @@ import net.minecraft.server.level.WorldGenRegion;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.feature.Feature;
-import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 
 import java.util.Arrays;
 import java.util.Optional;
@@ -34,7 +33,7 @@ public record CrystalIslandFeature() implements Feature {
      */
     @Override
     public boolean place(WorldGenLevel level, ChunkGenerator chunkGenerator, RandomSource random, BlockPos pos) {
-        Feature feature = level.holderOrThrow(AetherConfiguredFeatures.CRYSTAL_TREE_CONFIGURATION).value();
+        Feature feature = level.registryAccess().getOrThrow(AetherConfiguredFeatures.CRYSTAL_TREE_CONFIGURATION).value();
         if (feature.place(level, chunkGenerator, random, pos.above())) {
             for (int i = 0; i < 3; i++) {
                 BlockState state;

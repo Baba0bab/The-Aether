@@ -1,16 +1,18 @@
 package com.aetherteam.aether.client.gui.screen.menu;
 
+import net.minecraft.client.gui.components.PlainTextButton;
+
+import net.minecraft.client.gui.Font;
+
 import com.aetherteam.aether.client.gui.screen.menu.logo.LeftLogoRenderer;
 import com.aetherteam.aether.client.gui.screen.menu.splash.LeftSplashRenderer;
 import com.aetherteam.aether.mixin.mixins.client.accessor.TitleScreenAccessor;
 import com.aetherteam.cumulus.CumulusConfig;
 import com.aetherteam.cumulus.client.gui.screen.DynamicMenuButton;
 import com.aetherteam.cumulus.mixin.mixins.client.accessor.SplashRendererAccessor;
-import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
-import net.minecraft.client.gui.components.PlainTextButton;
 import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.TitleScreen;
@@ -91,19 +93,18 @@ public class VanillaLeftTitleScreen extends TitleScreen implements TitleScreenBe
     }
 
     @Override
-    public boolean forEachLineBranding(boolean includeMC, boolean reverse, BiConsumer<Integer, String> lineConsumer, GuiGraphicsExtractor guiGraphics, int i) {
-        BrandingControl.forEachLine(true, true, (brandingLine, branding) ->
-            guiGraphics.text(font, branding, this.width - font.width(branding) - 1, this.height - (10 + (brandingLine + 1) * (font.lineHeight + 1)), 16777215 | i)
-        );
-        return true;
+    public int getBrandingTextX(Font font, String text, int x) {
+        return this.width - font.width(text) - 2;
     }
 
     @Override
-    public boolean forEachAboveCopyrightLineBranding(BiConsumer<Integer, String> lineConsumer, GuiGraphicsExtractor guiGraphics, int i) {
-        BrandingControl.forEachAboveCopyrightLine((brandingLine, branding) ->
-            guiGraphics.text(font, branding, 1, this.height - (brandingLine + 1) * (font.lineHeight + 1), 16777215 | i)
-        );
-        return true;
+    public int getBrandingTextY(Font font, String text, int y) {
+        int creditsY = this.renderables.stream()
+            .filter(renderable -> renderable instanceof PlainTextButton btn && btn.getMessage().equals(Component.translatable("title.credits")))
+            .findFirst()
+            .map(renderable -> ((PlainTextButton) renderable).getY())
+            .orElse(0);
+        return creditsY - font.lineHeight - 2;
     }
 
     @Override

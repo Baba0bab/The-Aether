@@ -1,0 +1,15 @@
+{
+  "type": "aether:shelf",
+  "block": {
+    "id": "aether:quicksoil",
+    "properties": {
+      "double_drops": "true"
+    }
+  },
+  "radius": 3.4641016,
+  "valid_blocks": "aether:aether_grass_block",
+  "y_range": {
+    "max_inclusive": 48,
+    "min_inclusive": 0
+  }
+}

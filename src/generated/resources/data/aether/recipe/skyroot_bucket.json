@@ -1,17 +1,13 @@
 {
   "type": "minecraft:crafting_shaped",
-  "category": "misc",
   "key": {
-    "#": {
-      "tag": "aether:skyroot_tool_crafting"
-    }
+    "#": "#aether:skyroot_tool_crafting"
   },
   "pattern": [
     "# #",
     " # "
   ],
   "result": {
-    "count": 1,
     "id": "aether:skyroot_bucket"
   }
 }

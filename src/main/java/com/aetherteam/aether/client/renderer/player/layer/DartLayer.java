@@ -17,19 +17,19 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
-import net.minecraft.util.context.ContextKey;
+import net.fabricmc.fabric.api.client.rendering.v1.RenderStateDataKey;
 
 /**
  * Renders {@link AbstractDart}s stuck in the body of the player, similar to arrows.
  */
 public class DartLayer<M extends PlayerModel> extends RenderLayer<AvatarRenderState, M> {
-    private final ContextKey<Integer> dartCount;
+    private final RenderStateDataKey<Integer> dartCount;
     private final ArrowModel model;
     private final ArrowRenderState modelState = new ArrowRenderState();
     private final Identifier texture;
     private final float offset;
 
-    public DartLayer(LivingEntityRenderer<?, AvatarRenderState, M> renderer, EntityModelSet modelSet, ContextKey<Integer> dartCount, Identifier texture, float offset) {
+    public DartLayer(LivingEntityRenderer<?, AvatarRenderState, M> renderer, EntityModelSet modelSet, RenderStateDataKey<Integer> dartCount, Identifier texture, float offset) {
         super(renderer);
         this.dartCount = dartCount;
         this.model = new ArrowModel(modelSet.bakeLayer(ModelLayers.ARROW));
@@ -80,6 +80,6 @@ public class DartLayer<M extends PlayerModel> extends RenderLayer<AvatarRenderSt
     }
 
     protected int numStuck(AvatarRenderState renderState) {
-        return renderState.getRenderDataOrDefault(this.dartCount, 0);
+        return renderState.getDataOrDefault(this.dartCount, 0);
     }
 }

@@ -5,7 +5,6 @@ import net.minecraft.world.item.equipment.Equippable;
 import net.minecraft.world.entity.EquipmentSlotGroup;
 import net.minecraft.world.entity.EquipmentSlot;
 import com.aetherteam.aetherfabric.accessories.AccessoryApi;
-import net.neoforged.neoforge.event.level.block.BreakBlockEvent;
 import net.minecraft.world.entity.EntityTypes;
 import com.aetherteam.aether.AetherConfig;
 import com.aetherteam.aether.AetherTags;
@@ -21,7 +20,6 @@ import com.aetherteam.aether.item.EquipmentUtil;
 import com.aetherteam.aether.item.accessories.abilities.ZaniteAccessory;
 import com.aetherteam.aether.item.tools.abilities.HolystoneTool;
 import com.aetherteam.aether.item.tools.abilities.ZaniteTool;
-import com.aetherteam.aether.loot.AetherLoot;
 import com.aetherteam.aether.network.packet.clientbound.ToolDebuffPacket;
 import com.aetherteam.nitrogen.fabric.events.FallHelper;
 import com.aetherteam.nitrogen.fabric.network.PacketDistributor;
@@ -35,22 +33,16 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.storage.loot.LootParams;
-import net.minecraft.world.level.storage.loot.LootTable;
-import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
-import net.minecraft.world.phys.Vec3;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.apache.commons.lang3.mutable.MutableDouble;
 import org.jetbrains.annotations.Nullable;
@@ -71,7 +63,7 @@ public class AbilityHooks {
             SlotResult slotResult = EquipmentUtil.getGloves(player);
             if (slotResult != null) {
                 if (player.level() instanceof ServerLevel serverLevel) {
-                    slotResult.stack().hurtAndBreak(1, serverLevel, player, (item) -> AccessoryApi.onBroken(slotResult.slotContext(), slotResult.stack()));
+                    AccessoryApi.hurtAndBreak(slotResult.slotContext(), slotResult.stack(), 1);
                 }
             }
         }
@@ -87,7 +79,7 @@ public class AbilityHooks {
                 if (slotResult != null) {
                     if (state.getDestroySpeed(level, pos) > 0 && entity.getRandom().nextInt(6) == 0) {
                         if (entity.level() instanceof ServerLevel serverLevel) {
-                            slotResult.stack().hurtAndBreak(1, serverLevel, entity, (item) -> AccessoryApi.onBroken(slotResult.slotContext(), slotResult.stack()));
+                            AccessoryApi.hurtAndBreak(slotResult.slotContext(), slotResult.stack(), 1);
                         }
                     }
                 }
@@ -104,7 +96,7 @@ public class AbilityHooks {
             if (slotResult != null) {
                 if (state.getDestroySpeed(level, pos) > 0 && entity.getRandom().nextInt(6) == 0) {
                     if (entity.level() instanceof ServerLevel serverLevel) {
-                        slotResult.stack().hurtAndBreak(1, serverLevel, entity, (item) -> AccessoryApi.onBroken(slotResult.slotContext(), slotResult.stack()));
+                        AccessoryApi.hurtAndBreak(slotResult.slotContext(), slotResult.stack(), 1);
                     }
                 }
             }

@@ -2,14 +2,8 @@ package com.aetherteam.aether.item.combat;
 
 import com.aetherteam.aether.AetherTags;
 import com.aetherteam.aether.client.AetherSoundEvents;
-import com.aetherteam.nitrogen.fabric.registries.DeferredHolder;
-import com.aetherteam.nitrogen.fabric.registries.DeferredRegister;
 import net.minecraft.util.Util;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.Identifier;
-import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.equipment.ArmorMaterial;
-import net.minecraft.world.item.crafting.Ingredient;
 import com.aetherteam.aether.data.resources.registries.AetherEquipmentModels;
 import net.minecraft.world.item.equipment.ArmorType;
 

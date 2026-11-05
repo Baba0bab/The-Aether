@@ -2,7 +2,6 @@ package com.aetherteam.aether.data.resources.registries;
 
 import com.aetherteam.aether.Aether;
 import com.aetherteam.nitrogen.fabric.registries.datamaps.DataMapType;
-import com.aetherteam.nitrogen.fabric.registries.datamaps.builtin.FurnaceFuel;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Item;

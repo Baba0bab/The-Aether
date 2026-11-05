@@ -1,1 +1,5 @@
-{}
+{
+  "textures": {
+    "particle": "aether:block/dungeon/light_hellfire_stone"
+  }
+}

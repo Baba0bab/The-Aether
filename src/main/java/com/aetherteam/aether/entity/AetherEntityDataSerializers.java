@@ -1,24 +1,23 @@
 package com.aetherteam.aether.entity;
 
-import com.aetherteam.aether.Aether;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.syncher.EntityDataSerializer;
-import com.aetherteam.nitrogen.fabric.registries.DeferredRegister;
-import net.neoforged.neoforge.registries.NeoForgeRegistries;
+import net.minecraft.network.syncher.EntityDataSerializers;
 
 import java.util.Optional;
 import java.util.UUID;
 
 /**
- * Custom {@link EntityDataSerializer}s, for data types that vanilla no longer provides serializers for.
+ * Custom {@link EntityDataSerializer}s, for data types that vanilla no longer provides serializers for.<br><br>
+ * Fabric has no registry for these, so they are added to vanilla's serializer map directly, which must happen in the same order on both sides.
  */
 public class AetherEntityDataSerializers {
-    public static final DeferredRegister<EntityDataSerializer<?>> ENTITY_DATA_SERIALIZERS = DeferredRegister.create(NeoForgeRegistries.Keys.ENTITY_DATA_SERIALIZERS, Aether.MODID);
-
     public static final EntityDataSerializer<Optional<UUID>> OPTIONAL_UUID = EntityDataSerializer.forValueType(ByteBufCodecs.optional(UUIDUtil.STREAM_CODEC));
 
     static {
-        ENTITY_DATA_SERIALIZERS.register("optional_uuid", () -> OPTIONAL_UUID);
+        EntityDataSerializers.registerSerializer(OPTIONAL_UUID);
     }
+
+    public static void init() { }
 }

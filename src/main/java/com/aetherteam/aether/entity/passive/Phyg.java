@@ -4,8 +4,6 @@ import com.aetherteam.aether.AetherTags;
 import com.aetherteam.aether.client.AetherSoundEvents;
 import com.aetherteam.aether.entity.AetherEntityTypes;
 import com.aetherteam.aether.entity.ai.goal.FallingRandomStrollGoal;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;

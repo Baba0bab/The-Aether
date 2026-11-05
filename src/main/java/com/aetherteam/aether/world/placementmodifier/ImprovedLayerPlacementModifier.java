@@ -15,7 +15,6 @@ import net.minecraft.world.level.levelgen.placement.PlacementContext;
 import net.minecraft.world.level.levelgen.placement.PlacementModifier;
 
 import org.jetbrains.annotations.Nullable;
-import java.util.stream.Stream;
 
 /**
  * [CODE COPY] - {@link net.minecraft.world.level.levelgen.placement.CountOnEveryLayerPlacement}.<br><br>

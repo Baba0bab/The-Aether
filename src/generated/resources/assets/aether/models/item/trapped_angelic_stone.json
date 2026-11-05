@@ -139,8 +139,7 @@
       "faces": {
         "north": {
           "neoforge_data": {
-            "block_light": 15,
-            "sky_light": 15
+            "light_emission": 15
           },
           "texture": "#overlay"
         }
@@ -168,6 +167,7 @@
   ],
   "textures": {
     "face": "aether:block/dungeon/angelic_stone",
-    "overlay": "aether:block/dungeon/exclamation"
+    "overlay": "aether:block/dungeon/exclamation",
+    "particle": "aether:block/dungeon/angelic_stone"
   }
 }

@@ -1,6 +1,5 @@
 package com.aetherteam.aether.event.listeners.abilities;
 
-import net.neoforged.neoforge.event.level.block.BreakBlockEvent;
 import com.aetherteam.aether.Aether;
 import com.aetherteam.aether.event.hooks.AbilityHooks;
 import com.aetherteam.aether.item.accessories.abilities.ShieldOfRepulsionAccessory;
@@ -40,15 +39,9 @@ public class AccessoryAbilityListener {
      * @see AbilityHooks.AccessoryHooks#damageZaniteRing(LivingEntity, LevelAccessor, BlockState, BlockPos)
      * @see AbilityHooks.AccessoryHooks#damageZanitePendant(LivingEntity, LevelAccessor, BlockState, BlockPos)
      */
-    public static void onBlockBreak(BreakBlockEvent event) {
-        Player player = event.getPlayer();
-        LevelAccessor level = event.getLevel();
-        BlockState state = event.getState();
-        BlockPos pos = event.getPos();
-        if (!event.isCanceled()) {
-            AbilityHooks.AccessoryHooks.damageZaniteRing(player, level, state, pos);
-            AbilityHooks.AccessoryHooks.damageZanitePendant(player, level, state, pos);
-        }
+    public static void onBlockBreak(Level level, Player player, BlockPos pos, BlockState state) {
+        AbilityHooks.AccessoryHooks.damageZaniteRing(player, level, state, pos);
+        AbilityHooks.AccessoryHooks.damageZanitePendant(player, level, state, pos);
     }
 
     /**

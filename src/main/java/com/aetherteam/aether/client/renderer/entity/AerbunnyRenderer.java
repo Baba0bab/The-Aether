@@ -1,5 +1,6 @@
 package com.aetherteam.aether.client.renderer.entity;
 
+import net.minecraft.client.Minecraft;
 import com.aetherteam.aether.Aether;
 import com.aetherteam.aether.client.renderer.AetherModelLayers;
 import com.aetherteam.aether.client.renderer.entity.model.AerbunnyModel;
@@ -59,9 +60,9 @@ public class AerbunnyRenderer extends MobRenderer<Aerbunny, AerbunnyRenderState,
         super.setupRotations(renderState, poseStack, yBodyRot, scale);
         if (!renderState.onGround) {
             if (renderState.deltaMovement.y() > 0.5) {
-                poseStack.rotate(Axis.XN.rotationDegrees(Mth.rotLerp(renderState.partialTick, 0.0F, 15.0F)));
+                poseStack.rotate(Axis.XN.rotationDegrees(Mth.rotLerp(Minecraft.getInstance().getDeltaTracker().getGameTimeDeltaPartialTick(false), 0.0F, 15.0F)));
             } else if (renderState.deltaMovement.y() < -0.5) {
-                poseStack.rotate(Axis.XN.rotationDegrees(Mth.rotLerp(renderState.partialTick, 0.0F, -15.0F)));
+                poseStack.rotate(Axis.XN.rotationDegrees(Mth.rotLerp(Minecraft.getInstance().getDeltaTracker().getGameTimeDeltaPartialTick(false), 0.0F, -15.0F)));
             } else {
                 poseStack.rotate(Axis.XN.rotationDegrees((float) (renderState.deltaMovement.y() * 30.0)));
             }

@@ -1,0 +1,9 @@
+{
+  "icon": "aether:slot/shield",
+  "order": 304,
+  "amount": 1,
+  "validator_predicates": [
+    "trinkets:tag"
+  ],
+  "is_hidden": true
+}

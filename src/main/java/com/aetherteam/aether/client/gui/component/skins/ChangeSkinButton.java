@@ -1,16 +1,14 @@
 package com.aetherteam.aether.client.gui.component.skins;
 
+import com.aetherteam.nitrogen.fabric.BuilderMadeButton;
 import net.minecraft.client.input.InputWithModifiers;
 import net.minecraft.client.renderer.RenderPipelines;
 import com.aetherteam.aether.Aether;
-import com.aetherteam.nitrogen.fabric.BuilderMadeButton;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.WidgetSprites;
-import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.resources.Identifier;
 
-public class ChangeSkinButton extends Button {
+public class ChangeSkinButton extends BuilderMadeButton {
     public static final WidgetSprites APPLY_WIDGET = new WidgetSprites(Identifier.fromNamespaceAndPath(Aether.MODID, "skins/apply_button"), Identifier.fromNamespaceAndPath(Aether.MODID, "skins/apply_button_disabled"), Identifier.fromNamespaceAndPath(Aether.MODID, "skins/apply_button_highlighted"));
     public static final WidgetSprites REMOVE_WIDGET = new WidgetSprites(Identifier.fromNamespaceAndPath(Aether.MODID, "skins/remove_button"), Identifier.fromNamespaceAndPath(Aether.MODID, "skins/remove_button_disabled"), Identifier.fromNamespaceAndPath(Aether.MODID, "skins/remove_button_highlighted"));
 

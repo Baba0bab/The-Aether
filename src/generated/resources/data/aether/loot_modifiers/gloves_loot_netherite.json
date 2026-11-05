@@ -1,9 +1,7 @@
 {
   "type": "aether:gloves_loot",
-  "armor_material": "minecraft:netherite",
-  "conditions": [],
+  "armor_tag": "aether:armors/netherite",
   "gloves": {
-    "count": 1,
     "id": "aether:netherite_gloves"
   }
 }

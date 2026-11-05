@@ -12,7 +12,6 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -108,12 +107,12 @@ public class BerryBushBlock extends AetherBushBlock {
      * @param explosion The {@link Explosion} affecting the block.
      */
     @Override
-    public void onBlockExploded(BlockState state, ServerLevel level, BlockPos pos, Explosion explosion) {
-        super.onBlockExploded(state, level, pos, explosion);
+    public boolean nitrogen_fabric$onBlockExploded(BlockState state, ServerLevel level, BlockPos pos, Explosion explosion) {
         level.setBlock(pos, AetherBlocks.BERRY_BUSH_STEM.get().defaultBlockState().setValue(AetherBlockStateProperties.DOUBLE_DROPS, state.getValue(AetherBlockStateProperties.DOUBLE_DROPS)), 1 | 2);
         if (AetherConfig.SERVER.berry_bush_consistency.get()) { // Destroy stem too if config is enabled.
             level.destroyBlock(pos, true);
         }
+        return true;
     }
 
     /**

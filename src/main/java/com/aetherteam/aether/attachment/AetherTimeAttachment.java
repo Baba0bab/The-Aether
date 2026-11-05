@@ -8,7 +8,6 @@ import net.minecraft.core.Holder;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.SharedConstants;
 import com.aetherteam.aether.AetherConfig;
-import com.aetherteam.aether.data.resources.registries.AetherDimensions;
 import com.aetherteam.aether.network.packet.AetherTimeSyncPacket;
 import com.aetherteam.nitrogen.attachment.INBTSynchable;
 import com.aetherteam.nitrogen.network.packet.SyncPacket;

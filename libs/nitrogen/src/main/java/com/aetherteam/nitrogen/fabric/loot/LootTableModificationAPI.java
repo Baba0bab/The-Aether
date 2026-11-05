@@ -142,11 +142,18 @@ public abstract class LootTableModificationAPI {
             }).codec();
         }
 
+        /**
+         * Like NeoForge 26.x, every file in the "loot_modifiers" folders is loaded, and modifiers are applied by priority.<br><br>
+         * The old "neoforge:loot_modifiers/global_loot_modifiers.json" list is still read if present: its entries are loaded first and,
+         * when it sets "replace", only the listed modifiers are loaded.
+         */
         @Override
         protected Map<Identifier, JsonElement> prepare(ResourceManager resourceManager, ProfilerFiller profiler) {
             var data = super.prepare(resourceManager, profiler);
+            data.remove(Identifier.fromNamespaceAndPath("neoforge", "global_loot_modifiers"));
 
-            var validLocations = new ArrayList<Identifier>();
+            var listedLocations = new ArrayList<Identifier>();
+            boolean replace = false;
 
             for (var resource : resourceManager.getResourceStack(LOOT_MODIFIER_CONFIG)) {
                 try (var reader = resource.openAsReader()) {
@@ -154,11 +161,14 @@ public abstract class LootTableModificationAPI {
 
                     var config = LootModificationConfig.CODEC.parse(JsonOps.INSTANCE, obj).getOrThrow();
 
-                    if (config.replace()) validLocations.clear();
+                    if (config.replace()) {
+                        listedLocations.clear();
+                        replace = true;
+                    }
 
                     for (var location : config.allowedModificationEntries()) {
-                        validLocations.remove(location);
-                        validLocations.add(location);
+                        listedLocations.remove(location);
+                        listedLocations.add(location);
                     }
                 } catch (RuntimeException | IOException ioexception) {
                     LOGGER.error("Couldn't read global loot modifier list {} in data pack {}", LOOT_MODIFIER_CONFIG, resource.sourcePackId(), ioexception);
@@ -167,7 +177,13 @@ public abstract class LootTableModificationAPI {
 
             var validData = new LinkedHashMap<Identifier, JsonElement>();
 
-            for (var location : validLocations) validData.put(location, data.get(location));
+            for (var location : listedLocations) {
+                var json = data.get(location);
+                if (json != null) validData.put(location, json);
+            }
+            if (!replace) {
+                data.forEach(validData::putIfAbsent);
+            }
 
             return validData;
         }

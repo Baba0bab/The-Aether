@@ -1,11 +1,10 @@
 package com.aetherteam.aether.client;
 
+import net.fabricmc.fabric.api.client.rendering.v1.BlockColorRegistry;
+import net.minecraft.client.Minecraft;
+
 import com.aetherteam.aether.AetherTags;
 import com.aetherteam.aether.block.AetherBlocks;
-import com.aetherteam.aether.item.AetherItems;
-import com.aetherteam.aether.item.miscellaneous.MoaEggItem;
-import net.fabricmc.fabric.api.client.rendering.v1.ColorProviderRegistry;
-import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.color.block.BlockTintSource;
 import net.minecraft.client.renderer.block.BlockAndTintGetter;
 import net.minecraft.core.BlockPos;
@@ -29,10 +28,10 @@ public class AetherColorResolvers {
      *
      * @see AetherClient#eventSetup(IEventBus)
      */
-    public static void registerBlockColor(RegisterColorHandlersEvent.BlockTintSources event) {
+    public static void registerBlockColor() {
         for (Block block : List.of(Blocks.SHORT_GRASS, Blocks.FERN, Blocks.TALL_GRASS, Blocks.LARGE_FERN)) {
-            List<BlockTintSource> originalSources = event.getBlockColors().getTintSources(block.defaultBlockState());
-            event.register(originalSources.stream().map(AetherColorResolvers::wrapTintSource).toList(), block);
+            List<BlockTintSource> originalSources = Minecraft.getInstance().getBlockColors().getTintSources(block.defaultBlockState());
+            BlockColorRegistry.register(originalSources.stream().map(AetherColorResolvers::wrapTintSource).toList(), block);
         }
     }
 

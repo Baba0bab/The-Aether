@@ -2,62 +2,38 @@
   "type": "minecraft:block",
   "pools": [
     {
-      "bonus_rolls": 0.0,
-      "conditions": [
-        {
-          "condition": "minecraft:inverted",
-          "term": {
-            "condition": "minecraft:match_tool",
-            "predicate": {
-              "predicates": {
-                "minecraft:enchantments": [
-                  {
-                    "enchantments": "minecraft:silk_touch",
-                    "levels": {
-                      "min": 1
-                    }
-                  }
-                ]
-              }
-            }
-          }
-        }
-      ],
+      "condition": {
+        "type": "minecraft:inverted",
+        "term": "minecraft:tool/can_silk_touch"
+      },
       "entries": [
         {
-          "type": "minecraft:item",
-          "functions": [
-            {
-              "function": "aether:spawn_tnt"
-            }
-          ],
-          "name": "minecraft:air",
+          "type": "minecraft:empty",
+          "modifier": {
+            "type": "aether:spawn_tnt"
+          },
           "weight": 18
         },
         {
-          "type": "minecraft:item",
-          "functions": [
-            {
-              "function": "aether:spawn_xp"
-            }
-          ],
-          "name": "minecraft:air",
+          "type": "minecraft:empty",
+          "modifier": {
+            "type": "aether:spawn_xp"
+          },
           "weight": 9
         },
         {
           "type": "minecraft:item",
-          "functions": [
+          "modifier": [
             {
-              "add": false,
+              "type": "minecraft:set_count",
               "count": {
                 "type": "minecraft:uniform",
-                "max": 6.0,
-                "min": 5.0
-              },
-              "function": "minecraft:set_count"
+                "max": 6,
+                "min": 5
+              }
             },
             {
-              "function": "minecraft:explosion_decay"
+              "type": "minecraft:explosion_decay"
             }
           ],
           "name": "aether:gingerbread_man",
@@ -65,42 +41,23 @@
         },
         {
           "type": "minecraft:item",
-          "functions": [
-            {
-              "function": "minecraft:explosion_decay"
-            }
-          ],
+          "modifier": {
+            "type": "minecraft:explosion_decay"
+          },
           "name": "aether:candy_cane_sword"
         }
       ],
-      "rolls": 1.0
+      "rolls": 1
     },
     {
-      "bonus_rolls": 0.0,
-      "conditions": [
-        {
-          "condition": "minecraft:match_tool",
-          "predicate": {
-            "predicates": {
-              "minecraft:enchantments": [
-                {
-                  "enchantments": "minecraft:silk_touch",
-                  "levels": {
-                    "min": 1
-                  }
-                }
-              ]
-            }
-          }
-        }
-      ],
+      "condition": "minecraft:tool/can_silk_touch",
       "entries": [
         {
           "type": "minecraft:item",
           "name": "aether:present"
         }
       ],
-      "rolls": 1.0
+      "rolls": 1
     }
   ],
   "random_sequence": "aether:blocks/present"

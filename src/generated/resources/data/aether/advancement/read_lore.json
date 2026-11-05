@@ -10,7 +10,6 @@
       "translate": "advancement.aether.read_lore.desc"
     },
     "icon": {
-      "count": 1,
       "id": "aether:book_of_lore"
     },
     "title": {

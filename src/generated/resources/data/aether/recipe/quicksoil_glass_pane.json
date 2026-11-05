@@ -1,10 +1,7 @@
 {
   "type": "minecraft:crafting_shaped",
-  "category": "misc",
   "key": {
-    "#": {
-      "item": "aether:quicksoil_glass"
-    }
+    "#": "aether:quicksoil_glass"
   },
   "pattern": [
     "###",

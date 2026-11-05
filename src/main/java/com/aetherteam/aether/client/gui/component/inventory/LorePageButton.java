@@ -1,19 +1,17 @@
 package com.aetherteam.aether.client.gui.component.inventory;
 
+import com.aetherteam.nitrogen.fabric.BuilderMadeButton;
 import net.minecraft.client.input.InputWithModifiers;
 import net.minecraft.client.renderer.RenderPipelines;
 import com.aetherteam.aether.Aether;
-import com.aetherteam.nitrogen.fabric.BuilderMadeButton;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.WidgetSprites;
-import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
 
-public class LorePageButton extends Button {
+public class LorePageButton extends BuilderMadeButton {
     private static final WidgetSprites BUTTON_TEXTURES = new WidgetSprites(Identifier.fromNamespaceAndPath(Aether.MODID, "menu/lore_button"), Identifier.fromNamespaceAndPath(Aether.MODID, "menu/lore_button_disabled"), Identifier.fromNamespaceAndPath(Aether.MODID, "menu/lore_button_highlighted"));
 
     public LorePageButton(Builder builder) {

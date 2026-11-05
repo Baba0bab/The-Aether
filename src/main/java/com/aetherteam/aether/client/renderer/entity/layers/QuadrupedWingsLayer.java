@@ -6,7 +6,6 @@ import com.aetherteam.aether.client.renderer.entity.model.QuadrupedWingsModel;
 import com.aetherteam.aether.client.renderer.entity.state.WingEntityRenderState;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.model.QuadrupedModel;
-import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;

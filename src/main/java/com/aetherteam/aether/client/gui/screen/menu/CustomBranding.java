@@ -1,11 +1,9 @@
 package com.aetherteam.aether.client.gui.screen.menu;
 
-import net.minecraft.client.gui.GuiGraphicsExtractor;
-
-import java.util.function.BiConsumer;
+import net.minecraft.client.gui.Font;
 
 public interface CustomBranding {
-    boolean forEachLineBranding(boolean includeMC, boolean reverse, BiConsumer<Integer, String> lineConsumer, GuiGraphicsExtractor guiGraphics, int i);
+    int getBrandingTextX(Font font, String text, int x);
 
-    boolean forEachAboveCopyrightLineBranding(BiConsumer<Integer, String> lineConsumer, GuiGraphicsExtractor guiGraphics, int i);
+    int getBrandingTextY(Font font, String text, int y);
 }

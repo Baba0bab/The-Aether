@@ -258,8 +258,8 @@ public class TreasureChestBlockEntity extends RandomizableContainerBlockEntity i
     @Override
     protected void collectImplicitComponents(DataComponentMap.Builder components) {
         super.collectImplicitComponents(components);
-        components.set(AetherDataComponents.LOCKED, this.getLocked());
-        components.set(AetherDataComponents.DUNGEON_KIND, new DungeonKind(Identifier.fromNamespaceAndPath(Aether.MODID, "bronze")));
+        components.set(AetherDataComponents.LOCKED.get(), this.getLocked());
+        components.set(AetherDataComponents.DUNGEON_KIND.get(), new DungeonKind(Identifier.fromNamespaceAndPath(Aether.MODID, "bronze")));
     }
 
     @Override
@@ -274,7 +274,7 @@ public class TreasureChestBlockEntity extends RandomizableContainerBlockEntity i
         return this.saveWithoutMetadata(registries);
     }
 
-    @Override
+    
     public void handleUpdateTag(ValueInput tag) {
         this.loadAdditional(tag);
     }
@@ -305,7 +305,7 @@ public class TreasureChestBlockEntity extends RandomizableContainerBlockEntity i
         return ClientboundBlockEntityDataPacket.create(this);
     }
 
-    @Override
+    
     public void onDataPacket(Connection connection, ValueInput valueInput) {
         this.handleUpdateTag(valueInput);
     }

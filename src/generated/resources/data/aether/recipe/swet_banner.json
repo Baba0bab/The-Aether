@@ -1,13 +1,8 @@
 {
   "type": "minecraft:crafting_shapeless",
-  "category": "misc",
   "ingredients": [
-    {
-      "tag": "minecraft:banners"
-    },
-    {
-      "item": "aether:swet_cape"
-    }
+    "#minecraft:banners",
+    "aether:swet_cape"
   ],
   "result": {
     "components": {
@@ -45,10 +40,16 @@
           "pattern": "minecraft:gradient"
         }
       ],
-      "minecraft:hide_additional_tooltip": {},
-      "minecraft:item_name": "{\"color\":\"gold\",\"translate\":\"aether.block.aether.swet_banner\"}"
+      "minecraft:item_name": {
+        "color": "gold",
+        "translate": "aether.block.aether.swet_banner"
+      },
+      "minecraft:tooltip_display": {
+        "hidden_components": [
+          "minecraft:banner_patterns"
+        ]
+      }
     },
-    "count": 1,
     "id": "minecraft:black_banner"
   }
 }

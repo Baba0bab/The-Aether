@@ -18,9 +18,8 @@ import net.minecraft.client.gui.components.BossHealthOverlay;
 import net.minecraft.client.gui.components.LerpingBossEvent;
 import net.minecraft.client.gui.layouts.GridLayout;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.util.Tuple;
-import net.minecraft.world.BossEvent;
 import com.mojang.datafixers.util.Pair;
+import net.minecraft.world.BossEvent;
 
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -31,12 +30,12 @@ public class GuiListener {
      */
     public static void listen() {
         ScreenEvents.AFTER_INIT.register((client, screen, scaledWidth, scaledHeight) -> {
-            onGuiInitialize(screen, Screens.getButtons(screen)::add);
-            ScreenEvents.afterRender(screen).register((screen1, drawContext, mouseX, mouseY, tickDelta) -> GuiListener.onGuiDraw(screen1, drawContext));
-            ScreenKeyboardEvents.afterKeyPress(screen).register((screen1, key, scancode, modifiers) -> {
+            onGuiInitialize(screen, Screens.getWidgets(screen)::add);
+            ScreenEvents.afterExtract(screen).register((screen1, drawContext, mouseX, mouseY, tickDelta) -> GuiListener.onGuiDraw(screen1, drawContext));
+            ScreenKeyboardEvents.afterKeyPress(screen).register((screen1, keyEvent) -> {
                 if (ScreenKeyboardEventsExtension.getPressedResult(screen1)) return;
 
-                onKeyPress(key, InputConstants.PRESS);
+                onKeyPress(keyEvent.key(), InputConstants.PRESS);
             });
         });
         ClientTickEvents.END_CLIENT_TICK.register(client -> onClientTick());
@@ -47,14 +46,12 @@ public class GuiListener {
      * @see GuiHooks#setupAccessoryButton(Screen, Tuple)
      * @see GuiHooks#setupPerksButtons(Screen)
      */
-    public static void onGuiInitialize(ScreenEvent.Init.Post event) {
-        Screen screen = event.getScreen();
-
-        Pair<Integer, Integer> offsets = AetherAccessoriesScreen.getButtonOffset(screen);
-        AccessoryButton inventoryAccessoryButton = GuiHooks.setupAccessoryButton(screen, offsets);
-        if (inventoryAccessoryButton != null) {
-            if (GuiHooks.isAccessoryButtonEnabled()) {
-                event.addListener(inventoryAccessoryButton);
+    public static void onGuiInitialize(Screen screen, Consumer<AbstractButton> consumer) {
+        if (GuiHooks.isAccessoryButtonEnabled()) {
+            Pair<Integer, Integer> offsets = AetherAccessoriesScreen.getButtonOffset(screen);
+            AccessoryButton inventoryAccessoryButton = GuiHooks.setupAccessoryButton(screen, offsets);
+            if (inventoryAccessoryButton != null) {
+                consumer.accept(inventoryAccessoryButton);
             }
         } else {
             GridLayout layout = GuiHooks.setupPerksButtons(screen);
@@ -70,9 +67,7 @@ public class GuiListener {
      * @see GuiHooks#drawTrivia(Screen, GuiGraphicsExtractor)
      * @see GuiHooks#drawAetherTravelMessage(Screen, GuiGraphicsExtractor)
      */
-    public static void onGuiDraw(ScreenEvent.Render.Post event) {
-        Screen screen = event.getScreen();
-        GuiGraphicsExtractor guiGraphics = event.getGuiGraphics();
+    public static void onGuiDraw(Screen screen, GuiGraphicsExtractor guiGraphics) {
         if (!FabricLoader.getInstance().isModLoaded("tipsmod")) {
             GuiHooks.drawTrivia(screen, guiGraphics);
         }
@@ -98,12 +93,10 @@ public class GuiListener {
     /**
      * This event is cancelled in BossHealthOverlayMixin. See it for more info.
      *
-     * @see com.aetherteam.aether.mixin.mixins.client.BossHealthOverlayMixin#event(CustomizeGuiOverlayEvent.BossEventProgress)
+     * @see com.aetherteam.aether.mixin.mixins.client.BossHealthOverlayMixin#drawBar(BossHealthOverlay, GuiGraphicsExtractor, int, int, BossEvent, LocalBooleanRef)
      * @see GuiHooks#drawBossHealthBar(GuiGraphicsExtractor, int, int, LerpingBossEvent)
      */
-    public static void onRenderBossBar(CustomizeGuiOverlayEvent.BossEventProgress event) {
-        GuiGraphicsExtractor guiGraphics = event.getGuiGraphics();
-        LerpingBossEvent bossEvent = event.getBossEvent();
+    public static boolean onRenderBossBar(GuiGraphicsExtractor guiGraphics, int k, int j, BossEvent bossEvent) {
         UUID bossUUID = bossEvent.getId();
         if (bossEvent instanceof LerpingBossEvent lerpingBossEvent && GuiHooks.isAetherBossBar(bossUUID)) {
             GuiHooks.drawBossHealthBar(guiGraphics, k, j, lerpingBossEvent);

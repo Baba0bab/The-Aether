@@ -1,12 +1,8 @@
 package com.aetherteam.aether.client.event.hooks;
 
 import com.aetherteam.aether.world.LevelUtil;
-import com.aetherteam.aether.attachment.AetherDataAttachments;
-import com.aetherteam.aether.attachment.AetherTimeAttachment;
-import com.aetherteam.aether.data.resources.registries.AetherDimensions;
 import com.aetherteam.aether.item.EquipmentUtil;
 import net.minecraft.client.Camera;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.fog.environment.AtmosphericFogEnvironment;
 import net.minecraft.client.renderer.fog.environment.FogEnvironment;
@@ -14,9 +10,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.attribute.EnvironmentAttributes;
 import org.joml.Vector3fc;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.material.FogType;
-import net.minecraft.world.phys.Vec3;
 import org.apache.commons.lang3.tuple.Triple;
 import org.jetbrains.annotations.Nullable;
 

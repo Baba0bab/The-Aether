@@ -2,10 +2,7 @@ package com.aetherteam.aether.item.combat;
 
 import com.aetherteam.aether.client.AetherSoundEvents;
 import com.aetherteam.aether.entity.projectile.dart.AbstractDart;
-import com.google.common.collect.ImmutableSet;
-import net.fabricmc.fabric.api.item.v1.EnchantingContext;
 import net.fabricmc.fabric.api.item.v1.FabricItem;
-import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
@@ -21,9 +18,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemUseAnimation;
 import net.minecraft.world.item.ProjectileWeaponItem;
-import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
-import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 
@@ -32,10 +27,10 @@ import java.util.List;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
-public class DartShooterItem extends ProjectileWeaponItem implements FabricItem { //implements Vanishable
+public class DartShooterItem extends ProjectileWeaponItem implements FabricItem {
     private final Supplier<? extends Item> dartType;
 
-    public DartShooterItem(Supplier<? extends Item> dartType, Properties properties) {
+    public DartShooterItem(Supplier<? extends Item> dartType, Item.Properties properties) {
         super(properties);
         this.dartType = dartType;
     }
@@ -178,15 +173,7 @@ public class DartShooterItem extends ProjectileWeaponItem implements FabricItem 
         return 15;
     }
 
-    @Override
-    public boolean isPrimaryItemFor(ItemStack stack, Holder<Enchantment> enchantment) {
-        return super.isPrimaryItemFor(stack, enchantment) && !enchantment.is(Enchantments.FLAME) && !enchantment.is(Enchantments.INFINITY);
-    }
 
-    @Override
-    public boolean supportsEnchantment(ItemStack stack, Holder<Enchantment> enchantment) {
-        return super.supportsEnchantment(stack, enchantment) && !enchantment.is(Enchantments.FLAME) && !enchantment.is(Enchantments.INFINITY);
-    }
 
     /**
      * @return A {@link Supplier Supplier&lt;? extends Item&gt;} that gives the Dart item that this Dart Shooter is capable of using as ammo.

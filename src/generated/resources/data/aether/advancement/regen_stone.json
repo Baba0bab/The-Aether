@@ -17,7 +17,6 @@
       "translate": "advancement.aether.regen_stone.desc"
     },
     "icon": {
-      "count": 1,
       "id": "aether:regeneration_stone"
     },
     "title": {

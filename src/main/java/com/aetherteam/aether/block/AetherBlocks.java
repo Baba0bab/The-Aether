@@ -13,8 +13,6 @@ import com.aetherteam.aether.block.miscellaneous.UnstableObsidianBlock;
 import com.aetherteam.aether.block.natural.*;
 import com.aetherteam.aether.block.portal.AetherPortalBlock;
 import com.aetherteam.aether.block.utility.*;
-import com.aetherteam.aether.blockentity.ChestMimicBlockEntity;
-import com.aetherteam.aether.blockentity.TreasureChestBlockEntity;
 import com.aetherteam.aether.client.particle.AetherParticleTypes;
 import com.aetherteam.aether.effect.AetherEffects;
 import com.aetherteam.aether.entity.AetherEntityTypes;
@@ -24,11 +22,9 @@ import com.aetherteam.aether.mixin.mixins.common.accessor.FireBlockAccessor;
 import com.aetherteam.aether.world.treegrower.AetherTreeGrowers;
 import com.aetherteam.nitrogen.fabric.registries.DeferredBlock;
 import com.aetherteam.nitrogen.fabric.registries.DeferredRegister;
-import com.aetherteam.nitrogen.item.block.EntityBlockItem;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.Identifier;
@@ -110,18 +106,18 @@ public class AetherBlocks {
 
     public static final DeferredBlock<Block> BERRY_BUSH = registerBlock("berry_bush", BerryBushBlock::new, () -> Block.Properties.of().mapColor(MapColor.GRASS).pushReaction(PushReaction.POPPED).strength(0.2F).sound(SoundType.GRASS).noOcclusion().isValidSpawn(AetherBlocks::ocelotOrParrot).isRedstoneConductor(AetherBlocks::never).isSuffocating(AetherBlocks::never).isViewBlocking(AetherBlocks::never));
     public static final DeferredBlock<Block> BERRY_BUSH_STEM = registerBlock("berry_bush_stem", BerryBushStemBlock::new, () -> Block.Properties.of().mapColor(MapColor.GRASS).pushReaction(PushReaction.POPPED).strength(0.2F).sound(SoundType.GRASS).noCollision());
-    public static final DeferredBlock<FlowerPotBlock> POTTED_BERRY_BUSH = registerBlockWithoutItem("potted_berry_bush", (properties) -> new FlowerPotBlock(() -> (FlowerPotBlock) Blocks.FLOWER_POT, BERRY_BUSH, properties), () -> Block.Properties.ofFullCopy(Blocks.FLOWER_POT));
-    public static final DeferredBlock<FlowerPotBlock> POTTED_BERRY_BUSH_STEM = registerBlockWithoutItem("potted_berry_bush_stem", (properties) -> new FlowerPotBlock(() -> (FlowerPotBlock) Blocks.FLOWER_POT, BERRY_BUSH_STEM, properties), () -> Block.Properties.ofFullCopy(Blocks.FLOWER_POT));
+    public static final DeferredBlock<FlowerPotBlock> POTTED_BERRY_BUSH = registerBlockWithoutItem("potted_berry_bush", (properties) -> new FlowerPotBlock(BERRY_BUSH.get(), properties), () -> Block.Properties.ofFullCopy(Blocks.FLOWER_POT));
+    public static final DeferredBlock<FlowerPotBlock> POTTED_BERRY_BUSH_STEM = registerBlockWithoutItem("potted_berry_bush_stem", (properties) -> new FlowerPotBlock(BERRY_BUSH_STEM.get(), properties), () -> Block.Properties.ofFullCopy(Blocks.FLOWER_POT));
 
     public static final DeferredBlock<Block> PURPLE_FLOWER = registerBlock("purple_flower", (properties) -> new AetherFlowerBlock(AetherEffects.INEBRIATION, 12, properties), () -> Block.Properties.ofFullCopy(Blocks.DANDELION));
     public static final DeferredBlock<Block> WHITE_FLOWER = registerBlock("white_flower", (properties) -> new AetherFlowerBlock(MobEffects.SLOW_FALLING, 4, properties), () -> Block.Properties.ofFullCopy(Blocks.DANDELION));
-    public static final DeferredBlock<FlowerPotBlock> POTTED_PURPLE_FLOWER = registerBlockWithoutItem("potted_purple_flower", (properties) -> new FlowerPotBlock(() -> (FlowerPotBlock) Blocks.FLOWER_POT, PURPLE_FLOWER, properties), () -> Block.Properties.ofFullCopy(Blocks.FLOWER_POT));
-    public static final DeferredBlock<FlowerPotBlock> POTTED_WHITE_FLOWER = registerBlockWithoutItem("potted_white_flower", (properties) -> new FlowerPotBlock(() -> (FlowerPotBlock) Blocks.FLOWER_POT, WHITE_FLOWER, properties), () -> Block.Properties.ofFullCopy(Blocks.FLOWER_POT));
+    public static final DeferredBlock<FlowerPotBlock> POTTED_PURPLE_FLOWER = registerBlockWithoutItem("potted_purple_flower", (properties) -> new FlowerPotBlock(PURPLE_FLOWER.get(), properties), () -> Block.Properties.ofFullCopy(Blocks.FLOWER_POT));
+    public static final DeferredBlock<FlowerPotBlock> POTTED_WHITE_FLOWER = registerBlockWithoutItem("potted_white_flower", (properties) -> new FlowerPotBlock(WHITE_FLOWER.get(), properties), () -> Block.Properties.ofFullCopy(Blocks.FLOWER_POT));
 
     public static final DeferredBlock<SaplingBlock> SKYROOT_SAPLING = registerBlock("skyroot_sapling", (properties) -> new SaplingBlock(AetherTreeGrowers.SKYROOT, properties), () -> Block.Properties.ofFullCopy(Blocks.OAK_SAPLING));
     public static final DeferredBlock<SaplingBlock> GOLDEN_OAK_SAPLING = registerBlock("golden_oak_sapling", (properties) -> new SaplingBlock(AetherTreeGrowers.GOLDEN_OAK, properties), () -> Block.Properties.ofFullCopy(Blocks.OAK_SAPLING));
-    public static final DeferredBlock<FlowerPotBlock> POTTED_SKYROOT_SAPLING = registerBlockWithoutItem("potted_skyroot_sapling", (properties) -> new FlowerPotBlock(() -> (FlowerPotBlock) Blocks.FLOWER_POT, SKYROOT_SAPLING, properties), () -> Block.Properties.ofFullCopy(Blocks.FLOWER_POT));
-    public static final DeferredBlock<FlowerPotBlock> POTTED_GOLDEN_OAK_SAPLING = registerBlockWithoutItem("potted_golden_oak_sapling", (properties) -> new FlowerPotBlock(() -> (FlowerPotBlock) Blocks.FLOWER_POT, GOLDEN_OAK_SAPLING, properties), () -> Block.Properties.ofFullCopy(Blocks.FLOWER_POT));
+    public static final DeferredBlock<FlowerPotBlock> POTTED_SKYROOT_SAPLING = registerBlockWithoutItem("potted_skyroot_sapling", (properties) -> new FlowerPotBlock(SKYROOT_SAPLING.get(), properties), () -> Block.Properties.ofFullCopy(Blocks.FLOWER_POT));
+    public static final DeferredBlock<FlowerPotBlock> POTTED_GOLDEN_OAK_SAPLING = registerBlockWithoutItem("potted_golden_oak_sapling", (properties) -> new FlowerPotBlock(GOLDEN_OAK_SAPLING.get(), properties), () -> Block.Properties.ofFullCopy(Blocks.FLOWER_POT));
 
     public static final DeferredBlock<Block> CARVED_STONE = registerSimpleBlock("carved_stone", () -> Block.Properties.of().mapColor(MapColor.STONE).instrument(NoteBlockInstrument.BASEDRUM).strength(0.5F, 6.0F).requiresCorrectToolForDrops());
     public static final DeferredBlock<Block> SENTRY_STONE = registerSimpleBlock("sentry_stone", () -> Block.Properties.ofFullCopy(CARVED_STONE.get()).lightLevel(AetherBlocks::lightLevel11));
