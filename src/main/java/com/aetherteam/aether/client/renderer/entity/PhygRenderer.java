@@ -13,7 +13,6 @@ import net.minecraft.client.renderer.entity.AgeableMobRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import com.aetherteam.aether.client.renderer.entity.layers.SaddleLayer;
 import net.minecraft.resources.Identifier;
-import net.minecraft.util.Mth;
 
 public class PhygRenderer extends AgeableMobRenderer<Phyg, PhygRenderState, PigModel> {
     private static final Identifier PHYG_TEXTURE = Identifier.fromNamespaceAndPath(Aether.MODID, "textures/entity/mobs/phyg/phyg.png");
@@ -36,8 +35,7 @@ public class PhygRenderer extends AgeableMobRenderer<Phyg, PhygRenderState, PigM
     public void extractRenderState(Phyg phyg, PhygRenderState reusedState, float partialTick) {
         super.extractRenderState(phyg, reusedState, partialTick);
         reusedState.customName = phyg.getCustomName() != null ? phyg.getCustomName().getString() : null;
-        reusedState.wingAngle = (phyg.getWingFold() * Mth.sin(reusedState.ageInTicks / 15.9F));
-        reusedState.wingHold = phyg.getWingFold();
+        QuadrupedWingsModel.extractWings(phyg, reusedState);
         reusedState.saddle = phyg.isSaddled();
     }
 

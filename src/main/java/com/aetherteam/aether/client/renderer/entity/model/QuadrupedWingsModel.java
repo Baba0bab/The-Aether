@@ -1,5 +1,7 @@
 package com.aetherteam.aether.client.renderer.entity.model;
 
+import com.aetherteam.aether.entity.passive.WingedAnimal;
+
 import com.aetherteam.aether.client.renderer.entity.state.WingEntityRenderState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.EntityModel;
@@ -35,14 +37,25 @@ public class QuadrupedWingsModel<T extends WingEntityRenderState> extends Entity
         return LayerDefinition.create(meshDefinition, 64, 32);
     }
 
+    /**
+     * Fills in the wing values of the render state, and moves the entity's wing fold toward folded when on the ground
+     * or spread when in the air. Before 26.x, this was done by the model while rendering.
+     */
+    public static void extractWings(WingedAnimal entity, WingEntityRenderState renderState) {
+        renderState.wingAngle = entity.getWingFold() * Mth.sin(renderState.ageInTicks / 15.9F);
+        if (!Minecraft.getInstance().isPaused()) {
+            float aimingForFold = entity.isEntityOnGround() ? 0.1F : 1.0F;
+            entity.setWingFold(entity.getWingFold() + ((aimingForFold - entity.getWingFold()) / 37.5F));
+        }
+        renderState.wingHold = entity.getWingFold();
+    }
+
     @Override
     public void setupAnim(T entity) {
-        if (!Minecraft.getInstance().isPaused()) {
-            float wingBend = -((float) Math.acos(entity.wingHold));
-            this.leftWingInner.zRot = -(entity.wingAngle + wingBend + Mth.HALF_PI);
-            this.leftWingOuter.zRot = -(entity.wingAngle - wingBend + Mth.HALF_PI) - this.leftWingInner.zRot;
-            this.rightWingInner.zRot = -this.leftWingInner.zRot;
-            this.rightWingOuter.zRot = -this.leftWingOuter.zRot;
-        }
+        float wingBend = -((float) Math.acos(entity.wingHold));
+        this.leftWingInner.zRot = -(entity.wingAngle + wingBend + Mth.HALF_PI);
+        this.leftWingOuter.zRot = -(entity.wingAngle - wingBend + Mth.HALF_PI) - this.leftWingInner.zRot;
+        this.rightWingInner.zRot = -this.leftWingInner.zRot;
+        this.rightWingOuter.zRot = -this.leftWingOuter.zRot;
     }
 }

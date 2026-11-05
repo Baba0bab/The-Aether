@@ -11,7 +11,6 @@ import net.minecraft.client.renderer.entity.AgeableMobRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import com.aetherteam.aether.client.renderer.entity.layers.SaddleLayer;
 import net.minecraft.resources.Identifier;
-import net.minecraft.util.Mth;
 
 public class FlyingCowRenderer extends AgeableMobRenderer<FlyingCow, FlyingCowRenderState, CowModel> {
     private static final Identifier FLYING_COW_TEXTURE = Identifier.fromNamespaceAndPath(Aether.MODID, "textures/entity/mobs/flying_cow/flying_cow.png");
@@ -32,8 +31,7 @@ public class FlyingCowRenderer extends AgeableMobRenderer<FlyingCow, FlyingCowRe
     @Override
     public void extractRenderState(FlyingCow entity, FlyingCowRenderState reusedState, float partialTick) {
         super.extractRenderState(entity, reusedState, partialTick);
-        reusedState.wingAngle = (entity.getWingFold() * Mth.sin(reusedState.ageInTicks / 15.9F));
-        reusedState.wingHold = entity.getWingFold();
+        QuadrupedWingsModel.extractWings(entity, reusedState);
         reusedState.saddle = entity.isSaddled();
     }
 
