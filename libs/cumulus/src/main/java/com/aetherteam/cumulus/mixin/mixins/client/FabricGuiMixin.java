@@ -7,27 +7,27 @@ import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.ref.LocalRef;
-import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.screens.Screen;
 import org.jetbrains.annotations.Nullable;
-import org.spongepowered.asm.mixin.Debug;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 
-@Debug(export = true)
-@Mixin(value = Minecraft.class, priority = 1100)
-public abstract class FabricMinecraftMixin {
-
+/**
+ * Fires {@link OpeningScreenEvents#POST} when a screen is opened. In 26.x the current screen is held by {@link Gui} instead of the Minecraft class.
+ */
+@Mixin(value = Gui.class, priority = 1100)
+public abstract class FabricGuiMixin {
     @Shadow
     @Nullable
-    public Screen screen;
+    private Screen screen;
 
-    @Definition(id = "screen", field = "Lnet/minecraft/client/Minecraft;screen:Lnet/minecraft/client/gui/screens/Screen;")
+    @Definition(id = "screen", field = "Lnet/minecraft/client/gui/Gui;screen:Lnet/minecraft/client/gui/screens/Screen;")
     @Definition(id = "guiScreen", local = @Local(argsOnly = true, type = Screen.class))
     @Expression("this.screen = guiScreen")
     @WrapOperation(method = "setScreen", at = @At(value = "MIXINEXTRAS:EXPRESSION"))
-    private void beforeScreenSetCall(Minecraft instance, Screen value, Operation<Void> original, @Local(argsOnly = true) LocalRef<Screen> guiScreenRef) {
+    private void beforeScreenSetCall(Gui instance, Screen value, Operation<Void> original, @Local(argsOnly = true) LocalRef<Screen> guiScreenRef) {
         if (value != null) {
             var replacementScreen = OpeningScreenEvents.POST.invoker().onOpening(this.screen, value);
 

@@ -55,8 +55,11 @@ dependencies {
 
 processResources {
     inputs.properties libProperties
+    // Only the ${key} placeholders are replaced: a Groovy template would also try to expand the "$" in the inner class names of the injected interfaces.
     filesMatching(['fabric.mod.json']) {
-        expand libProperties
+        filter { String line ->
+            libProperties.inject(line) { String result, key, value -> result.replace('${' + key + '}', value.toString()) }
+        }
     }
 }
 

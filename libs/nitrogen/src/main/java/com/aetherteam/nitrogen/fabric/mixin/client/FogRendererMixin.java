@@ -38,26 +38,25 @@ public abstract class FogRendererMixin {
         return bl;
     }
 
-    @Inject(method = "setupFog", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/systems/RenderSystem;getDevice()Lcom/mojang/blaze3d/systems/GpuDevice;"))
-    private static void nitrogen_fabric$onFogRenderering(Camera camera, int renderDistance, boolean isFoggy, DeltaTracker deltaTracker, float darkenWorldAmount, ClientLevel level, CallbackInfoReturnable<Vector4f> cir,
-                                                         @Share(namespace = "nitrogen", value = "chosenEnv") LocalRef<FogEnvironment> ref,
-                                                         @Local FogType fogType, @Local FogData fogData, @Local(ordinal = 1) float partialTick){
-        var helper = new FogAdjustmentHelper(camera, partialTick, ref.get(), fogType, fogData);
+    // In 26.x, setupFog is an instance method that returns the final FogData, so the event is fired when it returns.
+    @Inject(method = "setupFog", at = @At("RETURN"))
+    private void nitrogen_fabric$onFogRenderering(Camera camera, int renderDistance, DeltaTracker deltaTracker, float darkenWorldAmount, ClientLevel level, CallbackInfoReturnable<FogData> cir,
+                                                  @Share(namespace = "nitrogen", value = "chosenEnv") LocalRef<FogEnvironment> ref,
+                                                  @Local FogType fogType) {
+        float partialTick = deltaTracker.getGameTimeDeltaPartialTick(false);
+        var helper = new FogAdjustmentHelper(camera, partialTick, ref.get(), fogType, cir.getReturnValue());
 
         FogEvents.ON_FOG_RENDER.invoker().onRenderer(helper);
     }
 
-    @WrapOperation(method = "computeFogColor", at = @At(value = "NEW", target = "(FFFF)Lorg/joml/Vector4f;"))
-    private static Vector4f nitrogen_fabric$adjustFogColor(float r, float g, float b, float a, Operation<Vector4f> original,
-                                                           @Local(argsOnly = true) Camera activeRenderInfo, @Local(argsOnly = true, ordinal = 0) float partialTicks){
+    // In 26.x, computeFogColor writes the color into a Vector4f that is passed to it, instead of creating one.
+    @WrapOperation(method = "computeFogColor", at = @At(value = "INVOKE", target = "Lorg/joml/Vector4f;set(FFFF)Lorg/joml/Vector4f;"))
+    private Vector4f nitrogen_fabric$adjustFogColor(Vector4f instance, float r, float g, float b, float a, Operation<Vector4f> original,
+                                                    @Local(argsOnly = true) Camera activeRenderInfo, @Local(argsOnly = true, ordinal = 0) float partialTicks) {
         var helper = new FogColorHelper(activeRenderInfo, partialTicks, r, g, b);
 
         FogEvents.ON_FOG_COLORING.invoker().onColor(helper);
 
-        r = helper.getRed();
-        g = helper.getGreen();
-        b = helper.getBlue();
-
-        return original.call(r, g, b, a);
+        return original.call(instance, helper.getRed(), helper.getGreen(), helper.getBlue(), a);
     }
 }

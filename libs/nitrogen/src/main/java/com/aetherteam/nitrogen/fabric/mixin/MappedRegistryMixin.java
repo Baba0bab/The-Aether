@@ -35,11 +35,11 @@ public abstract class MappedRegistryMixin<T> implements FullDataMapAccess<T>{
     public abstract static class InnerClass<T> implements RegistryLookupExtension<T> {
         @Final
         @Shadow(remap = false)
-        MappedRegistry<T> field_36468;
+        MappedRegistry<T> this$0;
 
         @Override
         public <T1> @Nullable T1 nitrogen_fabric$getData(DataMapType<T, T1> type, ResourceKey<T> key) {
-            return field_36468.nitrogen_fabric$getData(type, key);
+            return this$0.nitrogen_fabric$getData(type, key);
         }
     }
 }

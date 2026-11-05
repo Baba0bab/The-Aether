@@ -11,7 +11,7 @@ import org.spongepowered.asm.mixin.injection.At;
 
 @Mixin(AbstractHurtingProjectile.class)
 public abstract class AbstractHurtingProjectileMixin {
-    @WrapOperation(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/projectile/AbstractHurtingProjectile;hitTargetOrDeflectSelf(Lnet/minecraft/world/phys/HitResult;)Lnet/minecraft/world/entity/projectile/ProjectileDeflection;"))
+    @WrapOperation(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/projectile/hurtingprojectile/AbstractHurtingProjectile;hitTargetOrDeflectSelf(Lnet/minecraft/world/phys/HitResult;)Lnet/minecraft/world/entity/projectile/ProjectileDeflection;"))
     private ProjectileDeflection nitrogen_fabric$adjustImpact(AbstractHurtingProjectile instance, HitResult hitResult, Operation<ProjectileDeflection> original) {
         return ProjectileEvents.adjustDeflection(instance, hitResult, ProjectileDeflection.NONE, () -> original.call(instance, hitResult));
     }

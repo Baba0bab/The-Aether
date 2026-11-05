@@ -38,7 +38,7 @@
     "java": ">=25",
     "fabric-api": "${fabric_version_range}"
   },
-  "#accessWidener": "${mod_id}.accesswidener",
+  "accessWidener": "nitrogen_internals.accesswidener",
   "custom": {
     "loom:injected_interfaces": {
       "net/minecraft/core/Holder": [

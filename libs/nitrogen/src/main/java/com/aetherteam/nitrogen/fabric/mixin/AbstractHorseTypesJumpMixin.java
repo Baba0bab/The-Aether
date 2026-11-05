@@ -13,11 +13,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(value = {AbstractHorse.class, Camel.class})
 public abstract class AbstractHorseTypesJumpMixin {
-    @Definition(id = "hasImpulse", field = {
-        "Lnet/minecraft/world/entity/animal/camel/Camel;hasImpulse:Z",
-        "Lnet/minecraft/world/entity/animal/horse/AbstractHorse;hasImpulse:Z"
+    @Definition(id = "needsSync", field = {
+        "Lnet/minecraft/world/entity/animal/camel/Camel;needsSync:Z",
+        "Lnet/minecraft/world/entity/animal/equine/AbstractHorse;needsSync:Z"
     })
-    @Expression("this.hasImpulse = true")
+    @Expression("this.needsSync = true")
     @Inject(method = "executeRidersJump", at = @At(value = "MIXINEXTRAS:EXPRESSION", shift = At.Shift.AFTER))
     private void nitrogen_fabric$fireJumpEvent(CallbackInfo ci){
         LivingEntityEvents.ON_JUMP.invoker().onJump((LivingEntity) (Object) this);

@@ -7,6 +7,7 @@ import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.mojang.datafixers.util.Pair;
 import net.minecraft.client.gui.screens.LevelLoadingScreen;
+import net.minecraft.client.multiplayer.LevelLoadTracker;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.RegistryAccess;
@@ -35,7 +36,7 @@ public abstract class ClientPacketListenerMixin {
     @Shadow
     public abstract RegistryAccess.Frozen registryAccess();
 
-    @WrapOperation(method = "method_38542", at = @At(value = "INVOKE", target = "Lnet/minecraft/network/protocol/game/ClientboundBlockEntityDataPacket;getTag()Lnet/minecraft/nbt/CompoundTag;"))
+    @WrapOperation(method = "lambda$handleBlockEntityData$0", at = @At(value = "INVOKE", target = "Lnet/minecraft/network/protocol/game/ClientboundBlockEntityDataPacket;getTag()Lnet/minecraft/nbt/CompoundTag;"))
     private CompoundTag nitrogen_fabric$adjustLoadCall(ClientboundBlockEntityDataPacket instance, Operation<CompoundTag> original, @Local(argsOnly = true) BlockEntity blockEntity) {
         return !blockEntity.nitrogen_fabric$onDataPacket(this.getConnection(), instance, this.registryAccess()) ? original.call(instance) : new CompoundTag();
     }
@@ -55,8 +56,8 @@ public abstract class ClientPacketListenerMixin {
         this.nitrogen_fabric$storedLevels.set(Pair.of(localPlayer.isDeadOrDying() ? null : resourceKey, localPlayer.isDeadOrDying() ? null : resourceKey2));
     }
 
-    @WrapOperation(method = "startWaitingForNewLevel", at = @At(value = "NEW", target = "(Ljava/util/function/BooleanSupplier;Lnet/minecraft/client/gui/screens/LevelLoadingScreen$Reason;)Lnet/minecraft/client/gui/screens/LevelLoadingScreen;"))
-    private LevelLoadingScreen nitrogen_fabric$adjustDimTransition(BooleanSupplier levelReceived, LevelLoadingScreen.Reason reason, Operation<LevelLoadingScreen> original) {
+    @WrapOperation(method = "startWaitingForNewLevel", at = @At(value = "NEW", target = "(Lnet/minecraft/client/multiplayer/LevelLoadTracker;Lnet/minecraft/client/gui/screens/LevelLoadingScreen$Reason;)Lnet/minecraft/client/gui/screens/LevelLoadingScreen;"))
+    private LevelLoadingScreen nitrogen_fabric$adjustDimTransition(LevelLoadTracker levelReceived, LevelLoadingScreen.Reason reason, Operation<LevelLoadingScreen> original) {
         var dims = nitrogen_fabric$storedLevels.get();
 
         nitrogen_fabric$storedLevels.remove();

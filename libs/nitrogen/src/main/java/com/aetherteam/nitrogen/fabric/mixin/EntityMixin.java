@@ -11,7 +11,7 @@ import com.llamalad7.mixinextras.expression.Expression;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
-import it.unimi.dsi.fastutil.objects.Object2DoubleMap;
+import net.minecraft.tags.FluidTags;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -35,9 +35,6 @@ import java.util.function.Consumer;
 
 @Mixin(Entity.class)
 public abstract class EntityMixin implements EntityExtension {
-    @Shadow
-    protected Object2DoubleMap<TagKey<Fluid>> fluidHeight;
-
     @WrapOperation(method = "rideTick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;tick()V"))
     private void nitrogen_fabric$entityTickEvents(Entity instance, Operation<Void> original) {
         var shouldCancelEvent = new MutableBoolean(false);
@@ -58,11 +55,9 @@ public abstract class EntityMixin implements EntityExtension {
 
     @Override
     public boolean nitrogen_fabric$isInFluidType() {
-        for (var value : this.fluidHeight.values()) {
-            if (value > 0.0) return true;
-        }
-
-        return false;
+        // Entity fluid heights are kept by EntityFluidInteraction in 26.x, which only tracks the vanilla fluid tags.
+        Entity entity = (Entity) (Object) this;
+        return entity.getFluidHeight(FluidTags.WATER) > 0.0 || entity.getFluidHeight(FluidTags.LAVA) > 0.0;
     }
 
     @Definition(id = "vehicle", field = "Lnet/minecraft/world/entity/Entity;vehicle:Lnet/minecraft/world/entity/Entity;")
@@ -74,8 +69,8 @@ public abstract class EntityMixin implements EntityExtension {
         ci.cancel();
     }
 
-    @Inject(method = "startRiding(Lnet/minecraft/world/entity/Entity;Z)Z", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;canRide(Lnet/minecraft/world/entity/Entity;)Z"), cancellable = true)
-    private void nitrogen_fabric$entityMountEvent_add(Entity vehicle, boolean force, CallbackInfoReturnable<Boolean> cir) {
+    @Inject(method = "startRiding(Lnet/minecraft/world/entity/Entity;ZZ)Z", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;canRide(Lnet/minecraft/world/entity/Entity;)Z"), cancellable = true)
+    private void nitrogen_fabric$entityMountEvent_add(Entity vehicle, boolean force, boolean sendEventAndTriggers, CallbackInfoReturnable<Boolean> cir) {
         if (shouldPerformAction(((Entity) (Object) this), false)) return;
 
         cir.setReturnValue(false);

@@ -33,16 +33,8 @@ public abstract class PlayerMixin {
         PlayerTickEvents.AFTER.invoker().afterTick((Player) (Object) this);
     }
 
-    //-- These combine to prevent some issues with attack strength calculations in entire attack method being needed before reset
-    @WrapOperation(method = "attack", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;resetAttackStrengthTicker()V"))
-    private void nitrogen_fabric$preventResetHere(Player instance, Operation<Void> original) {
-        // NO-OP
-    }
-    @Inject(method = "attack", at = @At(value = "RETURN", ordinal = 3))
-    private void nitrogen_fabric$callResetAtEnd(Entity target, CallbackInfo ci) {
-        this.resetAttackStrengthTicker();
-    }
-    //--
+    // In 26.x, Player#attack no longer resets the attack strength ticker itself (its callers do it afterwards),
+    // so the old workaround that delayed the reset to the end of the attack is not needed anymore.
 
     @ModifyReturnValue(method = "getDestroySpeed", at = @At("RETURN"))
     private float nitrogen_fabric$modifySpeed(float value, @Local(argsOnly = true) BlockState state) {

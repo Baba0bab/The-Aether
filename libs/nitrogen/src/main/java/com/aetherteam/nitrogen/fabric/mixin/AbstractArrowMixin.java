@@ -22,20 +22,15 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(AbstractArrow.class)
 public abstract class AbstractArrowMixin {
-    @Definition(id = "isAlive", method = "Lnet/minecraft/world/entity/projectile/AbstractArrow;isAlive()Z")
-    @Expression("this.isAlive()")
-    @ModifyExpressionValue(method = "stepMoveAndHit", at = @At(value = "MIXINEXTRAS:EXPRESSION", ordinal = 2))
-    private boolean nitrogen$neoParityAdjustExpression(boolean original, @Local() EntityHitResult hitResult) {
-        return original && hitResult.getType() != HitResult.Type.MISS;
-    }
+    // In 26.x, stepMoveAndHit collects every entity hit into a list, so there is no missed entity hit result left to filter out for parity with NeoForge.
 
-    @Inject(method = "stepMoveAndHit", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/projectile/AbstractArrow;position()Lnet/minecraft/world/phys/Vec3;"))
+    @Inject(method = "stepMoveAndHit", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/projectile/arrow/AbstractArrow;position()Lnet/minecraft/world/phys/Vec3;"))
     private void nitrogen$setupStorageForDeflect(BlockHitResult hitResult, CallbackInfo ci,
                                                  @Share(namespace = "nitrogen", value = "deflection_instance") LocalRef<@Nullable ProjectileDeflection> deflection) {
         deflection.set(null); // TODO: MAY NOT BE NEEDED
     }
 
-    @WrapOperation(method = "stepMoveAndHit", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/projectile/AbstractArrow;hitTargetOrDeflectSelf(Lnet/minecraft/world/phys/HitResult;)Lnet/minecraft/world/entity/projectile/ProjectileDeflection;"))
+    @WrapOperation(method = "stepMoveAndHit", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/projectile/arrow/AbstractArrow;hitTargetOrDeflectSelf(Lnet/minecraft/world/phys/HitResult;)Lnet/minecraft/world/entity/projectile/ProjectileDeflection;"))
     private ProjectileDeflection nitrogen$projectileImpactEvent(AbstractArrow instance, HitResult hitResult, Operation<ProjectileDeflection> original,
                                                               @Share(namespace = "nitrogen", value = "deflection_instance") LocalRef<@Nullable ProjectileDeflection> deflection) {
         deflection.set(ProjectileEvents.adjustDeflection(instance, hitResult, ProjectileEvents.EMPTY_DEFLECTION, () -> original.call(instance, hitResult)));
@@ -44,13 +39,13 @@ public abstract class AbstractArrowMixin {
     }
 
     @Inject(method = "stepMoveAndHit",
-        at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/projectile/AbstractArrow;hitTargetOrDeflectSelf(Lnet/minecraft/world/phys/HitResult;)Lnet/minecraft/world/entity/projectile/ProjectileDeflection;"))
+        at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/projectile/arrow/AbstractArrow;hitTargetOrDeflectSelf(Lnet/minecraft/world/phys/HitResult;)Lnet/minecraft/world/entity/projectile/ProjectileDeflection;"))
     private void nitrogen$preventImpulseFlagging(BlockHitResult hitResult, CallbackInfo ci, @Share(namespace = "nitrogen", value = "deflection_instance") LocalRef<@Nullable ProjectileDeflection> deflection) {
         if (deflection.get() == ProjectileEvents.EMPTY_DEFLECTION) ci.cancel();
     }
 
     // TODO: DOUBLE CHECK IF THE GIVEN INJECTION WORKS AS INTENDED BUT MAY CAUSE MORE ISSUES IF PEOPLE NEED TO HOOK INTO AFTER EFFECT BUT THYE COULD USE WRAP METHOD SO :SHRUG:
-//    @Definition(id = "hasImpulse", field = "Lnet/minecraft/world/entity/projectile/AbstractArrow;hasImpulse:Z")
+//    @Definition(id = "hasImpulse", field = "Lnet/minecraft/world/entity/projectile/arrow/AbstractArrow;hasImpulse:Z")
 //    @Expression("this.hasImpulse = true")
 //    @WrapOperation(method = "stepMoveAndHit", at = @At(value = "MIXINEXTRAS:EXPRESSION"))
 //    private void nitrogen$preventImpulseFlagging(AbstractArrow instance, boolean value, Operation<Void> original, @Share(namespace = "nitrogen", value = "deflection_instance") LocalRef<@Nullable ProjectileDeflection> deflection) {

@@ -9,11 +9,10 @@
   "client": [
     "client.GameRendererMixin",
     "client.LivingEntityRendererMixin",
-    "client.FabricMinecraftMixin"
+    "client.FabricGuiMixin"
   ],
   "server": [],
   "injectors": {
     "defaultRequire": 1
   }
 }
-  

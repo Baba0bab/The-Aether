@@ -1,9 +1,8 @@
 package com.aetherteam.nitrogen.fabric.client.dim;
 
 import net.minecraft.client.gui.screens.LevelLoadingScreen;
-
-import java.util.function.BooleanSupplier;
+import net.minecraft.client.multiplayer.LevelLoadTracker;
 
 public interface ReceivingLevelScreenFactory {
-    LevelLoadingScreen create(BooleanSupplier supplier, LevelLoadingScreen.Reason reason);
+    LevelLoadingScreen create(LevelLoadTracker loadTracker, LevelLoadingScreen.Reason reason);
 }

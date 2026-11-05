@@ -1,5 +1,6 @@
 package com.aetherteam.nitrogen.fabric.mixin;
 
+import net.minecraft.world.item.component.SwingAnimation;
 import com.aetherteam.nitrogen.fabric.events.*;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
@@ -107,15 +108,15 @@ public abstract class LivingEntityMixin extends Entity {
         original.call(level, pos, helper.getFinalExperienceAmount());
     }
 
-    @Inject(method = "swing(Lnet/minecraft/world/InteractionHand;Z)V", at = @At("HEAD"), cancellable = true)
-    private void nitrogen_fabric$onSwing(InteractionHand hand, boolean updateSelf, CallbackInfo ci) {
+    @Inject(method = "swing(Lnet/minecraft/world/InteractionHand;Lnet/minecraft/world/item/component/SwingAnimation;Z)Z", at = @At("HEAD"), cancellable = true)
+    private void nitrogen_fabric$onSwing(InteractionHand hand, SwingAnimation animation, boolean updateSelf, CallbackInfoReturnable<Boolean> cir) {
         var stack = this.getItemInHand(hand);
 
         var callback = new CancellableCallbackImpl(false);
 
         LivingEntityEvents.ON_SWING.invoker().onSwing(stack, (LivingEntity)(Object) this, hand, callback);
 
-        if (callback.isCanceled()) ci.cancel();
+        if (callback.isCanceled()) cir.setReturnValue(false);
     }
 
     @WrapOperation(
