@@ -20,7 +20,7 @@ public class BossHealthOverlayMixin {
      * Determines whether a vanilla-style boss bar should display or not.
      * @see GuiListener#onRenderBossBar(GuiGraphicsExtractor, int, int, BossEvent)
      */
-    @WrapWithCondition(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/components/BossHealthOverlay;drawBar(Lnet/minecraft/client/gui/GuiGraphicsExtractor;IILnet/minecraft/world/BossEvent;)V"), method = "render(Lnet/minecraft/client/gui/GuiGraphicsExtractor;)V")
+    @WrapWithCondition(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/components/BossHealthOverlay;extractBar(Lnet/minecraft/client/gui/GuiGraphicsExtractor;IILnet/minecraft/world/BossEvent;)V"), method = "extractRenderState(Lnet/minecraft/client/gui/GuiGraphicsExtractor;)V")
     private boolean drawBar(BossHealthOverlay instance, GuiGraphicsExtractor guiGraphics, int k, int j, BossEvent bossEvent, @Share("allow") LocalBooleanRef allow) {
         boolean renderVanillaBar = !GuiListener.onRenderBossBar(guiGraphics, k, j, bossEvent);
         allow.set(renderVanillaBar);
@@ -30,7 +30,7 @@ public class BossHealthOverlayMixin {
     /**
      * Determines whether the name for a vanilla-style boss bar should display or not; determined by the shared value set by {@link BossHealthOverlayMixin#drawBar(BossHealthOverlay, GuiGraphicsExtractor, int, int, BossEvent, LocalBooleanRef)}.
      */
-    @WrapWithCondition(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;drawString(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;III)I"), method = "render(Lnet/minecraft/client/gui/GuiGraphicsExtractor;)V")
+    @WrapWithCondition(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;text(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;III)V"), method = "extractRenderState(Lnet/minecraft/client/gui/GuiGraphicsExtractor;)V")
     private boolean drawString(GuiGraphicsExtractor instance, Font font, Component component, int n, int o, int color, @Share("allow") LocalBooleanRef allow) {
         return allow.get();
     }
@@ -38,9 +38,9 @@ public class BossHealthOverlayMixin {
     /**
      * Increases the offset increment between boss bars when an Aether-style boss bar is rendered; determined by the shared value set by {@link BossHealthOverlayMixin#drawBar(BossHealthOverlay, GuiGraphicsExtractor, int, int, BossEvent, LocalBooleanRef)}.
      */
-    @ModifyVariable(method = "render(Lnet/minecraft/client/gui/GuiGraphicsExtractor;)V", at = @At("STORE"), ordinal = 1,
+    @ModifyVariable(method = "extractRenderState(Lnet/minecraft/client/gui/GuiGraphicsExtractor;)V", at = @At("STORE"), ordinal = 1,
         slice = @Slice(
-            from = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;drawString(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;III)I"),
+            from = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;text(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;III)V"),
             to = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;guiHeight()I")
         ))
     private int increment(int x, @Share("allow") LocalBooleanRef allow) {
@@ -56,7 +56,7 @@ public class BossHealthOverlayMixin {
      * @return The modified net.neoforged.neoforge.client.event.CustomizeGuiOverlayEvent.BossEventProgress parameter value.
      */
     // TODO: [Fabric Porting] NEED TO DEAL WITH THIS?
-//    @ModifyVariable(at = @At(value = "STORE"), method = "render(Lnet/minecraft/client/gui/GuiGraphicsExtractor;)V", index = 7)
+//    @ModifyVariable(at = @At(value = "STORE"), method = "extractRenderState(Lnet/minecraft/client/gui/GuiGraphicsExtractor;)V", index = 7)
 //    private CustomizeGuiOverlayEvent.BossEventProgress event(CustomizeGuiOverlayEvent.BossEventProgress event) {
 //        if (Minecraft.getInstance().level != null &&
 //                GuiHooks.BOSS_EVENTS.containsKey(event.getBossEvent().getId()) &&

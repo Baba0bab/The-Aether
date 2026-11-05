@@ -65,7 +65,6 @@
     "client.accessor.EntityRendererAccessor",
     "client.accessor.GuiAccessor",
     "client.accessor.HeartTypeAccessor",
-    "client.accessor.I18nAccessor",
     "client.accessor.MinecraftAccessor",
     "client.accessor.PlayerModelAccessor",
     "client.accessor.QuadrupedModelAccessor",

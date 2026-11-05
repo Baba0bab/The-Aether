@@ -14,12 +14,15 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(GameRenderer.class)
 public abstract class GameRendererMixin {
     @Shadow
-    protected abstract void loadEffect(Identifier resourceLocation);
+    private void setSpectatedEntityPostEffect(Identifier postEffect) {
+        throw new AssertionError();
+    }
 
     @Inject(method = "checkEntityPostEffect", at = @At("TAIL"))
     private void aetherFabric$checkForEffect(Entity entity, CallbackInfo ci) {
         if (entity != null && entity.getType().equals(AetherEntityTypes.SUN_SPIRIT.get())) {
-            this.loadEffect(Identifier.fromNamespaceAndPath(Aether.MODID, "shaders/post/sun_spirit.json"));
+            // Post effects are loaded from assets/<namespace>/post_effect/ in 26.x.
+            this.setSpectatedEntityPostEffect(Identifier.fromNamespaceAndPath(Aether.MODID, "sun_spirit"));
         }
     }
 }

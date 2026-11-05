@@ -1,5 +1,8 @@
 package com.aetherteam.cumulus.mixin.mixins.client;
 
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import com.aetherteam.cumulus.events.CancellableCallbackImpl;
+import com.aetherteam.cumulus.client.event.listeners.WorldPreviewListener;
 import com.aetherteam.cumulus.client.OpeningScreenEvents;
 import com.llamalad7.mixinextras.expression.Definition;
 import com.llamalad7.mixinextras.expression.Expression;
@@ -39,5 +42,17 @@ public abstract class FabricGuiMixin {
         }
 
         original.call(instance, value);
+    }
+
+    /**
+     * Lets the world preview hide the current screen. In 26.x screens are extracted for rendering by {@link Gui}.
+     */
+    @WrapOperation(method = "extractRenderState(Lnet/minecraft/client/DeltaTracker;ZZ)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/Screen;extractRenderStateWithTooltipAndSubtitles(Lnet/minecraft/client/gui/GuiGraphicsExtractor;IIF)V"))
+    private void extractScreen(Screen instance, GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTick, Operation<Void> original) {
+        var callback = new CancellableCallbackImpl();
+
+        WorldPreviewListener.onScreenRender(instance, callback);
+
+        if (!callback.isCanceled()) original.call(instance, guiGraphics, mouseX, mouseY, partialTick);
     }
 }

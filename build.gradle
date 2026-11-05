@@ -75,6 +75,9 @@ sourceSets.main.resources {
 
 processResources {
     exclude '.cache/'
+    // The generated pack.mcmeta declares the NeoForge data pack format, which makes the client flag the mod's resources as incompatible.
+    // Without it, Fabric creates the right metadata for both pack types.
+    exclude 'pack.mcmeta'
 }
 
 dependencies {
